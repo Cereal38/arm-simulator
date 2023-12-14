@@ -56,13 +56,13 @@ uint8_t registers_get_mode(registers r)
 {
   /*
     Modes :
-      USR 0x10
-      FIQ 0x11
-      IRQ 0x12
-      SVC 0x13
-      ABT 0x17
-      UND 0x1b
-      SYS 0x1f
+      USR 0x10 (User)
+      FIQ 0x11 (Fast Interrupt Request)
+      IRQ 0x12 (Interrupt Request)
+      SVC 0x13 (Supervisor)
+      ABT 0x17 (Abort)
+      UND 0x1b (Undefined)
+      SYS 0x1f (System)
     Documentation :
       https://developer.arm.com/documentation/ddi0406/cb/System-Level-Architecture/The-System-Level-Programmers--Model/ARM-processor-modes-and-ARM-core-registers/ARM-processor-modes?lang=en
   */
@@ -79,6 +79,14 @@ uint8_t registers_get_mode(registers r)
 
 static int registers_mode_has_spsr(registers r, uint8_t mode)
 {
+  /*
+  Dans l'architecture ARM, le registre SPSR (Saved Program Status Register) est un registre spécial qui sauvegarde l'état du registre CPSR (Current Program Status Register) lorsqu'une exception est déclenchée. Cela permet au processeur de restaurer l'état précédent du CPSR lorsque l'exception est terminée.
+
+  Cependant, le registre SPSR n'est pas toujours présent. Il n'existe que dans certains modes d'exécution du processeur. Plus précisément, il est présent dans les modes suivants : FIQ (Fast Interrupt Request), IRQ (Interrupt Request), SVC (Supervisor), ABT (Abort) et UND (Undefined).
+
+  Dire que le "registre SPSR est présent" signifie que le processeur est actuellement dans l'un de ces modes d'exécution où le registre SPSR existe et peut être utilisé.
+  */
+
   // Les modes qui ont un registre SPSR sont FIQ, IRQ, SVC, ABT et UND
   uint8_t modes_with_spsr[] = {FIQ, IRQ, SVC, ABT, UND};
 
