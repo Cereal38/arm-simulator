@@ -1,3 +1,28 @@
+#useless files and directories, feel free to modify later if any file is needed.
+.deps
+autom4te.cache
+Examples
+arm_simulator 
+config.h
+config.log
+config.status
+configure*
+Makefile
+memory_test
+registers_test
+send_irq
+stamp-h1
+aclocal.m4
+build-aux
+arm_*.*
+scanner.l 
+README 
+Makefile.*
+
+
+
+
+
 # Prerequisites
 *.d
 
