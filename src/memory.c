@@ -27,11 +27,27 @@ Contact: Guillaume.Huard@imag.fr
 
 struct memory_data
 {
+  size_t size;
+  uint8_t *data;
 };
 
 memory memory_create(size_t size)
 {
-  memory mem = NULL;
+
+  memory mem = malloc(sizeof(struct memory_data));
+  if (mem == NULL)
+  {
+    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    exit(EXIT_FAILURE);
+  }
+  mem->size = size;
+  mem->data = (uint8_t *)malloc(size);
+  if (mem->data == NULL)
+  {
+    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    exit(EXIT_FAILURE);
+  }
+
   return mem;
 }
 
