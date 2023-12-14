@@ -27,8 +27,8 @@ Contact: Guillaume.Huard@imag.fr
 struct registers_data
 {
   uint32_t r[16];
-  uint32_t cpsr;    /* Current Program Status Register */
-  uint32_t spsr[5]; /* Saved Program Status Register */
+  uint32_t cpsr; /* Current Program Status Register */
+  uint32_t spsr; /* Saved Program Status Register */
 };
 
 registers registers_create()
@@ -63,6 +63,8 @@ uint8_t registers_get_mode(registers r)
       ABT 0x17
       UND 0x1b
       SYS 0x1f
+    Documentation :
+      https://developer.arm.com/documentation/ddi0406/cb/System-Level-Architecture/The-System-Level-Programmers--Model/ARM-processor-modes-and-ARM-core-registers/ARM-processor-modes?lang=en
   */
   if (r == NULL)
   {
@@ -77,7 +79,18 @@ uint8_t registers_get_mode(registers r)
 
 static int registers_mode_has_spsr(registers r, uint8_t mode)
 {
-  /* � compl�ter... */
+  // Les modes qui ont un registre SPSR sont FIQ, IRQ, SVC, ABT et UND
+  uint8_t modes_with_spsr[] = {FIQ, IRQ, SVC, ABT, UND};
+
+  // On retourne 1 si le mode est dans le tableau
+  for (int i = 0; i < sizeof(modes_with_spsr); i++)
+  {
+    if (mode == modes_with_spsr[i])
+    {
+      return 1;
+    }
+  }
+
   return 0;
 }
 
