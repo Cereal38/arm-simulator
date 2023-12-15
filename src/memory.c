@@ -148,7 +148,8 @@ int memory_read_word(memory mem, uint32_t address, uint32_t *value, uint8_t be)
   if (address > mem->size)
   {
     fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
+    exit(-1); 
+    
   }
   
 
