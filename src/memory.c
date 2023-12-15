@@ -24,6 +24,7 @@ Contact: Guillaume.Huard@imag.fr
 #include <stdlib.h>
 #include "memory.h"
 #include "util.h"
+#include <stdio.h>
 
 struct memory_data
 {
@@ -37,14 +38,14 @@ memory memory_create(size_t size)
   memory mem = malloc(sizeof(struct memory_data));
   if (mem == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   mem->size = size;
   mem->data = malloc(size);
   if (mem->data == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
 
@@ -54,7 +55,7 @@ memory memory_create(size_t size)
 size_t memory_get_size(memory mem) {
   if (mem == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   return mem->size;
@@ -63,12 +64,12 @@ size_t memory_get_size(memory mem) {
 void memory_destroy(memory mem) {
   if (mem == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   if (mem->data == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   free(mem->data);
@@ -79,33 +80,33 @@ void memory_destroy(memory mem) {
 
 int memory_read_byte(memory mem, uint32_t address, uint8_t *value)
 {
-  if ( mem = NULL)
+  if ( mem == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   if (address > mem->size)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   *value = mem->data[address];
 
-  return 1;
+  return 0;
 }
 
 int memory_read_half(memory mem, uint32_t address, uint16_t *value, uint8_t be)
 {
 
   uint8_t byte1, byte2;
-  if ( mem = NULL)
+  if ( mem == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   if (address > mem->size)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
 
@@ -139,14 +140,14 @@ int memory_read_word(memory mem, uint32_t address, uint32_t *value, uint8_t be)
 {
   uint8_t byte1, byte2, byte3, byte4;
   
-  if ( mem = NULL)
+  if ( mem == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   if (address > mem->size)
   {
-    ERROR_MSG("Erreur lors de l'allocation de la memoire");
+    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(-1);
   }
   
@@ -199,25 +200,27 @@ int memory_write_half(memory mem, uint32_t address, uint16_t value, uint8_t be)
     mem->data[address] = ((uint8_t *)&value )[0] ;   //   (uint8_t)(value << 8)
     mem->data[address + 1] = ((uint8_t *)&value) [1];//  (uint8_t)(value >> 8) 
   }
+  return 0;
 }
 
 int memory_write_word(memory mem, uint32_t address, uint32_t value, uint8_t be)
 {
-  if (mem ==NULL || address +3 >= mem->size )
+  if (mem == NULL || address + 3 >= mem->size)
     return -1;
 
-  if (be){
+  if (be)
+  {
     mem->data[address] = ((uint8_t *)&value)[3];
-    mem->data[address] = ((uint8_t *)&value)[2];
-    mem->data[address] = ((uint8_t *)&value)[1];
-    mem->data[address] = ((uint8_t *)&value)[0];
-
+    mem->data[address + 1] = ((uint8_t *)&value)[2];
+    mem->data[address + 2] = ((uint8_t *)&value)[1];
+    mem->data[address + 3] = ((uint8_t *)&value)[0];
   }
-  else{
+  else
+  {
     mem->data[address] = ((uint8_t *)&value)[0];
-    mem->data[address] = ((uint8_t *)&value)[1];
-    mem->data[address] = ((uint8_t *)&value)[2];
-    mem->data[address] = ((uint8_t *)&value)[3];
+    mem->data[address + 1] = ((uint8_t *)&value)[1];
+    mem->data[address + 2] = ((uint8_t *)&value)[2];
+    mem->data[address + 3] = ((uint8_t *)&value)[3];
   }
 
   return 0;
