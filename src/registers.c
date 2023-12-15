@@ -63,6 +63,7 @@ uint8_t registers_get_mode(registers r)
       ABT 0x17 (Abort)
       UND 0x1b (Undefined)
       SYS 0x1f (System)
+
     Documentation :
       https://developer.arm.com/documentation/ddi0406/cb/System-Level-Architecture/The-System-Level-Programmers--Model/ARM-processor-modes-and-ARM-core-registers/ARM-processor-modes?lang=en
   */
@@ -80,26 +81,14 @@ uint8_t registers_get_mode(registers r)
 static int registers_mode_has_spsr(registers r, uint8_t mode)
 {
   /*
-  Dans l'architecture ARM, le registre SPSR (Saved Program Status Register) est un registre spécial qui sauvegarde l'état du registre CPSR (Current Program Status Register) lorsqu'une exception est déclenchée. Cela permet au processeur de restaurer l'état précédent du CPSR lorsque l'exception est terminée.
+    Documentation:
+      https://developer.arm.com/documentation/dvi0027/b/arm-architecture-v4t/modes-and-exceptions
 
-  Cependant, le registre SPSR n'est pas toujours présent. Il n'existe que dans certains modes d'exécution du processeur. Plus précisément, il est présent dans les modes suivants : FIQ (Fast Interrupt Request), IRQ (Interrupt Request), SVC (Supervisor), ABT (Abort) et UND (Undefined).
-
-  Dire que le "registre SPSR est présent" signifie que le processeur est actuellement dans l'un de ces modes d'exécution où le registre SPSR existe et peut être utilisé.
+      All modes other than User are privileged modes. These are used to service hardware interrupts, exceptions, and software interrupts. Each privileged mode has an associated Saved Program Status Register (SPSR). This register is use to save the state of the Current Program Status Register (CPSR) of the task immediately before the exception occurs.
   */
 
-  // Les modes qui ont un registre SPSR sont FIQ, IRQ, SVC, ABT et UND
-  uint8_t modes_with_spsr[] = {FIQ, IRQ, SVC, ABT, UND};
-
-  // On retourne 1 si le mode est dans le tableau
-  for (int i = 0; i < sizeof(modes_with_spsr); i++)
-  {
-    if (mode == modes_with_spsr[i])
-    {
-      return 1;
-    }
-  }
-
-  return 0;
+  // On regarde si le mode est différent de USR
+  return mode != USR;
 }
 
 int registers_current_mode_has_spsr(registers r)
@@ -109,8 +98,15 @@ int registers_current_mode_has_spsr(registers r)
 
 int registers_in_a_privileged_mode(registers r)
 {
-  /* � compl�ter... */
-  return 0;
+  /*
+    Documentation:
+      https://developer.arm.com/documentation/dvi0027/b/arm-architecture-v4t/modes-and-exceptions
+
+      All modes other than User are privileged modes. These are used to service hardware interrupts, exceptions, and software interrupts. Each privileged mode has an associated Saved Program Status Register (SPSR). This register is use to save the state of the Current Program Status Register (CPSR) of the task immediately before the exception occurs.
+  */
+
+  // On regarde si le mode est différent de USR
+  return registers_get_mode(r) != USR;
 }
 
 uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
