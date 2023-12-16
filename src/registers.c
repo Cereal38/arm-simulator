@@ -28,7 +28,7 @@ struct registers_data
 {
   /*
     Registers :
-      r0-r10 (General Purpose)
+      r0-r7  (Unbanked Registers -> No special use)
       r11    (FP - Frame Pointer)
       r12    (IP - Intra Procedure Call)
       r13    (SP - Stack Pointer)
@@ -94,14 +94,11 @@ uint8_t registers_get_mode(registers r)
 static int registers_mode_has_spsr(registers r, uint8_t mode)
 {
   /*
-    Documentation:
-      https://developer.arm.com/documentation/dvi0027/b/arm-architecture-v4t/modes-and-exceptions
-
-      All modes other than User are privileged modes. These are used to service hardware interrupts, exceptions, and software interrupts. Each privileged mode has an associated Saved Program Status Register (SPSR). This register is use to save the state of the Current Program Status Register (CPSR) of the task immediately before the exception occurs.
+    Voir figure A2-1 du manuel (page 43)
   */
 
-  // On regarde si le mode est différent de USR
-  return mode != USR;
+  // On regarde si le mode appartient à la liste des modes qui ont un spsr
+  return mode == FIQ || mode == IRQ || mode == SVC || mode == ABT || mode == UND;
 }
 
 int registers_current_mode_has_spsr(registers r)
@@ -112,20 +109,17 @@ int registers_current_mode_has_spsr(registers r)
 int registers_in_a_privileged_mode(registers r)
 {
   /*
-    Documentation:
-      https://developer.arm.com/documentation/dvi0027/b/arm-architecture-v4t/modes-and-exceptions
-
-      All modes other than User are privileged modes. These are used to service hardware interrupts, exceptions, and software interrupts. Each privileged mode has an associated Saved Program Status Register (SPSR). This register is use to save the state of the Current Program Status Register (CPSR) of the task immediately before the exception occurs.
+    Voir figure A2-1 du manuel (page 43)
   */
 
-  // On regarde si le mode est différent de USR
-  return registers_get_mode(r) != USR;
+  // On regarde si le mode appartient à la liste des modes privilégiés
+  uint8_t mode = registers_get_mode(r);
+  return mode == FIQ || mode == IRQ || mode == SVC || mode == ABT || mode == UND || mode == SYS;
 }
 
 uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
 {
-  // TODO: Corriger cette fonction
-  return r->r[reg];
+  return 0;
 }
 
 uint32_t registers_read_cpsr(registers r)
@@ -135,7 +129,6 @@ uint32_t registers_read_cpsr(registers r)
 
 uint32_t registers_read_spsr(registers r, uint8_t mode)
 {
-  // On regarde si le mode est différent de USR
   if (registers_mode_has_spsr(r, mode))
   {
     return r->spsr;
@@ -149,8 +142,7 @@ uint32_t registers_read_spsr(registers r, uint8_t mode)
 
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
 {
-  // TODO: Corriger cette fonction
-  r->r[reg] = value;
+  return;
 }
 
 void registers_write_cpsr(registers r, uint32_t value)
@@ -160,14 +152,5 @@ void registers_write_cpsr(registers r, uint32_t value)
 
 void registers_write_spsr(registers r, uint8_t mode, uint32_t value)
 {
-  // On regarde si le mode est différent de USR
-  if (registers_mode_has_spsr(r, mode))
-  {
-    r->spsr = value;
-  }
-  else
-  {
-    fprintf(stderr, "Erreur lors de l'écriture du registre spsr");
-    exit(EXIT_FAILURE);
-  }
+  return;
 }
