@@ -129,7 +129,7 @@ uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
     return r->registers[reg];
   }
 
-  // On regarde si le registre est un registre banked
+  // On regarde si le registre est un registre spécifique à un mode
   switch (mode)
   {
   case FIQ:
@@ -228,7 +228,94 @@ uint32_t registers_read_spsr(registers r, uint8_t mode)
 
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
 {
-  return;
+  /*
+    Voir figure A2-1 du manuel (page 43)
+  */
+
+  // On regarde si le registre est un registre unbanked ou le pc (r15)
+  if (reg < 8 || reg == 15)
+  {
+    r->registers[reg] = value;
+    return;
+  }
+
+  // On regarde si le registre est un registre spécifique à un mode
+  switch (mode)
+  {
+  case FIQ:
+    switch (reg)
+    {
+    case 8:
+      r->r8_fiq = value;
+      return;
+    case 9:
+      r->r9_fiq = value;
+      return;
+    case 10:
+      r->r10_fiq = value;
+      return;
+    case 11:
+      r->r11_fiq = value;
+      return;
+    case 12:
+      r->r12_fiq = value;
+      return;
+    case 13:
+      r->r13_fiq = value;
+      return;
+    case 14:
+      r->r14_fiq = value;
+      return;
+    }
+    break;
+  case IRQ:
+    switch (reg)
+    {
+    case 13:
+      r->r13_irq = value;
+      return;
+    case 14:
+      r->r14_irq = value;
+      return;
+    }
+    break;
+  case SVC:
+    switch (reg)
+    {
+    case 13:
+      r->r13_svc = value;
+      return;
+    case 14:
+      r->r14_svc = value;
+      return;
+    }
+    break;
+  case ABT:
+    switch (reg)
+    {
+    case 13:
+      r->r13_abt = value;
+      return;
+    case 14:
+      r->r14_abt = value;
+      return;
+    }
+    break;
+  case UND:
+    switch (reg)
+    {
+    case 13:
+      r->r13_und = value;
+      return;
+    case 14:
+      r->r14_und = value;
+      return;
+    }
+    break;
+  }
+
+  // Le registre n'est pas un registre spécifique à un mode
+  r->registers[reg] = value;
 }
 
 void registers_write_cpsr(registers r, uint32_t value)
