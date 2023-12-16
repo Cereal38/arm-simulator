@@ -152,6 +152,39 @@ void test_registers_current_mode_has_spsr()
   registers_destroy(r);
 }
 
+void test_register_read_write_spsr()
+{
+  registers r = registers_create();
+  assert(r != NULL);
+
+  printf("Test : Write/Read spsr (FIQ) ... ");
+  registers_write_spsr(r, FIQ, 0xabcd);
+  assert(registers_read_spsr(r, FIQ) == 0xabcd);
+  printf("OK\n");
+
+  printf("Test : Write/Read spsr (IRQ) ... ");
+  registers_write_spsr(r, IRQ, 0xdcba);
+  assert(registers_read_spsr(r, IRQ) == 0xdcba);
+  printf("OK\n");
+
+  printf("Test : Write/Read spsr (SVC) ... ");
+  registers_write_spsr(r, SVC, 0x1234);
+  assert(registers_read_spsr(r, SVC) == 0x1234);
+  printf("OK\n");
+
+  printf("Test : Write/Read spsr (ABT) ... ");
+  registers_write_spsr(r, ABT, 0x4321);
+  assert(registers_read_spsr(r, ABT) == 0x4321);
+  printf("OK\n");
+
+  printf("Test : Write/Read spsr (UND) ... ");
+  registers_write_spsr(r, UND, 0x5678);
+  assert(registers_read_spsr(r, UND) == 0x5678);
+  printf("OK\n");
+
+  registers_destroy(r);
+}
+
 int main()
 {
 
@@ -159,6 +192,7 @@ int main()
   test_register_read_write_cpsr();
   test_registers_get_mode();
   test_registers_current_mode_has_spsr();
+  test_register_read_write_spsr();
 
   return 0;
 
