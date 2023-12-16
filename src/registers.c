@@ -26,9 +26,22 @@ Contact: Guillaume.Huard@imag.fr
 
 struct registers_data
 {
+  /*
+    Registers :
+      r0-r10 (General Purpose)
+      r11    (FP - Frame Pointer)
+      r12    (IP - Intra Procedure Call)
+      r13    (SP - Stack Pointer)
+      r14    (LR - Link Register)
+      r15    (PC - Program Counter)
+      cpsr   (CPSR - Current Program Status Register)
+      spsr   (SPSR - Saved Program Status Register)
+    Tutorial :
+      https://www.youtube.com/watch?v=ibh4tadjUaw&ab_channel=techAj
+  */
   uint32_t r[16];
-  uint32_t cpsr; /* Current Program Status Register */
-  uint32_t spsr; /* Saved Program Status Register */
+  uint32_t cpsr;
+  uint32_t spsr;
 };
 
 registers registers_create()
@@ -37,7 +50,7 @@ registers registers_create()
 
   if (registers == NULL)
   {
-    ERROR_MSG("Erreur lors de l'allocation des registres");
+    fprintf(stderr, "Erreur lors de l'allocation des registres");
     exit(EXIT_FAILURE);
   }
 
@@ -69,7 +82,7 @@ uint8_t registers_get_mode(registers r)
   */
   if (r == NULL)
   {
-    ERROR_MSG("Erreur lors de la lecture du mode");
+    fprintf(stderr, "Erreur lors de la lecture du mode");
     exit(EXIT_FAILURE);
   }
   // On regarde les 5 derniers bits de poids faible du registre cpsr
@@ -111,36 +124,50 @@ int registers_in_a_privileged_mode(registers r)
 
 uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
 {
-  uint32_t value = 0;
-  /* � compl�ter... */
-  return value;
+  // TODO: Corriger cette fonction
+  return r->r[reg];
 }
 
 uint32_t registers_read_cpsr(registers r)
 {
-  uint32_t value = 0;
-  /* � compl�ter... */
-  return value;
+  return r->cpsr;
 }
 
 uint32_t registers_read_spsr(registers r, uint8_t mode)
 {
-  uint32_t value = 0;
-  /* � compl�ter... */
-  return value;
+  // On regarde si le mode est différent de USR
+  if (registers_mode_has_spsr(r, mode))
+  {
+    return r->spsr;
+  }
+  else
+  {
+    fprintf(stderr, "Erreur lors de la lecture du registre spsr");
+    exit(EXIT_FAILURE);
+  }
 }
 
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
 {
-  /* � compl�ter... */
+  // TODO: Corriger cette fonction
+  r->r[reg] = value;
 }
 
 void registers_write_cpsr(registers r, uint32_t value)
 {
-  /* � compl�ter... */
+  r->cpsr = value;
 }
 
 void registers_write_spsr(registers r, uint8_t mode, uint32_t value)
 {
-  /* � compl�ter... */
+  // On regarde si le mode est différent de USR
+  if (registers_mode_has_spsr(r, mode))
+  {
+    r->spsr = value;
+  }
+  else
+  {
+    fprintf(stderr, "Erreur lors de l'écriture du registre spsr");
+    exit(EXIT_FAILURE);
+  }
 }
