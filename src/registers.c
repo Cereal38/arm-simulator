@@ -200,7 +200,30 @@ uint32_t registers_read_cpsr(registers r)
 
 uint32_t registers_read_spsr(registers r, uint8_t mode)
 {
-  return 0;
+  /*
+    Voir figure A2-1 du manuel (page 43)
+  */
+
+  // On regarde si le mode appartient à la liste des modes qui ont un spsr
+  if (registers_mode_has_spsr(r, mode))
+  {
+    switch (mode)
+    {
+    case FIQ:
+      return r->spsr_fiq;
+    case IRQ:
+      return r->spsr_irq;
+    case SVC:
+      return r->spsr_svc;
+    case ABT:
+      return r->spsr_abt;
+    case UND:
+      return r->spsr_und;
+    }
+  }
+
+  fprintf(stderr, "Erreur ! Le registre spsr n'existe pas pour le mode %s", arm_get_mode_name(mode));
+  exit(EXIT_FAILURE);
 }
 
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
