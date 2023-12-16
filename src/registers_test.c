@@ -95,11 +95,56 @@ void test_registers_get_mode()
   registers_destroy(r);
 }
 
+void test_registers_current_mode_has_spsr()
+{
+
+  registers r = registers_create();
+  assert(r != NULL);
+
+  printf("Test : Current mode has spsr (USR) ... ");
+  registers_write_cpsr(r, 0x110);
+  assert(!registers_current_mode_has_spsr(r));
+  printf("OK\n");
+
+  printf("Test : Current mode has spsr (FIQ) ... ");
+  registers_write_cpsr(r, 0x11);
+  assert(registers_current_mode_has_spsr(r));
+  printf("OK\n");
+
+  printf("Test : Current mode has spsr (IRQ) ... ");
+  registers_write_cpsr(r, 0x12);
+  assert(registers_current_mode_has_spsr(r));
+  printf("OK\n");
+
+  printf("Test : Current mode has spsr (SVC) ... ");
+  registers_write_cpsr(r, 0x13);
+  assert(registers_current_mode_has_spsr(r));
+  printf("OK\n");
+
+  printf("Test : Current mode has spsr (ABT) ... ");
+  registers_write_cpsr(r, 0x17);
+  assert(registers_current_mode_has_spsr(r));
+  printf("OK\n");
+
+  printf("Test : Current mode has spsr (UND) ... ");
+  registers_write_cpsr(r, 0x1b);
+  assert(registers_current_mode_has_spsr(r));
+  printf("OK\n");
+
+  printf("Test : Current mode has spsr (SYS) ... ");
+  registers_write_cpsr(r, 0x1f);
+  assert(!registers_current_mode_has_spsr(r));
+  printf("OK\n");
+
+  registers_destroy(r);
+}
+
 int main()
 {
 
   test_registers_create();
   test_registers_get_mode();
+  test_registers_current_mode_has_spsr();
 
   return 0;
 
