@@ -93,10 +93,6 @@ uint8_t registers_get_mode(registers r)
 
 static int registers_mode_has_spsr(registers r, uint8_t mode)
 {
-  /*
-    Voir figure A2-1 du manuel (page 43)
-  */
-
   // On regarde si le mode appartient à la liste des modes qui ont un spsr
   return mode == FIQ || mode == IRQ || mode == SVC || mode == ABT || mode == UND;
 }
@@ -108,10 +104,6 @@ int registers_current_mode_has_spsr(registers r)
 
 int registers_in_a_privileged_mode(registers r)
 {
-  /*
-    Voir figure A2-1 du manuel (page 43)
-  */
-
   // On regarde si le mode appartient à la liste des modes privilégiés
   uint8_t mode = registers_get_mode(r);
   return mode == FIQ || mode == IRQ || mode == SVC || mode == ABT || mode == UND || mode == SYS;
@@ -119,10 +111,6 @@ int registers_in_a_privileged_mode(registers r)
 
 uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
 {
-  /*
-    Voir figure A2-1 du manuel (page 43)
-  */
-
   // On regarde si le registre est un registre unbanked ou le pc (r15)
   if (reg < 8 || reg == 15)
   {
@@ -200,10 +188,6 @@ uint32_t registers_read_cpsr(registers r)
 
 uint32_t registers_read_spsr(registers r, uint8_t mode)
 {
-  /*
-    Voir figure A2-1 du manuel (page 43)
-  */
-
   // On regarde si le mode appartient à la liste des modes qui ont un spsr
   if (registers_mode_has_spsr(r, mode))
   {
@@ -228,10 +212,6 @@ uint32_t registers_read_spsr(registers r, uint8_t mode)
 
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
 {
-  /*
-    Voir figure A2-1 du manuel (page 43)
-  */
-
   // On regarde si le registre est un registre unbanked ou le pc (r15)
   if (reg < 8 || reg == 15)
   {
@@ -325,5 +305,29 @@ void registers_write_cpsr(registers r, uint32_t value)
 
 void registers_write_spsr(registers r, uint8_t mode, uint32_t value)
 {
-  return;
+  // On regarde si le mode appartient à la liste des modes qui ont un spsr
+  if (registers_mode_has_spsr(r, mode))
+  {
+    switch (mode)
+    {
+    case FIQ:
+      r->spsr_fiq = value;
+      return;
+    case IRQ:
+      r->spsr_irq = value;
+      return;
+    case SVC:
+      r->spsr_svc = value;
+      return;
+    case ABT:
+      r->spsr_abt = value;
+      return;
+    case UND:
+      r->spsr_und = value;
+      return;
+    }
+  }
+
+  fprintf(stderr, "Erreur ! Le registre spsr n'existe pas pour le mode %s", arm_get_mode_name(mode));
+  exit(EXIT_FAILURE);
 }
