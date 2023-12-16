@@ -45,6 +45,19 @@ void test_registers_create()
   registers_destroy(r);
 }
 
+void test_register_read_write_cpsr()
+{
+  registers r = registers_create();
+  assert(r != NULL);
+
+  printf("Test : Write/Read cpsr ... ");
+  registers_write_cpsr(r, 0x1d3);
+  assert(registers_read_cpsr(r) == 0x1d3);
+  printf("OK\n");
+
+  registers_destroy(r);
+}
+
 void test_registers_get_mode()
 {
   registers r = registers_create();
@@ -143,6 +156,7 @@ int main()
 {
 
   test_registers_create();
+  test_register_read_write_cpsr();
   test_registers_get_mode();
   test_registers_current_mode_has_spsr();
 
