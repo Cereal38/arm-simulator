@@ -228,8 +228,120 @@ void test_registers_in_a_privileged_mode()
   registers_destroy(r);
 }
 
+void test_registers_read_write()
+{
+  registers r = registers_create();
+  assert(r != NULL);
+
+  printf("Test : Write/Read registers (USR) ... ");
+  uint32_t word_list[15];
+  for (int i = 0; i < 15; i++)
+  {
+    word_list[i] = random();
+    registers_write(r, i, USR, word_list[i]);
+  }
+  for (int i = 0; i < 15; i++)
+  {
+    assert(registers_read(r, i, USR) == word_list[i]);
+  }
+  registers_destroy(r);
+  printf("OK\n");
+
+  printf("Test : Write/Read registers (FIQ) ... ");
+  r = registers_create();
+  assert(r != NULL);
+  for (int i = 0; i < 15; i++)
+  {
+    word_list[i] = random();
+    registers_write(r, i, FIQ, word_list[i]);
+  }
+  for (int i = 0; i < 15; i++)
+  {
+    assert(registers_read(r, i, FIQ) == word_list[i]);
+  }
+  registers_destroy(r);
+  printf("OK\n");
+
+  printf("Test : Write/Read registers (IRQ) ... ");
+  r = registers_create();
+  assert(r != NULL);
+  for (int i = 0; i < 15; i++)
+  {
+    word_list[i] = random();
+    registers_write(r, i, IRQ, word_list[i]);
+  }
+  for (int i = 0; i < 15; i++)
+  {
+    assert(registers_read(r, i, IRQ) == word_list[i]);
+  }
+  registers_destroy(r);
+  printf("OK\n");
+
+  printf("Test : Write/Read registers (SVC) ... ");
+  r = registers_create();
+  assert(r != NULL);
+  for (int i = 0; i < 15; i++)
+  {
+    word_list[i] = random();
+    registers_write(r, i, SVC, word_list[i]);
+  }
+  for (int i = 0; i < 15; i++)
+  {
+    assert(registers_read(r, i, SVC) == word_list[i]);
+  }
+  registers_destroy(r);
+  printf("OK\n");
+
+  printf("Test : Write/Read registers (ABT) ... ");
+  r = registers_create();
+  assert(r != NULL);
+  for (int i = 0; i < 15; i++)
+  {
+    word_list[i] = random();
+    registers_write(r, i, ABT, word_list[i]);
+  }
+  for (int i = 0; i < 15; i++)
+  {
+    assert(registers_read(r, i, ABT) == word_list[i]);
+  }
+  registers_destroy(r);
+  printf("OK\n");
+
+  printf("Test : Write/Read registers (UND) ... ");
+  r = registers_create();
+  assert(r != NULL);
+  for (int i = 0; i < 15; i++)
+  {
+    word_list[i] = random();
+    registers_write(r, i, UND, word_list[i]);
+  }
+  for (int i = 0; i < 15; i++)
+  {
+    assert(registers_read(r, i, UND) == word_list[i]);
+  }
+  registers_destroy(r);
+  printf("OK\n");
+
+  printf("Test : Write/Read registers (SYS) ... ");
+  r = registers_create();
+  assert(r != NULL);
+  for (int i = 0; i < 15; i++)
+  {
+    word_list[i] = random();
+    registers_write(r, i, SYS, word_list[i]);
+  }
+  for (int i = 0; i < 15; i++)
+  {
+    assert(registers_read(r, i, SYS) == word_list[i]);
+  }
+  registers_destroy(r);
+  printf("OK\n");
+}
+
 int main()
 {
+
+  srandom(getpid());
 
   test_registers_create();
   test_register_read_write_cpsr();
@@ -237,6 +349,7 @@ int main()
   test_registers_current_mode_has_spsr();
   test_register_read_write_spsr();
   test_registers_in_a_privileged_mode();
+  test_registers_read_write();
 
   return 0;
 
