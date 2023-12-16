@@ -27,21 +27,23 @@ Contact: Guillaume.Huard@imag.fr
 struct registers_data
 {
   /*
-    Registers :
-      r0-r7  (Unbanked Registers -> No special use)
-      r11    (FP - Frame Pointer)
-      r12    (IP - Intra Procedure Call)
-      r13    (SP - Stack Pointer)
-      r14    (LR - Link Register)
-      r15    (PC - Program Counter)
-      cpsr   (CPSR - Current Program Status Register)
-      spsr   (SPSR - Saved Program Status Register)
-    Tutorial :
-      https://www.youtube.com/watch?v=ibh4tadjUaw&ab_channel=techAj
+    Voir figure A2-1 du manuel (page 43)
   */
-  uint32_t r[16];
+  // r0-r7 sont les mêmes pour tous les modes (unbanked registers)
+  uint32_t unbanked_registers[8];
+
+  // r15 (pc) est le même pour tous les modes
+  uint32_t pc;
+
+  // cpsr est le même pour tous les modes
   uint32_t cpsr;
-  uint32_t spsr;
+
+  // Les 5 modes qui ont un spsr ont un spsr différent
+  uint32_t spsr_svc;
+  uint32_t spsr_abt;
+  uint32_t spsr_und;
+  uint32_t spsr_irq;
+  uint32_t spsr_fiq;
 };
 
 registers registers_create()
