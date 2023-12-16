@@ -185,6 +185,49 @@ void test_register_read_write_spsr()
   registers_destroy(r);
 }
 
+void test_registers_in_a_privileged_mode()
+{
+  registers r = registers_create();
+  assert(r != NULL);
+
+  printf("Test : In a privileged mode (USR) ... ");
+  registers_write_cpsr(r, 0x110);
+  assert(!registers_in_a_privileged_mode(r));
+  printf("OK\n");
+
+  printf("Test : In a privileged mode (FIQ) ... ");
+  registers_write_cpsr(r, 0x11);
+  assert(registers_in_a_privileged_mode(r));
+  printf("OK\n");
+
+  printf("Test : In a privileged mode (IRQ) ... ");
+  registers_write_cpsr(r, 0x12);
+  assert(registers_in_a_privileged_mode(r));
+  printf("OK\n");
+
+  printf("Test : In a privileged mode (SVC) ... ");
+  registers_write_cpsr(r, 0x13);
+  assert(registers_in_a_privileged_mode(r));
+  printf("OK\n");
+
+  printf("Test : In a privileged mode (ABT) ... ");
+  registers_write_cpsr(r, 0x17);
+  assert(registers_in_a_privileged_mode(r));
+  printf("OK\n");
+
+  printf("Test : In a privileged mode (UND) ... ");
+  registers_write_cpsr(r, 0x1b);
+  assert(registers_in_a_privileged_mode(r));
+  printf("OK\n");
+
+  printf("Test : In a privileged mode (SYS) ... ");
+  registers_write_cpsr(r, 0x1f);
+  assert(registers_in_a_privileged_mode(r));
+  printf("OK\n");
+
+  registers_destroy(r);
+}
+
 int main()
 {
 
@@ -193,6 +236,7 @@ int main()
   test_registers_get_mode();
   test_registers_current_mode_has_spsr();
   test_register_read_write_spsr();
+  test_registers_in_a_privileged_mode();
 
   return 0;
 
