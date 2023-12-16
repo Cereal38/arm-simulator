@@ -34,14 +34,14 @@ struct registers_data
 
   // r0-r7 sont les mêmes pour tous les modes (unbanked registers)
   // pc est le même pour tous les modes (r15)
-  uint32_t unbanked_registers[16];
+  uint32_t registers[16];
 
   // Modes spécifiques de SVC, ABT, UND, IRQ, FIQ
   uint32_t r13_svc, r14_svc, spsr_svc;
   uint32_t r13_abt, r14_abt, spsr_abt;
   uint32_t r13_und, r14_und, spsr_und;
   uint32_t r13_irq, r14_irq, spsr_irq;
-  uint32_t r8_fiq, r9_fiq, r10_fiq, r11_fiq, r12_fiq, r13_fiq, r14_fiq;
+  uint32_t r8_fiq, r9_fiq, r10_fiq, r11_fiq, r12_fiq, r13_fiq, r14_fiq, spsr_fiq;
 
   // cpsr est le même pour tous les modes
   uint32_t cpsr;
@@ -79,16 +79,13 @@ uint8_t registers_get_mode(registers r)
       ABT 0x17 (Abort)
       UND 0x1b (Undefined)
       SYS 0x1f (System)
-
-    Documentation :
-      https://developer.arm.com/documentation/ddi0406/cb/System-Level-Architecture/The-System-Level-Programmers--Model/ARM-processor-modes-and-ARM-core-registers/ARM-processor-modes?lang=en
   */
   if (r == NULL)
   {
     fprintf(stderr, "Erreur lors de la lecture du mode");
     exit(EXIT_FAILURE);
   }
-  // On regarde les 5 derniers bits de poids faible du registre cpsr
+  // On regarde les 5 derniers bits de poids faible du registre cpsr (Manuel A2.5)
   // Pour récupérer le mode
   // 0x1f = 0001 1111
   return r->cpsr & 0x1f;
@@ -122,7 +119,78 @@ int registers_in_a_privileged_mode(registers r)
 
 uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
 {
-  return 0;
+  /*
+    Voir figure A2-1 du manuel (page 43)
+  */
+
+  // On regarde si le registre est un registre unbanked ou le pc (r15)
+  if (reg < 8 || reg == 15)
+  {
+    return r->registers[reg];
+  }
+
+  // On regarde si le registre est un registre banked
+  switch (mode)
+  {
+  case FIQ:
+    switch (reg)
+    {
+    case 8:
+      return r->r8_fiq;
+    case 9:
+      return r->r9_fiq;
+    case 10:
+      return r->r10_fiq;
+    case 11:
+      return r->r11_fiq;
+    case 12:
+      return r->r12_fiq;
+    case 13:
+      return r->r13_fiq;
+    case 14:
+      return r->r14_fiq;
+    }
+    break;
+  case IRQ:
+    switch (reg)
+    {
+    case 13:
+      return r->r13_irq;
+    case 14:
+      return r->r14_irq;
+    }
+    break;
+  case SVC:
+    switch (reg)
+    {
+    case 13:
+      return r->r13_svc;
+    case 14:
+      return r->r14_svc;
+    }
+    break;
+  case ABT:
+    switch (reg)
+    {
+    case 13:
+      return r->r13_abt;
+    case 14:
+      return r->r14_abt;
+    }
+    break;
+  case UND:
+    switch (reg)
+    {
+    case 13:
+      return r->r13_und;
+    case 14:
+      return r->r14_und;
+    }
+    break;
+  }
+
+  // Le registre n'est pas un registre spécifique à un mode
+  return r->registers[reg];
 }
 
 uint32_t registers_read_cpsr(registers r)
@@ -132,15 +200,7 @@ uint32_t registers_read_cpsr(registers r)
 
 uint32_t registers_read_spsr(registers r, uint8_t mode)
 {
-  if (registers_mode_has_spsr(r, mode))
-  {
-    return r->spsr;
-  }
-  else
-  {
-    fprintf(stderr, "Erreur lors de la lecture du registre spsr");
-    exit(EXIT_FAILURE);
-  }
+  return 0;
 }
 
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
