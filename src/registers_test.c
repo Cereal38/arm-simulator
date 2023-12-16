@@ -352,49 +352,4 @@ int main()
   test_registers_read_write();
 
   return 0;
-
-  registers r;
-  uint32_t word_value[15], word_read;
-  int i;
-
-  r = registers_create();
-  if (r == NULL)
-  {
-    fprintf(stderr, "Error when creating simulated registers\n");
-    exit(1);
-  }
-  srandom(getpid());
-  for (i = 0; i < 15; i++)
-  {
-    word_value[i] = random();
-  }
-
-  // Arm reset
-  printf("Reseting registers...\n");
-  registers_write_cpsr(r, 0x1d3);
-  uint8_t mode = registers_get_mode(r);
-  registers_write(r, 15, mode, 0);
-
-  printf("Testing read and write to general registers:\n");
-  for (i = 0; i < 15; i++)
-  {
-    registers_write(r, i, mode, word_value[i]);
-  }
-  for (i = 0; i < 15; i++)
-  {
-    word_read = registers_read(r, i, mode);
-    printf("- register %d : ", i);
-    print_test(word_read == word_value[i]);
-  }
-
-  printf("Current mode : ");
-  print_test(registers_get_mode(r) == SVC);
-  printf("Mode is priviledged : ");
-  print_test(registers_in_a_privileged_mode(r));
-  printf("Mode has spsr : ");
-  print_test(registers_current_mode_has_spsr(r));
-
-  registers_destroy(r);
-
-  return 0;
 }
