@@ -28,22 +28,23 @@ struct registers_data
 {
   /*
     Voir figure A2-1 du manuel (page 43)
-  */
-  // r0-r7 sont les mêmes pour tous les modes (unbanked registers)
-  uint32_t unbanked_registers[8];
 
-  // r15 (pc) est le même pour tous les modes
-  uint32_t pc;
+    Video: https://youtu.be/msWvVmCZRTI?si=YUxaf2tEL0ttMTFD
+  */
+
+  // r0-r7 sont les mêmes pour tous les modes (unbanked registers)
+  // pc est le même pour tous les modes (r15)
+  uint32_t unbanked_registers[16];
+
+  // Modes spécifiques de SVC, ABT, UND, IRQ, FIQ
+  uint32_t r13_svc, r14_svc, spsr_svc;
+  uint32_t r13_abt, r14_abt, spsr_abt;
+  uint32_t r13_und, r14_und, spsr_und;
+  uint32_t r13_irq, r14_irq, spsr_irq;
+  uint32_t r8_fiq, r9_fiq, r10_fiq, r11_fiq, r12_fiq, r13_fiq, r14_fiq;
 
   // cpsr est le même pour tous les modes
   uint32_t cpsr;
-
-  // Les 5 modes qui ont un spsr ont un spsr différent
-  uint32_t spsr_svc;
-  uint32_t spsr_abt;
-  uint32_t spsr_und;
-  uint32_t spsr_irq;
-  uint32_t spsr_fiq;
 };
 
 registers registers_create()
