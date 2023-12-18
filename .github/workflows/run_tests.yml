@@ -21,42 +21,54 @@ jobs:
         run: make
         working-directory: ./src
 
-      - name: ls
-        run: ls
-        working-directory: ./src
-
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build-artifacts
           path: ./build-artifacts
 
-  # test-registers:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
+  test-memory:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-  #     - name: Download build artifacts
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: build-artifacts
-  #         path: ./path-to-your-build-artifacts
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifacts
+          path: ./build-artifacts
 
-  #     - run: echo "Test registers"
+      - name: Run tests
+        run: ./memory_test
+        working-directory: ./src
 
-  # test-memory:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
+      - name: Fail if tests failed
+        run: |
+          if [ $? -ne 0 ]; then
+            exit 1
+          fi
 
-  #     - name: Download build artifacts
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: build-artifacts
-  #         path: ./path-to-your-build-artifacts
+  test-registers:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-  #     - run: echo "Test memory"
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifacts
+          path: ./build-artifacts
+
+      - name: Run tests
+        run: ./registers_test
+        working-directory: ./src
+
+      - name: Fail if tests failed
+        run: |
+          if [ $? -ne 0 ]; then
+            exit 1
+          fi
