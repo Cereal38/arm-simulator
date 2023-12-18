@@ -3,7 +3,7 @@ name: run-tests
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,26 +21,20 @@ jobs:
         run: make
         working-directory: ./src
 
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: build-artifacts
-          path: ./build-artifacts
+      # TODO: Make this work
+      # - name: Archive production artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: build-artifacts
+      #     path: ./build-artifacts
 
-  test-memory:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      # - name: Download build artifacts
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: build-artifacts
+      #     path: ./build-artifacts
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: build-artifacts
-          path: ./build-artifacts
-
-      - name: Run tests
+      - name: Test memory.c
         run: ./memory_test
         working-directory: ./src
 
@@ -50,20 +44,7 @@ jobs:
             exit 1
           fi
 
-  test-registers:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: build-artifacts
-          path: ./build-artifacts
-
-      - name: Run tests
+      - name: Test registers.c
         run: ./registers_test
         working-directory: ./src
 
