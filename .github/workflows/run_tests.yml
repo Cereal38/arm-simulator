@@ -1,0 +1,55 @@
+name: run-tests
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: sudo apt-get -y update &&
+          sudo apt-get -y install gcc-arm-none-eabi
+
+      - name: Configure
+        run: ./configure CFLAGS='-Wall -Werror -g'
+        working-directory: ./src
+
+      - name: Build
+        run: make
+        working-directory: ./src
+
+      # TODO: Make this work
+      # - name: Archive production artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: build-artifacts
+      #     path: ./build-artifacts
+
+      # - name: Download build artifacts
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: build-artifacts
+      #     path: ./build-artifacts
+
+      - name: Test memory.c
+        run: ./memory_test
+        working-directory: ./src
+
+      - name: Fail if tests failed
+        run: |
+          if [ $? -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Test registers.c
+        run: ./registers_test
+        working-directory: ./src
+
+      - name: Fail if tests failed
+        run: |
+          if [ $? -ne 0 ]; then
+            exit 1
+          fi
