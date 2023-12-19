@@ -81,8 +81,8 @@ int arm_load_store(arm_core p, uint32_t ins) {
 int arm_load_store_multiple(arm_core p, uint32_t ins) {
     uint8_t posP = 24;
     uint8_t posU = 23;
-    uint8_t posS = 22;
-    uint8_t posW = 21;
+    // uint8_t posS = 22;
+    // uint8_t posW = 21;
     uint8_t posL = 20;
     
     uint8_t P = (ins >> posP) & 0b1;
@@ -91,7 +91,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
     // uint8_t W = (ins >> posW) & 0b1;
     uint8_t L = (ins >> posL) & 0b1;
 
-    uint8_t posOpCode = 20;//24 a 20
+    // uint8_t posOpCode = 20;//24 a 20
     uint8_t posRn = 16;//19 a 16
     // uint8_t opCode = (ins >> posOpCode) & 0b1111;
     uint8_t rn = (ins >> posRn) & 0b1111;
