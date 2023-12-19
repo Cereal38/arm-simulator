@@ -99,7 +99,7 @@ static int arm_execute_instruction(arm_core p)
   }
 
   // Incrémente le PC
-  uint32_t mode = arm_get_current_mode(p->reg);
+  uint32_t mode = registers_get_mode(p->reg);
   registers_write(p->reg, 0xF, mode, p->reg->registers[15] + 4);
 
   return 0;
