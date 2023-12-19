@@ -87,13 +87,13 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
     
     uint8_t P = (ins >> posP) & 0b1;
     uint8_t U = (ins >> posU) & 0b1;
-    uint8_t S = (ins >> posS) & 0b1;
-    uint8_t W = (ins >> posW) & 0b1;
+    // uint8_t S = (ins >> posS) & 0b1;
+    // uint8_t W = (ins >> posW) & 0b1;
     uint8_t L = (ins >> posL) & 0b1;
 
     uint8_t posOpCode = 20;//24 a 20
     uint8_t posRn = 16;//19 a 16
-    uint8_t opCode = (ins >> posOpCode) & 0b1111;
+    // uint8_t opCode = (ins >> posOpCode) & 0b1111;
     uint8_t rn = (ins >> posRn) & 0b1111;
     uint16_t register_list = ins & 0b1111;
     uint32_t address = arm_read_register(p, rn);
