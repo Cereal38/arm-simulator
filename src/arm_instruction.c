@@ -36,8 +36,9 @@ static int arm_execute_instruction(arm_core p)
 
   if (resultat)
   {
-    return arm_exception(p, resultat); // venant de arm step.. pas sur
-    // Doit retrun 1 si il y a une erreur (d'apres fun arm step)
+    // return arm_exception(p, resultat); // venant de arm step.. pas sur
+    // // Doit retrun 1 si il y a une erreur (d'apres fun arm step)
+    return 1;
   }
   //  << 24 or >> 21 c'est sur 8 ou 4 bits?
   uint8_t codeInstruction = (uint8_t)((instruction >> 21) & 0b1111);
@@ -45,58 +46,63 @@ static int arm_execute_instruction(arm_core p)
   switch (codeInstruction)
   {
   case 0b0000: // AND
-
     printf("Implement AND\n");
-    return 0;
+    break;
   case 0b0001:
     printf("Implement EOR\n");
-    return 0;
+    break;
   case 0b0010:
     printf("Implement SUB\n");
-    return 0;
+    break;
   case 0b0011:
     printf("Implement RSB\n");
-    return 0;
+    break;
   case 0b0100:
     printf("Implement ADD\n");
-    return 0;
+    break;
   case 0b0101:
     printf("Implement ADC\n");
-    return 0;
+    break;
   case 0b0110:
     printf("Implement SBC\n");
-    return 0;
+    break;
   case 0b0111:
     printf("Implement RSC\n");
-    return 0;
+    break;
   case 0b1000:
     printf("Implement TST\n");
-    return 0;
+    break;
   case 0b1001:
     printf("Implement TEQ\n");
-    return 0;
+    break;
   case 0b1010:
     printf("Implement CMP\n");
-    return 0;
+    break;
   case 0b1011:
     printf("Implement CMN\n");
-    return 0;
+    break;
   case 0b1100:
     printf("Implement ORR\n");
-    return 0;
+    break;
   case 0b1101:
     printf("Implement MOV\n");
-    return 0;
+    break;
   case 0b1110:
     printf("Implement BIC\n");
-    return 0;
+    break;
   case 0b1111:
     printf("Implement MVN\n");
-    return 0;
+    break;
   default: // ne dois jamais arriver
     fprintf(stderr, "<arm_execute_instruction> Erreur default dans switch\n");
     exit(1);
   }
+
+  // Incrémente le PC
+  uint32_t mode = arm_get_current_mode(p->reg);
+  registers_write(p->reg, 0xF, mode, p->reg->registers[15] + 4);
+
+  return 0;
 }
 
 int arm_step(arm_core p)
