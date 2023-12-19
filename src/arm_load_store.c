@@ -60,7 +60,7 @@ int arm_load_store(arm_core p, uint32_t ins) {
             }
             address = arm_read_register(p, rn);
             uint32_t storedData = arm_read_register(p, rd);
-            if (arm_read_word(p, address , storedData) != 0){  
+            if (arm_read_word(p, address , &storedData) != 0){  
                 //si ca marche pas
                 return UNDEFINED_INSTRUCTION;
             }
@@ -144,7 +144,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
                     }
                 }
                 uint32_t StoreData = arm_read_register(p, i);
-                if (arm_read_word(p, address , StoreData) != 0){  
+                if (arm_read_word(p, address , &StoreData) != 0){  
                     return UNDEFINED_INSTRUCTION;
                 }
                 if(P==0){//incremente/decremente AFTER
