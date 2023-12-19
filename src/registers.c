@@ -24,29 +24,6 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_constants.h"
 #include <stdlib.h>
 
-struct registers_data
-{
-  /*
-    Voir figure A2-1 du manuel (page 43)
-
-    Video: https://youtu.be/msWvVmCZRTI?si=YUxaf2tEL0ttMTFD
-  */
-
-  // r0-r7 sont les mêmes pour tous les modes (unbanked registers)
-  // pc est le même pour tous les modes (r15)
-  uint32_t registers[16];
-
-  // Modes spécifiques de SVC, ABT, UND, IRQ, FIQ
-  uint32_t r13_svc, r14_svc, spsr_svc;
-  uint32_t r13_abt, r14_abt, spsr_abt;
-  uint32_t r13_und, r14_und, spsr_und;
-  uint32_t r13_irq, r14_irq, spsr_irq;
-  uint32_t r8_fiq, r9_fiq, r10_fiq, r11_fiq, r12_fiq, r13_fiq, r14_fiq, spsr_fiq;
-
-  // cpsr est le même pour tous les modes
-  uint32_t cpsr;
-};
-
 registers registers_create()
 {
   registers registers = malloc(sizeof(struct registers_data));
