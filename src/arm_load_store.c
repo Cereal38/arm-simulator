@@ -98,7 +98,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
     uint16_t register_list = ins & 0b1111;
     uint32_t address = arm_read_register(p, rn);
 
-    int Number_Of_Set_Bits_In_Register_List = 0;//pour W, non utilisé pour l'instant
+    // int Number_Of_Set_Bits_In_Register_List = 0;//pour W, non utilisé pour l'instant
 
     int check_register_list=0;//entier qui verifie que au moins un bit de register_list est a 1
 
