@@ -16,10 +16,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
 �tats-Unis.
 
 Contact: Guillaume.Huard@imag.fr
-	 B�timent IMAG
-	 700 avenue centrale, domaine universitaire
-	 38401 Saint Martin d'H�res
+   B�timent IMAG
+   700 avenue centrale, domaine universitaire
+   38401 Saint Martin d'H�res
 */
+#include <stdlib.h>
 #include "arm_instruction.h"
 #include "arm_exception.h"
 #include "arm_data_processing.h"
@@ -28,84 +29,84 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_constants.h"
 #include "util.h"
 
-static int arm_execute_instruction(arm_core p) {
-    uint32_t instruction;
-    int resultat = arm_fetch(p, &instruction);
+static int arm_execute_instruction(arm_core p)
+{
+  uint32_t instruction;
+  int resultat = arm_fetch(p, &instruction);
 
-    if (resultat) {
-        return arm_exception(p, resultat);  //venant de arm step.. pas sur 
-        // Doit retrun 1 si il y a une erreur (d'apres fun arm step)
-    }
-    //  << 24 or >> 21 c'est sur 8 ou 4 bits? 
-    uint8_t codeInstruction = (uint8_t) ((instruction >> 21) & 0b1111 ); 
+  if (resultat)
+  {
+    return arm_exception(p, resultat); // venant de arm step.. pas sur
+    // Doit retrun 1 si il y a une erreur (d'apres fun arm step)
+  }
+  //  << 24 or >> 21 c'est sur 8 ou 4 bits?
+  uint8_t codeInstruction = (uint8_t)((instruction >> 21) & 0b1111);
 
-    switch(codeInstruction){
-        case 0b0000://AND
+  switch (codeInstruction)
+  {
+  case 0b0000: // AND
 
-            printf("Implement AND\n");
-            return 0;
-        case 0b0001:
-            printf("Implement EOR\n");
-            return 0;
-        case 0b0010:
-            printf("Implement SUB\n");
-            return 0;
-        case 0b0011:
-            printf("Implement RSB\n");
-            return 0;
-        case 0b0100:
-            printf("Implement ADD\n");
-            return 0;
-        case 0b0101:
-            printf("Implement ADC\n");
-            return 0;
-        case 0b0110:
-            printf("Implement SBC\n");
-            return 0;
-        case 0b0111:
-            printf("Implement RSC\n");
-            return 0;
-        case 0b1000:
-            printf("Implement TST\n");
-            return 0;
-        case 0b1001:
-            printf("Implement TEQ\n");
-            return 0;
-        case 0b1010:
-            printf("Implement CMP\n");
-            return 0;
-        case 0b1011:
-            printf("Implement CMN\n");
-            return 0;
-        case 0b1100:
-            printf("Implement ORR\n");
-            return 0;
-        case 0b1101:
-            printf("Implement MOV\n");
-            return 0;
-        case 0b1110:
-            printf("Implement BIC\n");
-            return 0;
-        case 0b1111:
-            printf("Implement MVN\n");
-            return 0;
-        default://ne dois jamais arriver
-            fprintf(stderr, "<arm_execute_instruction> Erreur default dans switch\n");
-            exit(1);
-    }
+    printf("Implement AND\n");
+    return 0;
+  case 0b0001:
+    printf("Implement EOR\n");
+    return 0;
+  case 0b0010:
+    printf("Implement SUB\n");
+    return 0;
+  case 0b0011:
+    printf("Implement RSB\n");
+    return 0;
+  case 0b0100:
+    printf("Implement ADD\n");
+    return 0;
+  case 0b0101:
+    printf("Implement ADC\n");
+    return 0;
+  case 0b0110:
+    printf("Implement SBC\n");
+    return 0;
+  case 0b0111:
+    printf("Implement RSC\n");
+    return 0;
+  case 0b1000:
+    printf("Implement TST\n");
+    return 0;
+  case 0b1001:
+    printf("Implement TEQ\n");
+    return 0;
+  case 0b1010:
+    printf("Implement CMP\n");
+    return 0;
+  case 0b1011:
+    printf("Implement CMN\n");
+    return 0;
+  case 0b1100:
+    printf("Implement ORR\n");
+    return 0;
+  case 0b1101:
+    printf("Implement MOV\n");
+    return 0;
+  case 0b1110:
+    printf("Implement BIC\n");
+    return 0;
+  case 0b1111:
+    printf("Implement MVN\n");
+    return 0;
+  default: // ne dois jamais arriver
+    fprintf(stderr, "<arm_execute_instruction> Erreur default dans switch\n");
+    exit(1);
+  }
 }
 
-int arm_step(arm_core p) {
-    int result;
+int arm_step(arm_core p)
+{
+  int result;
 
-    result = arm_execute_instruction(p);
-    if (result) {
-        return arm_exception(p, result);
-    }
-    return result;
+  result = arm_execute_instruction(p);
+  if (result)
+  {
+    return arm_exception(p, result);
+  }
+  return result;
 }
-
-
-
-
-
