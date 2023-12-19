@@ -35,6 +35,8 @@ int arm_load_store(arm_core p, uint32_t ins) {
     uint8_t rd = (ins >> posRd) & 0b1111;
     uint8_t rn = (ins >> posRn) & 0b1111;
 
+    uint32_t address;
+
     switch(opCode) {
         //LDR
         case 0b0101 : 
@@ -42,7 +44,7 @@ int arm_load_store(arm_core p, uint32_t ins) {
             if (rn >= 16){
                 return UNDEFINED_INSTRUCTION;
             }
-            uint32_t address = arm_read_register(p, rn);
+            address = arm_read_register(p, rn);
             uint32_t dataToLoad;
             if (arm_read_word(p, address , &dataToLoad) != 0){
                 return UNDEFINED_INSTRUCTION;
@@ -56,7 +58,7 @@ int arm_load_store(arm_core p, uint32_t ins) {
             if (rn >= 16){
                 return UNDEFINED_INSTRUCTION; 
             }
-            uint32_t address = arm_read_register(p, rn);
+            address = arm_read_register(p, rn);
             uint32_t storedData = arm_read_register(p, rd);
             if (arm_read_word(p, address , storedData) != 0){  
                 //si ca marche pas
