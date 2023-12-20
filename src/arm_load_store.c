@@ -75,6 +75,14 @@ int arm_load_store(arm_core p, uint32_t ins) {
     return UNDEFINED_INSTRUCTION;
 }
 
+int number_registers(uint16_t register_list){
+    int compteur;
+    for (int i = 0; i < 16; i++){
+        if((register_list & (1 << i)) != 0)
+            compteur++;
+    }
+    return compteur;
+}
 
 //Manque les cas avec les bits S et W. Manuel page 482.
 //LDM et STM info plus générale page 134.
@@ -82,13 +90,13 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
     uint8_t posP = 24;
     uint8_t posU = 23;
     // uint8_t posS = 22;
-    // uint8_t posW = 21;
+    uint8_t posW = 21;
     uint8_t posL = 20;
     
     uint8_t P = (ins >> posP) & 0b1;
     uint8_t U = (ins >> posU) & 0b1;
     // uint8_t S = (ins >> posS) & 0b1;
-    // uint8_t W = (ins >> posW) & 0b1;
+    uint8_t W = (ins >> posW) & 0b1;
     uint8_t L = (ins >> posL) & 0b1;
 
     // uint8_t posOpCode = 20;//24 a 20
@@ -97,10 +105,6 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
     uint8_t rn = (ins >> posRn) & 0b1111;
     uint16_t register_list = ins & 0b1111;
     uint32_t address = arm_read_register(p, rn);
-
-    // int Number_Of_Set_Bits_In_Register_List = 0;//pour W, non utilisé pour l'instant
-
-    int check_register_list=0;//entier qui verifie que au moins un bit de register_list est a 1
 
     if(!L){//LDM
         for (int i = 0; i < 16; i++){
@@ -127,43 +131,37 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
                     }
                 }
             }
-            else{
-                check_register_list++;
-            }
         }
     }
     else{//STM
         for (int i = 0; i < 16; i++){
             if((register_list & (1 << i)) != 0){
-                if(P == 1){//incremente/decremente BEFORE
-                    if(U == 0){
+                if(P == 1){
+                    if(U==0)//decremente BEFORE
                         address -= 4;
-                    }
-                    else{//U == 1
+                    else//incremente BEFORE
                         address += 4;
-                    }
                 }
                 uint32_t StoreData = arm_read_register(p, i);
                 if (arm_read_word(p, address , &StoreData) != 0){  
                     return UNDEFINED_INSTRUCTION;
                 }
-                if(P==0){//incremente/decremente AFTER
-                    if(U==0){
+                if(P == 0){
+                    if(U == 0){//decremente AFTER
                         address -= 4;
                     }
-                    else{//U == 1
+                    else{//U == 1 incremente AFTER
                         address += 4;
                     }
                 }
             }
-            else{
-                check_register_list++;
-            }
         }
     }
-    if(check_register_list == 16){
-        fprintf(stderr, "<arm_load_store.c> Erreur: tous les bits de register_list sont à 0\n");
-        return UNDEFINED_INSTRUCTION;
+    if (W == 1){//&& condition passed
+        if(U == 0)
+            address = address - 4 * number_registers(register_list);
+        else
+            address = address + 4 * number_registers(register_list);
     }
     return 0;
 }
