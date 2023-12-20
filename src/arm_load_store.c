@@ -84,18 +84,19 @@ int number_registers(uint16_t register_list){
     return compteur;
 }
 
-//Manque les cas avec les bits S et W. Manuel page 482.
+//Manque les cas avec le bit S. Manuel page 482.
 //LDM et STM info plus générale page 134.
+//LDM(1) (apparement c'est lui qu'il faut faire) page 186 du manuel.
 int arm_load_store_multiple(arm_core p, uint32_t ins) {
     uint8_t posP = 24;
     uint8_t posU = 23;
-    // uint8_t posS = 22;
+    uint8_t posS = 22;
     uint8_t posW = 21;
     uint8_t posL = 20;
     
     uint8_t P = (ins >> posP) & 0b1;
     uint8_t U = (ins >> posU) & 0b1;
-    // uint8_t S = (ins >> posS) & 0b1;
+    uint8_t S = (ins >> posS) & 0b1;
     uint8_t W = (ins >> posW) & 0b1;
     uint8_t L = (ins >> posL) & 0b1;
 
@@ -105,6 +106,16 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
     uint8_t rn = (ins >> posRn) & 0b1111;
     uint16_t register_list = ins & 0b1111;
     uint32_t address = arm_read_register(p, rn);
+
+    int nbr_register_list = number_registers(register_list);
+
+    if(nbr_register_list == 0){
+        return UNDEFINED_INSTRUCTION;
+    }
+
+    if(S != 0){//si on est en user mode et s set alors unpredictable
+        return UNDEFINED_INSTRUCTION;
+    }
 
     if(!L){//LDM
         for (int i = 0; i < 16; i++){
@@ -159,9 +170,9 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
     }
     if (W == 1){//&& condition passed
         if(U == 0)
-            address = address - 4 * number_registers(register_list);
+            address = address - 4 * nbr_register_list;
         else
-            address = address + 4 * number_registers(register_list);
+            address = address + 4 * nbr_register_list;
     }
     return 0;
 }
