@@ -29,6 +29,66 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_constants.h"
 #include "util.h"
 
+// verif_cond prend en parametre l'instruction en cours
+// et verifie si sa condition est verifiée 
+// renvoie 1 si ok 0 sinon
+int verif_cond(uint32_t instruction, registers r) {
+  // Extraire les bits de condition (bits 28-31)
+  uint8_t condition_bits = (uint8_t)((instruction >> 28) & 0xF);
+  // récupération de l'état des flags
+  uint32_t cpsr = registers_read_cpsr(r);
+
+  switch (condition_bits) {
+    case 0x0: // EQ (Z == 1)
+      if ((cpsr & Z) != 0) { return 1; }
+      return 0;
+    case 0x1: // NE (Z == 0)
+      if ((cpsr & Z) == 0) { return 1; }
+      return 0;
+    case 0x2: // CS/HS (C == 1)
+      if ((cpsr & C) != 0) { return 1; }
+      return 0;
+    case 0x3: // CC/LO (C == 0)
+      if ((cpsr & C) == 0) { return 1; }
+      return 0;
+    case 0x4: // MI (N == 1)
+      if ((cpsr & N) != 0) { return 1; }
+      return 0;
+    case 0x5: // PL (N == 0)
+      if ((cpsr & N) == 0) { return 1; }
+      return 0;
+    case 0x6: // VS (V == 1)
+      if ((cpsr & V) != 0) { return 1; }
+      return 0;
+    case 0x7: // VC (V == 0)
+      if ((cpsr & V) == 0) { return 1; }
+      return 0;
+    case 0x8: // HI (C == 1 && Z == 0)
+      if (((cpsr & C) != 0) && ((cpsr & Z) == 0)) { return 1; }
+      return 0;
+    case 0x9: // LS (C == 0 || Z == 1)
+      if (((cpsr & C) == 0) || ((cpsr & Z) != 0)) { return 1; }
+      return 0;
+    case 0xA: // GE (N == V)
+      if ((cpsr & N) == (cpsr & V)) { return 1; }
+      return 0;
+    case 0xB: // LT (N != V)
+      if ((cpsr & N) != (cpsr & V)) { return 1; }
+      return 0;
+    case 0xC: // GT (Z == 0 && N == V)
+      if (((cpsr & Z) == 0) && ((cpsr & N) == (cpsr & V))) { return 1; }
+      return 0;
+    case 0xD: // LE (Z == 1 || N != V)
+      if (((cpsr & Z) != 0) || ((cpsr & N) != (cpsr & V))) { return 1; }
+      return 0;
+    case 0xE: // AL (Always, toujours vrai)
+      return 1;
+    default:
+      fprintf(stderr, "Condition inconnue : %d\n", condition_bits);
+      return -1;
+  }
+}
+
 static int arm_execute_instruction(arm_core p)
 {
   uint32_t instruction;
@@ -36,63 +96,53 @@ static int arm_execute_instruction(arm_core p)
 
   if (resultat)
   {
-    // return arm_exception(p, resultat); // venant de arm step.. pas sur
-    // // Doit retrun 1 si il y a une erreur (d'apres fun arm step)
-    return 1;
+    // gestion interruption fetch
+    return PREFETCH_ABORT;
   }
-  //  << 24 or >> 21 c'est sur 8 ou 4 bits?
-  uint8_t codeInstruction = (uint8_t)((instruction >> 21) & 0b1111);
 
-  switch (codeInstruction)
+  // Verfification de la condition
+  int cond = verif_cond(instruction, p->reg);
+
+  if (cond == 0) {
+    fprintf(stderr, "Condition non satisfaite \n");
+    return;
+  }
+  if( cond == -1 ){
+    fprintf(stderr, "Condition non existante \n");
+    // Gestion interruption conditon non existante
+    return UNDEFINED_INSTRUCTION;
+  }
+  // Extraction des 3 prochains bits 27 - 25 
+  uint8_t code = (uint8_t)(((instruction << 3) >> 25) & 0b0111);
+
+  switch (code)
   {
-  case 0b0000: // AND
-    printf("Implement AND\n");
+  case 0b000: // Data processing immediate shift
+    resultat = arm_data_processing_shift(p, instruction);
     break;
-  case 0b0001:
-    printf("Implement EOR\n");
+  case 0b001:
+    resultat = arm_data_processing_immediate_msr( p, instruction);
     break;
-  case 0b0010:
-    printf("Implement SUB\n");
+  case 0b010:
+    resultat = arm_load_store( p,  instruction); 
     break;
-  case 0b0011:
-    printf("Implement RSB\n");
+  case 0b100:
+    resultat = arm_load_store_multiple(p,instruction);
     break;
-  case 0b0100:
+  case 0b011:
     printf("Implement ADD\n");
     break;
-  case 0b0101:
-    printf("Implement ADC\n");
+  case 0b101:
+    resultat = arm_branch(p , instruction);
     break;
-  case 0b0110:
-    printf("Implement SBC\n");
+  case 0b110:
+    resultat = arm_coprocessor_load_store( p, instruction);
     break;
-  case 0b0111:
-    printf("Implement RSC\n");
-    break;
-  case 0b1000:
-    printf("Implement TST\n");
-    break;
-  case 0b1001:
-    printf("Implement TEQ\n");
-    break;
-  case 0b1010:
-    printf("Implement CMP\n");
-    break;
-  case 0b1011:
-    printf("Implement CMN\n");
-    break;
-  case 0b1100:
-    printf("Implement ORR\n");
-    break;
-  case 0b1101:
-    printf("Implement MOV\n");
-    break;
-  case 0b1110:
-    printf("Implement BIC\n");
-    break;
-  case 0b1111:
-    printf("Implement MVN\n");
-    break;
+  /*
+    il manque appel fun 
+    int arm_coprocessor_others_swi(arm_core p, uint32_t ins);		
+int arm_miscellaneous(arm_core p, uint32_t ins);
+  */
   default: // ne dois jamais arriver
     fprintf(stderr, "<arm_execute_instruction> Erreur default dans switch\n");
     exit(1);
