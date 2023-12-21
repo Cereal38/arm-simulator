@@ -69,9 +69,9 @@ int arm_load_store(arm_core p, uint32_t ins) {
             return 0;
 
         // LDRH
-        case 0b0101:
+        case 0b1000:
             // load 16-bit value into rd from rn
-            if (rn >= 16) {
+            if (rd >= 16 || rn >= 16) {
                 return UNDEFINED_INSTRUCTION;
             }
             address = arm_read_register(p, rn);
