@@ -29,9 +29,9 @@ Contact: Guillaume.Huard@imag.fr
 
 
 int arm_load_store(arm_core p, uint32_t ins) {
-    uint8_t posOpCode = 20;        // 24 to 20
-    uint8_t posRd = 12;            // 15 to 12
-    uint8_t posRn = 16;            // 19 to 16
+    uint8_t posOpCode = 20;  // 24 to 20
+    uint8_t posRd = 12;      // 15 to 12
+    uint8_t posRn = 16;      // 19 to 16
 
     uint8_t opCode = (ins >> posOpCode) & 0b1111;
     uint8_t rd = (ins >> posRd) & 0b1111;
@@ -48,7 +48,7 @@ int arm_load_store(arm_core p, uint32_t ins) {
             }
             address = arm_read_register(p, rn);
             uint32_t dataToLoad;
-            if (arm_read_word(p, address, &dataToLoad) != 0) {
+            if (memory_read_word(p->mem, address, &dataToLoad, 1) != 0) {
                 return UNDEFINED_INSTRUCTION;
             }
             arm_write_register(p, rd, dataToLoad);
@@ -62,7 +62,7 @@ int arm_load_store(arm_core p, uint32_t ins) {
             }
             address = arm_read_register(p, rn);
             uint8_t dataToLoadByte;
-            if (arm_read_byte(p, address, &dataToLoadByte) != 0) {
+            if (memory_read_byte(p->mem, address, &dataToLoadByte) != 0) {
                 return UNDEFINED_INSTRUCTION;
             }
             arm_write_register(p, rd, (uint32_t)dataToLoadByte);
@@ -71,12 +71,12 @@ int arm_load_store(arm_core p, uint32_t ins) {
         // LDRH
         case 0b1000:
             // load 16-bit value into rd from rn
-            if (rd >= 16 || rn >= 16) {
+            if (rn >= 16) {
                 return UNDEFINED_INSTRUCTION;
             }
             address = arm_read_register(p, rn);
             uint16_t dataToLoadHalfword;
-            if (arm_read_halfword(p, address, &dataToLoadHalfword) != 0) {
+            if (memory_read_half(p->mem, address, &dataToLoadHalfword, 1) != 0) {
                 return UNDEFINED_INSTRUCTION;
             }
             arm_write_register(p, rd, (uint32_t)dataToLoadHalfword);
@@ -90,7 +90,7 @@ int arm_load_store(arm_core p, uint32_t ins) {
             }
             address = arm_read_register(p, rn);
             int8_t dataToLoadSignedByte;
-            if (arm_read_byte(p, address, (uint8_t *)&dataToLoadSignedByte) != 0) {
+            if (memory_read_byte(p->mem, address, (uint8_t *)&dataToLoadSignedByte) != 0) {
                 return UNDEFINED_INSTRUCTION;
             }
             arm_write_register(p, rd, (uint32_t)dataToLoadSignedByte);
@@ -104,25 +104,22 @@ int arm_load_store(arm_core p, uint32_t ins) {
             }
             address = arm_read_register(p, rn);
             int16_t dataToLoadSignedHalfword;
-            if (arm_read_halfword(p, address, (uint16_t *)&dataToLoadSignedHalfword) != 0) {
+            if (memory_read_half(p->mem, address, (uint16_t *)&dataToLoadSignedHalfword, 1) != 0) {
                 return UNDEFINED_INSTRUCTION;
             }
             arm_write_register(p, rd, (uint32_t)dataToLoadSignedHalfword);
             return 0;
 
-
-        //STR
-        case 0b0110 :
-            if (rn >= 16){
-                return UNDEFINED_INSTRUCTION; 
+        // STR
+        case 0b0110:
+            if (rn >= 16) {
+                return UNDEFINED_INSTRUCTION;
             }
             address = arm_read_register(p, rn);
             uint32_t storedData = arm_read_register(p, rd);
-            if (arm_read_word(p, address , &storedData) != 0){  
-                //si ca marche pas
+            if (memory_write_word(p->mem, address, storedData, 1) != 0) {
                 return UNDEFINED_INSTRUCTION;
             }
-            //sinon
             return 0;
 
         // STRB
@@ -132,7 +129,7 @@ int arm_load_store(arm_core p, uint32_t ins) {
             }
             address = arm_read_register(p, rn);
             uint8_t storedDataByte = arm_read_register(p, rd) & 0xFF;
-            if (arm_write_byte(p, address, storedDataByte) != 0) {
+            if (memory_write_byte(p->mem, address, storedDataByte) != 0) {
                 return UNDEFINED_INSTRUCTION;
             }
             return 0;
@@ -144,20 +141,18 @@ int arm_load_store(arm_core p, uint32_t ins) {
             }
             address = arm_read_register(p, rn);
             uint16_t storedDataHalfword = arm_read_register(p, rd) & 0xFFFF;
-            if (arm_write_halfword(p, address, storedDataHalfword) != 0) {
+            if (memory_write_half(p->mem, address, storedDataHalfword, 1) != 0) {
                 return UNDEFINED_INSTRUCTION;
             }
             return 0;
 
-
-        default :
+        default:
             return UNDEFINED_INSTRUCTION;
-
-
     }
 
     return UNDEFINED_INSTRUCTION;
 }
+
 
 int number_registers(uint16_t register_list){
     int compteur;
