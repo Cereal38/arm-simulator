@@ -43,6 +43,14 @@ int get_rd(uint32_t ins)
   return rd;
 }
 
+int get_s(uint32_t ins)
+{
+  // Return the value of S bit (Bit 20)
+  uint8_t posS = 20; // 20
+  uint8_t s = (ins >> posS) & 0b1;
+  return s;
+}
+
 // TODO: Utiliser la fonction de arm_instruction.c (Pas sur master à l'heure qu'il est)
 int verif_cond(uint32_t instruction, registers r)
 {
@@ -167,6 +175,7 @@ int arm_data_processing_add(arm_core p, uint32_t ins)
 
   uint8_t rn = get_rn(ins);
   uint8_t rd = get_rd(ins);
+  uint8_t s = get_s(ins);
 
   return UNDEFINED_INSTRUCTION;
 }
