@@ -35,6 +35,22 @@ int get_cond(uint32_t ins)
   return cond;
 }
 
+int get_rn(uint32_t ins)
+{
+  // Return the value of Rn (Bits 19.18.17.16)
+  uint8_t posRn = 16; // 19 to 16
+  uint8_t rn = (ins >> posRn) & 0b1111;
+  return rn;
+}
+
+int get_rd(uint32_t ins)
+{
+  // Return the value of Rd (Bits 15.14.13.12)
+  uint8_t posRd = 12; // 15 to 12
+  uint8_t rd = (ins >> posRd) & 0b1111;
+  return rd;
+}
+
 /* Decoding functions for different classes of instructions */
 int arm_data_processing_shift(arm_core p, uint32_t ins)
 {
@@ -49,6 +65,8 @@ int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 int arm_data_processing_add(arm_core p, uint32_t ins)
 {
   uint8_t cond = get_cond(ins);
+  uint8_t rn = get_rn(ins);
+  uint8_t rd = get_rd(ins);
 
   return UNDEFINED_INSTRUCTION;
 }
