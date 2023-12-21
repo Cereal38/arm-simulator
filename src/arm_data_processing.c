@@ -27,14 +27,6 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-int get_cond(uint32_t ins)
-{
-  // Return the condition code of the instruction (Bits 31.30.29.28)
-  uint8_t posCond = 28; // 31 to 28
-  uint8_t cond = (ins >> posCond) & 0b1111;
-  return cond;
-}
-
 int get_rn(uint32_t ins)
 {
   // Return the value of Rn (Bits 19.18.17.16)
@@ -51,6 +43,108 @@ int get_rd(uint32_t ins)
   return rd;
 }
 
+// TODO: Utiliser la fonction de arm_instruction.c (Pas sur master à l'heure qu'il est)
+int verif_cond(uint32_t instruction, registers r)
+{
+  // Extraire les bits de condition (bits 28-31)
+  uint8_t condition_bits = (uint8_t)((instruction >> 28) & 0xF);
+  // récupération de l'état des flags
+  uint32_t cpsr = registers_read_cpsr(r);
+
+  switch (condition_bits)
+  {
+  case 0x0: // EQ (Z == 1)
+    if ((cpsr & Z) != 0)
+    {
+      return 1;
+    }
+    return 0;
+  case 0x1: // NE (Z == 0)
+    if ((cpsr & Z) == 0)
+    {
+      return 1;
+    }
+    return 0;
+  case 0x2: // CS/HS (C == 1)
+    if ((cpsr & C) != 0)
+    {
+      return 1;
+    }
+    return 0;
+  case 0x3: // CC/LO (C == 0)
+    if ((cpsr & C) == 0)
+    {
+      return 1;
+    }
+    return 0;
+  case 0x4: // MI (N == 1)
+    if ((cpsr & N) != 0)
+    {
+      return 1;
+    }
+    return 0;
+  case 0x5: // PL (N == 0)
+    if ((cpsr & N) == 0)
+    {
+      return 1;
+    }
+    return 0;
+  case 0x6: // VS (V == 1)
+    if ((cpsr & V) != 0)
+    {
+      return 1;
+    }
+    return 0;
+  case 0x7: // VC (V == 0)
+    if ((cpsr & V) == 0)
+    {
+      return 1;
+    }
+    return 0;
+  case 0x8: // HI (C == 1 && Z == 0)
+    if (((cpsr & C) != 0) && ((cpsr & Z) == 0))
+    {
+      return 1;
+    }
+    return 0;
+  case 0x9: // LS (C == 0 || Z == 1)
+    if (((cpsr & C) == 0) || ((cpsr & Z) != 0))
+    {
+      return 1;
+    }
+    return 0;
+  case 0xA: // GE (N == V)
+    if ((cpsr & N) == (cpsr & V))
+    {
+      return 1;
+    }
+    return 0;
+  case 0xB: // LT (N != V)
+    if ((cpsr & N) != (cpsr & V))
+    {
+      return 1;
+    }
+    return 0;
+  case 0xC: // GT (Z == 0 && N == V)
+    if (((cpsr & Z) == 0) && ((cpsr & N) == (cpsr & V)))
+    {
+      return 1;
+    }
+    return 0;
+  case 0xD: // LE (Z == 1 || N != V)
+    if (((cpsr & Z) != 0) || ((cpsr & N) != (cpsr & V)))
+    {
+      return 1;
+    }
+    return 0;
+  case 0xE: // AL (Always, toujours vrai)
+    return 1;
+  default:
+    fprintf(stderr, "Condition inconnue : %d\n", condition_bits);
+    return -1;
+  }
+}
+
 /* Decoding functions for different classes of instructions */
 int arm_data_processing_shift(arm_core p, uint32_t ins)
 {
@@ -64,7 +158,13 @@ int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 
 int arm_data_processing_add(arm_core p, uint32_t ins)
 {
-  uint8_t cond = get_cond(ins);
+
+  // Check condition
+  if (!verif_cond(ins, p->reg))
+  {
+    return 0;
+  }
+
   uint8_t rn = get_rn(ins);
   uint8_t rd = get_rd(ins);
 
