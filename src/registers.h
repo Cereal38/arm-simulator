@@ -63,4 +63,9 @@ void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value);
 void registers_write_cpsr(registers r, uint32_t value);
 void registers_write_spsr(registers r, uint8_t mode, uint32_t value);
 
+void registers_write_Z(registers r, uint8_t value);
+void registers_write_N(registers r, uint8_t value);
+void registers_write_C(registers r, uint8_t value);
+void registers_write_V(registers r, uint8_t value);
+
 #endif
