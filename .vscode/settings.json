@@ -1,6 +1,7 @@
 {
   "files.associations": {
     "memory.h": "c",
-    "registers.h": "c"
+    "registers.h": "c",
+    "arm_core.h": "c"
   }
 }
