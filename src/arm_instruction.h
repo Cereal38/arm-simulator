@@ -16,15 +16,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
 �tats-Unis.
 
 Contact: Guillaume.Huard@imag.fr
-	 B�timent IMAG
-	 700 avenue centrale, domaine universitaire
-	 38401 Saint Martin d'H�res
+   B�timent IMAG
+   700 avenue centrale, domaine universitaire
+   38401 Saint Martin d'H�res
 */
 #ifndef __ARM_INSTRUCTION_H__
 #define __ARM_INSTRUCTION_H__
 #include "arm_core.h"
 
-
 int arm_step(arm_core p);
+int verif_cond(uint32_t instruction, registers r);
 
 #endif
