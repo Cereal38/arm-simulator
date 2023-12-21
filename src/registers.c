@@ -353,3 +353,40 @@ void registers_write_spsr(registers r, uint8_t mode, uint32_t value)
   fprintf(stderr, "Erreur ! Le registre spsr n'existe pas pour le mode %s", arm_get_mode_name(mode));
   exit(EXIT_FAILURE);
 }
+
+void write_cpsr_bit(registers r, uint8_t bit, uint8_t value)
+{
+  if (r == NULL)
+  {
+    fprintf(stderr, "<write_cpsr_bit> Erreur: r est nulle\n");
+    exit(EXIT_FAILURE);
+  }
+  if (value == 0)
+  {
+    r->cpsr &= ~bit;
+  }
+  else
+  {
+    r->cpsr |= bit;
+  }
+}
+
+void registers_write_Z(registers r, uint8_t value)
+{
+  write_cpsr_bit(r, Z, value);
+}
+
+void registers_write_N(registers r, uint8_t value)
+{
+  write_cpsr_bit(r, N, value);
+}
+
+void registers_write_C(registers r, uint8_t value)
+{
+  write_cpsr_bit(r, C, value);
+}
+
+void registers_write_V(registers r, uint8_t value)
+{
+  write_cpsr_bit(r, V, value);
+}
