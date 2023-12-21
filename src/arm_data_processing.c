@@ -200,11 +200,17 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
   }
   else if (s_code == 1)
   {
-    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) & 0x0FFFFFFF);
-    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) | (rd & 0xF0000000));
-    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) | (rd == 0 ? 0x40000000 : 0x0));
-    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) | (carry_from(rn, shifter_operand) ? 0x20000000 : 0x0));
-    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) | (overflow_from(rn, shifter_operand) ? 0x10000000 : 0x0));
+    // Edit N, Z, C, V flags
+    registers_write_N(p->reg, (rd >> 31) & 0b1);
+    registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
+
+    // TODO: Verify if this implementation is correct (Carry and Overflow flags)
+    // Set the Carry flag based on unsigned overflow
+    registers_write_C(p->reg, (rn + shifter_operand) < rn ? 1 : 0);
+
+    // Set the Overflow flag based on signed overflow
+    int32_t result = (int32_t)rn + (int32_t)shifter_operand;
+    registers_write_V(p->reg, (result < rn) != (result < shifter_operand) ? 1 : 0);
   }
 }
 
