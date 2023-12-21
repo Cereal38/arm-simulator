@@ -159,18 +159,6 @@ int verif_cond(uint32_t instruction, registers r)
 void arm_data_processing_add(arm_core p, uint32_t ins)
 {
 
-  // if ConditionPassed(cond) then
-  //   Rd = Rn + shifter_operand
-  //   if S == 1 and Rd == R15 then
-  //     if CurrentModeHasSPSR() then
-  //       CPSR = SPSR
-  //     else UNPREDICTABLE
-  //   else if S == 1 then
-  //     N Flag = Rd[31]
-  //     Z Flag = if Rd == 0 then 1 else 0
-  //     C Flag = CarryFrom(Rn + shifter_operand)
-  //     V Flag = OverflowFrom(Rn + shifter_operand)
-
   // Check condition
   if (!verif_cond(ins, p->reg))
   {
