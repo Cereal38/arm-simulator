@@ -24,6 +24,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_exception.h"
 #include "arm_constants.h"
 #include "arm_branch_other.h"
+#include "arm_instruction.h"
 #include "util.h"
 #include "debug.h"
 
@@ -49,108 +50,6 @@ int get_shifter_operand(uint32_t ins)
 {
   // Return the value of shifter operand (Bits 11..0)
   return (ins & 0xFFF);
-}
-
-// TODO: Utiliser la fonction de arm_instruction.c (Pas sur master à l'heure qu'il est)
-int verif_cond(uint32_t instruction, registers r)
-{
-  // Extraire les bits de condition (bits 28-31)
-  uint8_t condition_bits = (uint8_t)((instruction >> 28) & 0xF);
-  // récupération de l'état des flags
-  uint32_t cpsr = registers_read_cpsr(r);
-
-  switch (condition_bits)
-  {
-  case 0x0: // EQ (Z == 1)
-    if ((cpsr & Z) != 0)
-    {
-      return 1;
-    }
-    return 0;
-  case 0x1: // NE (Z == 0)
-    if ((cpsr & Z) == 0)
-    {
-      return 1;
-    }
-    return 0;
-  case 0x2: // CS/HS (C == 1)
-    if ((cpsr & C) != 0)
-    {
-      return 1;
-    }
-    return 0;
-  case 0x3: // CC/LO (C == 0)
-    if ((cpsr & C) == 0)
-    {
-      return 1;
-    }
-    return 0;
-  case 0x4: // MI (N == 1)
-    if ((cpsr & N) != 0)
-    {
-      return 1;
-    }
-    return 0;
-  case 0x5: // PL (N == 0)
-    if ((cpsr & N) == 0)
-    {
-      return 1;
-    }
-    return 0;
-  case 0x6: // VS (V == 1)
-    if ((cpsr & V) != 0)
-    {
-      return 1;
-    }
-    return 0;
-  case 0x7: // VC (V == 0)
-    if ((cpsr & V) == 0)
-    {
-      return 1;
-    }
-    return 0;
-  case 0x8: // HI (C == 1 && Z == 0)
-    if (((cpsr & C) != 0) && ((cpsr & Z) == 0))
-    {
-      return 1;
-    }
-    return 0;
-  case 0x9: // LS (C == 0 || Z == 1)
-    if (((cpsr & C) == 0) || ((cpsr & Z) != 0))
-    {
-      return 1;
-    }
-    return 0;
-  case 0xA: // GE (N == V)
-    if ((cpsr & N) == (cpsr & V))
-    {
-      return 1;
-    }
-    return 0;
-  case 0xB: // LT (N != V)
-    if ((cpsr & N) != (cpsr & V))
-    {
-      return 1;
-    }
-    return 0;
-  case 0xC: // GT (Z == 0 && N == V)
-    if (((cpsr & Z) == 0) && ((cpsr & N) == (cpsr & V)))
-    {
-      return 1;
-    }
-    return 0;
-  case 0xD: // LE (Z == 1 || N != V)
-    if (((cpsr & Z) != 0) || ((cpsr & N) != (cpsr & V)))
-    {
-      return 1;
-    }
-    return 0;
-  case 0xE: // AL (Always, toujours vrai)
-    return 1;
-  default:
-    fprintf(stderr, "Condition inconnue : %d\n", condition_bits);
-    return -1;
-  }
 }
 
 // TODO: VERIFY THIS:
