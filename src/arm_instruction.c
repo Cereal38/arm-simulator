@@ -58,7 +58,7 @@ static int arm_execute_instruction(arm_core p)
     printf("Implement RSB\n");
     break;
   case 0b0100:
-    printf("Implement ADD\n");
+    arm_data_processing_add(p, instruction);
     break;
   case 0b0101:
     printf("Implement ADC\n");
