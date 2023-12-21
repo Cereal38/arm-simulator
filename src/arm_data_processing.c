@@ -153,6 +153,61 @@ int verif_cond(uint32_t instruction, registers r)
   }
 }
 
+// TODO: VERIFY THIS:
+// If the I bit is 0 and both bit[7] and bit[4] of shifter_operand are 1, the instruction is not ADD.
+// Instead, see Extending the instruction set on page A3-32 to determine which instruction it is.
+void arm_data_processing_add(arm_core p, uint32_t ins)
+{
+
+  // if ConditionPassed(cond) then
+  //   Rd = Rn + shifter_operand
+  //   if S == 1 and Rd == R15 then
+  //     if CurrentModeHasSPSR() then
+  //       CPSR = SPSR
+  //     else UNPREDICTABLE
+  //   else if S == 1 then
+  //     N Flag = Rd[31]
+  //     Z Flag = if Rd == 0 then 1 else 0
+  //     C Flag = CarryFrom(Rn + shifter_operand)
+  //     V Flag = OverflowFrom(Rn + shifter_operand)
+
+  // Check condition
+  if (!verif_cond(ins, p->reg))
+  {
+    return;
+  }
+
+  uint8_t rn_code = get_rn(ins);
+  uint8_t rd_code = get_rd(ins);
+  uint8_t s_code = get_s(ins);
+  uint32_t shifter_operand = get_shifter_operand(ins);
+  uint8_t mode = registers_get_mode(p->reg);
+
+  // Get Rn value
+  uint32_t rn = registers_read(p->reg, rn_code, mode);
+
+  // Set Rd value
+  uint32_t rd = rn + shifter_operand;
+  registers_write(p->reg, rd_code, mode, rd);
+
+  // Set CPSR if needed
+  if (s_code == 1 && rd_code == 15)
+  {
+    if (registers_current_mode_has_spsr(p->reg))
+    {
+      registers_write_cpsr(p->reg, registers_read_spsr(p->reg, mode));
+    }
+  }
+  else if (s_code == 1)
+  {
+    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) & 0x0FFFFFFF);
+    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) | (rd & 0xF0000000));
+    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) | (rd == 0 ? 0x40000000 : 0x0));
+    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) | (carry_from(rn, shifter_operand) ? 0x20000000 : 0x0));
+    // registers_write_cpsr(p->reg, registers_read_cpsr(p->reg) | (overflow_from(rn, shifter_operand) ? 0x10000000 : 0x0));
+  }
+}
+
 /* Decoding functions for different classes of instructions */
 int arm_data_processing_shift(arm_core p, uint32_t ins)
 {
@@ -161,33 +216,5 @@ int arm_data_processing_shift(arm_core p, uint32_t ins)
 
 int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 {
-  return UNDEFINED_INSTRUCTION;
-}
-
-int arm_data_processing_add(arm_core p, uint32_t ins)
-{
-
-  // if ConditionPassed(cond) then
-  //   Rd = Rn + shifter_operand
-  //   if S == 1 and Rd == R15 then
-  //   if CurrentModeHasSPSR() then
-  //   CPSR = SPSR
-  //   else UNPREDICTABLE
-  //   else if S == 1 then
-  //   N Flag = Rd[31]
-  //   Z Flag = if Rd == 0 then 1 else 0
-  //   C Flag = CarryFrom(Rn + shifter_operand)
-  //   V Flag = OverflowFrom(Rn + shifter_operand)
-
-  // Check condition
-  if (!verif_cond(ins, p->reg))
-  {
-    return 0;
-  }
-
-  uint8_t rn = get_rn(ins);
-  uint8_t rd = get_rd(ins);
-  uint8_t s = get_s(ins);
-
   return UNDEFINED_INSTRUCTION;
 }
