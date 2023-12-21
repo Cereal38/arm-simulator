@@ -26,64 +26,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
-int arm_load_store(arm_core p, uint32_t ins) {
-    uint8_t posOpCode = 20;        //24 to 20
-    uint8_t posRd = 12 ;          //15 to 12
-    uint8_t posRn = 16 ;          //19 to 16
 
-    uint8_t opCode = (ins >> posOpCode) & 0b1111 ;
-    uint8_t rd = (ins >> posRd) & 0b1111;
-    uint8_t rn = (ins >> posRn) & 0b1111;
-
-    uint32_t address;
-
-    switch(opCode) {
-        //LDR
-        case 0b0101 : 
-            //load into rd the value in rn
-            if (rn >= 16){
-                return UNDEFINED_INSTRUCTION;
-            }
-            address = arm_read_register(p, rn);
-            uint32_t dataToLoad;
-            if (arm_read_word(p, address , &dataToLoad) != 0){
-                return UNDEFINED_INSTRUCTION;
-            }
-            arm_write_register(p, rd, dataToLoad);
-            return 0;
-
-        
-        // LDRB
-        case 0b0100:
-            // load 8-bit value into rd from rn
-            if (rn >= 16) {
-                return UNDEFINED_INSTRUCTION;
-            }
-            address = arm_read_register(p, rn);
-            uint8_t dataToLoadByte;
-            if (arm_read_byte(p, address, &dataToLoadByte) != 0) {
-                return UNDEFINED_INSTRUCTION;
-            }
-            arm_write_register(p, rd, (uint32_t)dataToLoadByte);
-            return 0;
-    
-        // LDRH
-        case 0b0101:
-            // load 16-bit value into rd from rn
-            if (rn >= 16) {
-                return UNDEFINED_INSTRUCTION;
-            }
-            address = arm_read_register(p, rn);
-            uint16_t dataToLoadHalfword;
-            if (arm_read_halfword(p, address, &dataToLoadHalfword) != 0) {
-                return UNDEFINED_INSTRUCTION;
-            }
-            arm_write_register(p, rd, (uint32_t)dataToLoadHalfword);
-            return 0;
-
-To add support for all single data transfer instructions in your arm_load_store function, you'll need to extend the switch statement to handle additional opcodes. Here's an updated version of your function that includes all single data transfer instructions:
-
-c
 
 int arm_load_store(arm_core p, uint32_t ins) {
     uint8_t posOpCode = 20;        // 24 to 20
