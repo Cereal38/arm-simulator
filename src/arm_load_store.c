@@ -221,6 +221,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
             // fprintf(stderr, "<arm_load_store.c> Non implémenté : le bit 15 (PC) est set.\n");
             // return UNDEFINED_INSTRUCTION;
             //  des choses incompréhensibles
+            // TODO à vérifier ici voilà
         }
     }
     else{//STM(1)
