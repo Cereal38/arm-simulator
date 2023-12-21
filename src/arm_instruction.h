@@ -24,10 +24,6 @@ Contact: Guillaume.Huard@imag.fr
 #define __ARM_INSTRUCTION_H__
 #include "arm_core.h"
 
-#define Z 0x40000000
-#define N 0x80000000
-#define C 0x20000000
-#define V 0x10000000
 
 int arm_step(arm_core p);
 
