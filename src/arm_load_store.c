@@ -87,6 +87,7 @@ int number_registers(uint16_t register_list){
 //Manque les cas avec le bit S. Manuel page 482.
 //LDM et STM info plus générale page 134.
 //LDM(1) (apparement c'est lui qu'il faut faire) page 186 du manuel.
+//STM(1) page 339 du Manuel.
 int arm_load_store_multiple(arm_core p, uint32_t ins) {
     uint8_t posP = 24;
     uint8_t posU = 23;
@@ -100,75 +101,73 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
     uint8_t W = (ins >> posW) & 0b1;
     uint8_t L = (ins >> posL) & 0b1;
 
-    // uint8_t posOpCode = 20;//24 a 20
-    uint8_t posRn = 16;//19 a 16
-    // uint8_t opCode = (ins >> posOpCode) & 0b1111;
+    uint8_t posRn = 16;//19 à 16
     uint8_t rn = (ins >> posRn) & 0b1111;
-    uint16_t register_list = ins & 0b1111;
+    uint16_t register_list = ins & 0b1111;//15 à 0
+
     uint32_t address = arm_read_register(p, rn);
 
     int nbr_register_list = number_registers(register_list);
 
     if(nbr_register_list == 0){
+        fprintf(stderr, "<arm_load_store.c> Erreur aucun bit n'est set dans la liste de registres.\n");
         return UNDEFINED_INSTRUCTION;
     }
 
-    if(S != 0){//si on est en user mode et s set alors unpredictable
+    if(S != 0){
+        fprintf(stderr, "<arm_load_store.c> Erreur le bit S n'est pas à 0.\n");
         return UNDEFINED_INSTRUCTION;
     }
-
-    if(!L){//LDM
-        for (int i = 0; i < 16; i++){
-            if((register_list & (1 << i)) != 0){
-                uint32_t dataToLoad;
-                if(P == 1){//incremente/decremente BEFORE
-                    if(U == 0){
-                        address -= 4;
-                    }
-                    else{//U == 1
-                        address += 4;
-                    }
-                }
-                if (arm_read_word(p, address , &dataToLoad) != 0){
-                    return UNDEFINED_INSTRUCTION;
-                }
-                arm_write_register(p, i, dataToLoad);
-                if(P==0){//incremente/decremente AFTER
-                    if(U==0){
-                        address -= 4;
-                    }
-                    else{//U == 1
-                        address += 4;
-                    }
-                }
-            }
-        }
-    }
-    else{//STM
-        for (int i = 0; i < 16; i++){
-            if((register_list & (1 << i)) != 0){
+    if(L){//LDM(1)
+        for (int i = 0; i < 15; i++){
+            if((register_list & (1 << i))!=0){
                 if(P == 1){
-                    if(U==0)//decremente BEFORE
+                    if(U == 0)//decremente BEFORE
                         address -= 4;
                     else//incremente BEFORE
                         address += 4;
                 }
-                uint32_t StoreData = arm_read_register(p, i);
-                if (arm_read_word(p, address , &StoreData) != 0){  
-                    return UNDEFINED_INSTRUCTION;
-                }
+                uint32_t Ri = arm_read_register(p, address);
+                arm_write_register(p, i, Ri);
                 if(P == 0){
-                    if(U == 0){//decremente AFTER
+                    if(U == 0)//decremente AFTER
                         address -= 4;
-                    }
-                    else{//U == 1 incremente AFTER
+                    else//incremente AFTER
                         address += 4;
-                    }
+                }
+            }
+        }
+        if((register_list & (1 << 15))!=0){//si PC est set dans register_list
+            uint32_t value = arm_read_register(p, address);
+            arm_write_register(p, 15, value);//15 pour pc
+            //uint8_t T = value & 0b1;//bit thumb? qu'est ce que c'est que ce truc??
+            address += 4;
+            // fprintf(stderr, "<arm_load_store.c> Non implémenté : le bit 15 (PC) est set.\n");
+            // return UNDEFINED_INSTRUCTION;
+            //  des choses incompréhensibles
+        }
+    }
+    else{//STM(1)
+        for (int i = 0; i < 16; i++){
+            if((register_list & (1 << i))!=0){
+                if(P == 1){
+                    if(U == 0)//decremente BEFORE
+                        address -= 4;
+                    else//incremente BEFORE
+                        address += 4;
+                }
+                uint32_t Ri = arm_read_register(p, i);
+                arm_write_register(p, address, Ri);
+                if(P == 0){
+                    if(U == 0)//decremente AFTER
+                        address -= 4;
+                    else//incremente AFTER
+                        address += 4;
                 }
             }
         }
     }
-    if (W == 1){//&& condition passed
+    if (W == 1){
         if(U == 0)
             address = address - 4 * nbr_register_list;
         else
