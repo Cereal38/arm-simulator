@@ -27,6 +27,14 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "debug.h"
 
+int get_cond(uint32_t ins)
+{
+  // Return the condition code of the instruction (Bits 31.30.29.28)
+  uint8_t posCond = 28; // 31 to 28
+  uint8_t cond = (ins >> posCond) & 0b1111;
+  return cond;
+}
+
 /* Decoding functions for different classes of instructions */
 int arm_data_processing_shift(arm_core p, uint32_t ins)
 {
@@ -40,5 +48,7 @@ int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 
 int arm_data_processing_add(arm_core p, uint32_t ins)
 {
+  uint8_t cond = get_cond(ins);
+
   return UNDEFINED_INSTRUCTION;
 }
