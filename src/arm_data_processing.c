@@ -29,26 +29,26 @@ Contact: Guillaume.Huard@imag.fr
 
 int get_rn(uint32_t ins)
 {
-  // Return the value of Rn (Bits 19.18.17.16)
-  uint8_t posRn = 16; // 19 to 16
-  uint8_t rn = (ins >> posRn) & 0b1111;
-  return rn;
+  // Return the value of Rn (Bits 19..16)
+  return (ins >> 16) & 0b1111;
 }
 
 int get_rd(uint32_t ins)
 {
-  // Return the value of Rd (Bits 15.14.13.12)
-  uint8_t posRd = 12; // 15 to 12
-  uint8_t rd = (ins >> posRd) & 0b1111;
-  return rd;
+  // Return the value of Rd (Bits 15..12)
+  return (ins >> 12) & 0b1111;
 }
 
 int get_s(uint32_t ins)
 {
   // Return the value of S bit (Bit 20)
-  uint8_t posS = 20; // 20
-  uint8_t s = (ins >> posS) & 0b1;
-  return s;
+  return (ins >> 20) & 0b1;
+}
+
+int get_shifter_operand(uint32_t ins)
+{
+  // Return the value of shifter operand (Bits 11..0)
+  return (ins & 0xFFF);
 }
 
 // TODO: Utiliser la fonction de arm_instruction.c (Pas sur master à l'heure qu'il est)
@@ -166,6 +166,18 @@ int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 
 int arm_data_processing_add(arm_core p, uint32_t ins)
 {
+
+  // if ConditionPassed(cond) then
+  //   Rd = Rn + shifter_operand
+  //   if S == 1 and Rd == R15 then
+  //   if CurrentModeHasSPSR() then
+  //   CPSR = SPSR
+  //   else UNPREDICTABLE
+  //   else if S == 1 then
+  //   N Flag = Rd[31]
+  //   Z Flag = if Rd == 0 then 1 else 0
+  //   C Flag = CarryFrom(Rn + shifter_operand)
+  //   V Flag = OverflowFrom(Rn + shifter_operand)
 
   // Check condition
   if (!verif_cond(ins, p->reg))
