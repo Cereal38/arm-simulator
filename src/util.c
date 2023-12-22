@@ -22,6 +22,7 @@ Contact: Guillaume.Huard@imag.fr
 */
 #include "util.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 /* We implement asr because shifting a signed is non portable in ANSI C */
 uint32_t asr(uint32_t value, uint8_t shift)
@@ -58,19 +59,28 @@ void log_printf(const char *format, ...)
 char *to_binary(uint32_t value, int size)
 {
   /*
-    Convert the given value to a string representing its binary value
-    There is a space every 4 bits
+    Convert the given value to a string representing a tab containing 2 rows
+    The first row is the number of the bit
+    The second row is the value of the bit
+    Example:
+    31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|...
+     0| 0| 1| 0| 0| 0| 0| 0| 0| 0| 0| 1| 1| 0| 0| 0|...
   */
-  char *result = malloc(size + size / 4 + 1);
-  int i, j;
-  for (i = 0, j = 0; i < size; i++, j++)
+  char *result = malloc(size * 2 * 3 + 1);
+
+  // Write first row
+  for (int i = size - 1; i >= 0; i--)
   {
-    if (i % 4 == 0)
-    {
-      result[j++] = ' ';
-    }
-    result[j] = get_bit(value, size - i - 1) ? '1' : '0';
+    sprintf(result + (size - 1 - i) * 3, "%2d|", i);
   }
-  result[j] = '\0';
+
+  sprintf(result + size * 3, "\n");
+
+  // Write second row
+  for (int i = size - 1; i >= 0; i--)
+  {
+    sprintf(result + (size * 2 - 1 - i) * 3, "%2d|", get_bit(value, i));
+  }
+
   return result;
 }
