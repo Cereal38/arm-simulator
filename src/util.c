@@ -66,7 +66,7 @@ char *to_binary(uint32_t value, int size)
     31|30|29|28|27|26|25|24|23|22|21|20|19|18|17|16|...
      0| 0| 1| 0| 0| 0| 0| 0| 0| 0| 0| 1| 1| 0| 0| 0|...
   */
-  char *result = malloc(size * 2 * 3 + 1);
+  char *result = malloc(size * 3 * 2 + 4);
 
   // Write first row
   for (int i = size - 1; i >= 0; i--)
@@ -79,8 +79,10 @@ char *to_binary(uint32_t value, int size)
   // Write second row
   for (int i = size - 1; i >= 0; i--)
   {
-    sprintf(result + (size * 2 - 1 - i) * 3, "%2d|", get_bit(value, i));
+    sprintf(result + (size * 3 + 1) + (size - 1 - i) * 3, "%2d|", get_bit(value, i));
   }
+
+  sprintf(result + size * 3 * 2 + 2, "\n");
 
   return result;
 }
