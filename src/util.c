@@ -42,6 +42,9 @@ int is_big_endian()
 
 void log_printf(const char *format, ...)
 {
+  /*
+    Print the given formatted string to the file logs.txt
+  */
   FILE *f = fopen("logs.txt", "a");
 
   va_list args;
@@ -50,4 +53,24 @@ void log_printf(const char *format, ...)
   va_end(args);
 
   fclose(f);
+}
+
+char *to_binary(uint32_t value, int size)
+{
+  /*
+    Convert the given value to a string representing its binary value
+    There is a space every 4 bits
+  */
+  char *result = malloc(size + size / 4 + 1);
+  int i, j;
+  for (i = 0, j = 0; i < size; i++, j++)
+  {
+    if (i % 4 == 0)
+    {
+      result[j++] = ' ';
+    }
+    result[j] = get_bit(value, size - i - 1) ? '1' : '0';
+  }
+  result[j] = '\0';
+  return result;
 }
