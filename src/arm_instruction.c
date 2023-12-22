@@ -215,7 +215,7 @@ static int arm_execute_instruction(arm_core p)
   uint32_t instruction;
   int resultat = arm_fetch(p, &instruction);
 
-  log_printf("arm_execute_instruction: instruction = \n%s\n", to_binary(instruction, 32));
+  log_printf(">>> READ INSTRUCTION :\n%s\n", to_binary(instruction, 32));
 
   if (resultat)
   {
