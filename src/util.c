@@ -16,32 +16,38 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
 �tats-Unis.
 
 Contact: Guillaume.Huard@imag.fr
-	 B�timent IMAG
-	 700 avenue centrale, domaine universitaire
-	 38401 Saint Martin d'H�res
+   B�timent IMAG
+   700 avenue centrale, domaine universitaire
+   38401 Saint Martin d'H�res
 */
 #include "util.h"
 #include <stdio.h>
 
 /* We implement asr because shifting a signed is non portable in ANSI C */
-uint32_t asr(uint32_t value, uint8_t shift) {
-    return (value >> shift) | (get_bit(value, 31) ? ~0 << (32 - shift) : 0);
+uint32_t asr(uint32_t value, uint8_t shift)
+{
+  return (value >> shift) | (get_bit(value, 31) ? ~0 << (32 - shift) : 0);
 }
 
-uint32_t ror(uint32_t value, uint8_t rotation) {
-    return (value >> rotation) | (value << (32 - rotation));
+uint32_t ror(uint32_t value, uint8_t rotation)
+{
+  return (value >> rotation) | (value << (32 - rotation));
 }
 
-int is_big_endian() {
-    static uint32_t one = 1;
-    return ((*(uint8_t *) & one) == 0);
+int is_big_endian()
+{
+  static uint32_t one = 1;
+  return ((*(uint8_t *)&one) == 0);
 }
 
-void log(const char *fmt, ...) {
-    FILE *f = fopen("logs.txt", "w");
+void log_printf(const char *format, ...)
+{
+  FILE *f = fopen("logs.txt", "a");
 
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(f, fmt, args);
-    va_end(args);
+  va_list args;
+  va_start(args, format);
+  vfprintf(f, format, args);
+  va_end(args);
+
+  fclose(f);
 }

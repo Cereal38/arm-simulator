@@ -16,35 +16,34 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307,
 �tats-Unis.
 
 Contact: Guillaume.Huard@imag.fr
-	 B�timent IMAG
-	 700 avenue centrale, domaine universitaire
-	 38401 Saint Martin d'H�res
+   B�timent IMAG
+   700 avenue centrale, domaine universitaire
+   38401 Saint Martin d'H�res
 */
 #ifndef __UTIL_H__
 #define __UTIL_H__
 #include <stdint.h>
 #include <stdarg.h>
 
-#define min(x,y) ((x)<(y)?(x):(y))
-#define max(x,y) ((x)>(y)?(x):(y))
+#define min(x, y) ((x) < (y) ? (x) : (y))
+#define max(x, y) ((x) > (y) ? (x) : (y))
 
-#define get_bit(x, i) (((x)>>(i))&1)
-#define set_bit(x, i) ((x)|(1<<(i)))
-#define clr_bit(x, i) ((x)&~(1<<(i)))
+#define get_bit(x, i) (((x) >> (i)) & 1)
+#define set_bit(x, i) ((x) | (1 << (i)))
+#define clr_bit(x, i) ((x) & ~(1 << (i)))
 
-#define get_bits(x, h, l) (((x)>>(l))&~((((uint32_t) ~0)>>((h)-(l)+1))<<((h)-(l)+1)))
+#define get_bits(x, h, l) (((x) >> (l)) & ~((((uint32_t)~0) >> ((h) - (l) + 1)) << ((h) - (l) + 1)))
 #define set_bits(x, h, l, bits) \
-	(((x)&~(((~0)>>(l))<<(l)))|((x)&((((uint32_t) ~0)>>((h)+1))<<((h)+1)))|((bits)<<(l)))
+  (((x) & ~(((~0) >> (l)) << (l))) | ((x) & ((((uint32_t)~0) >> ((h) + 1)) << ((h) + 1))) | ((bits) << (l)))
 
-#define reverse_2(x) ((((x)&0xFF)<<8)|(((x)>>8)&0xFF))
-#define reverse_4(x) ((((x)&0xFF)<<24)|((((x)>>8)&0xFF)<<16)|\
-                      ((((x)>>16)&0xFF)<<8)|(((x)>>24)&0xFF))
+#define reverse_2(x) ((((x) & 0xFF) << 8) | (((x) >> 8) & 0xFF))
+#define reverse_4(x) ((((x) & 0xFF) << 24) | ((((x) >> 8) & 0xFF) << 16) | \
+                      ((((x) >> 16) & 0xFF) << 8) | (((x) >> 24) & 0xFF))
 
 uint32_t asr(uint32_t value, uint8_t shift);
 uint32_t ror(uint32_t value, uint8_t rotation);
 
-void log(const char* format, ...);
-
+void log_printf(const char *format, ...);
 
 int is_big_endian();
 #endif

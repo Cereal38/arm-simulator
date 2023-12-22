@@ -215,6 +215,8 @@ static int arm_execute_instruction(arm_core p)
   uint32_t instruction;
   int resultat = arm_fetch(p, &instruction);
 
+  log_printf("arm_execute_instruction: instruction = %08x\n", instruction);
+
   if (resultat)
   {
     // gestion interruption fetch
