@@ -215,6 +215,8 @@ static int arm_execute_instruction(arm_core p)
   uint32_t instruction;
   int resultat = arm_fetch(p, &instruction);
 
+  log_printf(">>> READ INSTRUCTION :\n%s\n", to_binary(instruction, 32));
+
   if (resultat)
   {
     // gestion interruption fetch
