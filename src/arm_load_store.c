@@ -219,10 +219,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
         }
     }
     if (W == 1){
-        if(U == 0)
-            arm_write_register(p, rn, address);//address sera délà à la bone valeur normalement (address + 4 * nbr_register_list)
-        else
-            arm_write_register(p, rn, address);
+        arm_write_register(p, rn, address);//address sera déjà à la bonne valeur normalement (address +/- 4 * nbr_register_list)
     }
     return 0;
 }
