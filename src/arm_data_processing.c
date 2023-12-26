@@ -26,6 +26,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_branch_other.h"
 #include "arm_instruction.h"
 #include "util.h"
+#include "registers.h"
 #include "debug.h"
 
 int get_rn(uint32_t ins)
