@@ -85,7 +85,7 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
   else if (s_code == 1)
   {
     // Edit N, Z, C, V flags
-    registers_write_N(p->reg, (rd >> 31) & 0b1);
+    registers_write_N(p->reg, get_bits(rd, 31, 31));
     registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
 
     // TODO: Verify if this implementation is correct (Carry and Overflow flags)

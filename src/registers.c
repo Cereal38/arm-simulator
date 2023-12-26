@@ -362,14 +362,8 @@ void write_cpsr_bit(registers r, uint8_t bit, uint8_t value)
     fprintf(stderr, "<write_cpsr_bit> Erreur: r est nulle\n");
     exit(EXIT_FAILURE);
   }
-  if (value == 0)
-  {
-    r->cpsr &= ~bit;
-  }
-  else
-  {
-    r->cpsr |= bit;
-  }
+  r->cpsr &= ~(1 << bit);
+  r->cpsr |= value << bit;
 }
 
 void registers_write_Z(registers r, uint8_t value)
