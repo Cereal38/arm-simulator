@@ -23,5 +23,9 @@ int main()
   arm_core p = arm_create(registers_create(), memory_create(2048));
   test_add(p);
 
+  memory_destroy(p->mem);
+  registers_destroy(p->reg);
+  arm_destroy(p);
+
   return 0;
 }
