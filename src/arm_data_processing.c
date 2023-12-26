@@ -71,6 +71,7 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
   uint32_t rn = registers_read(p->reg, rn_code, mode);
 
   // Set Rd value
+  // TODO: This is wrong ! Check A5.1 to fix
   uint32_t rd = rn + shifter_operand;
   registers_write(p->reg, rd_code, mode, rd);
 

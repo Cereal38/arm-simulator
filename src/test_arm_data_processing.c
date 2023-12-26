@@ -10,10 +10,10 @@
 
 void test_add(arm_core p)
 {
-  printf("Test : ADD (2 + 3) ... ");
+  printf("Test : ADD (Immediate value) ... ");
   registers_write(p->reg, 0, USR, 2);
   // Cond -- I ---- S Rn   Rd   Shifter
-  // 1110 00 1 0100 1 0000 0001 000000000011
+  // 1110 00 1 0100 1 0000 0001 0000 00000011
   arm_data_processing_add(p, 0b11100010100100000001000000000011);
   assert(registers_read(p->reg, 1, USR) == 5);
   assert(registers_read_Z(p->reg) == 0);
@@ -25,7 +25,7 @@ void test_add(arm_core p)
   printf("Test : ADD (N+V : 0x7FFFFFFF + 0x1) ... ");
   registers_write(p->reg, 0, USR, 0x7FFFFFFF);
   // Cond -- I ---- S Rn   Rd   Shifter
-  // 1110 00 1 0100 1 0000 0001 000000000001
+  // 1110 00 1 0100 1 0000 0001 0000 00000001
   arm_data_processing_add(p, 0b11100010100100000001000000000001);
   assert(registers_read(p->reg, 1, USR) == 0x80000000);
   assert(registers_read_Z(p->reg) == 0);
@@ -36,11 +36,20 @@ void test_add(arm_core p)
 
   printf("Test : ADD (Unvalid condition) ... ");
   registers_write(p->reg, 0, USR, 2);
-  registers_write_Z(p->reg, 0);
   // Cond -- I ---- S Rn   Rd   Shifter
-  // 0000 00 1 0100 1 0000 0000 000000000011
+  // 0000 00 1 0100 1 0000 0000 0000 00000011
   arm_data_processing_add(p, 0b00000010100100000000000000000011);
   assert(registers_read(p->reg, 0, USR) == 2);
+  printf("OK\n");
+
+  printf("Test: ADD (Second value from register) ... ");
+  registers_write(p->reg, 0, USR, 2);
+  registers_write(p->reg, 2, USR, 3);
+  registers_write_Z(p->reg, 0);
+  // Cond -- I ---- S Rn   Rd   Shifter
+  // 0000 00 0 0100 1 0000 0000 0000 0000 0010
+  arm_data_processing_add(p, 0b00000010100100000000000000000010);
+  assert(registers_read(p->reg, 1, USR) == 5);
   printf("OK\n");
 }
 
