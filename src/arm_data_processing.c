@@ -31,26 +31,22 @@ Contact: Guillaume.Huard@imag.fr
 
 int get_rn(uint32_t ins)
 {
-  // Return the value of Rn (Bits 19..16)
-  return (ins >> 16) & 0b1111;
+  return get_bits(ins, 19, 16);
 }
 
 int get_rd(uint32_t ins)
 {
-  // Return the value of Rd (Bits 15..12)
-  return (ins >> 12) & 0b1111;
+  return get_bits(ins, 15, 12);
 }
 
 int get_s(uint32_t ins)
 {
-  // Return the value of S bit (Bit 20)
-  return (ins >> 20) & 0b1;
+  return get_bits(ins, 20, 20);
 }
 
 int get_shifter_operand(uint32_t ins)
 {
-  // Return the value of shifter operand (Bits 11..0)
-  return (ins & 0xFFF);
+  return get_bits(ins, 11, 0);
 }
 
 // TODO: VERIFY THIS:
