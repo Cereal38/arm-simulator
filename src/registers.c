@@ -22,6 +22,7 @@ Contact: Guillaume.Huard@imag.fr
 */
 #include "registers.h"
 #include "arm_constants.h"
+#include "util.h"
 #include <stdlib.h>
 
 registers registers_create()
