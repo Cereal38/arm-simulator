@@ -2,6 +2,7 @@
   "files.associations": {
     "memory.h": "c",
     "registers.h": "c",
-    "arm_core.h": "c"
+    "arm_core.h": "c",
+    "arm_data_processing.h": "c"
   }
 }
