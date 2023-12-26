@@ -15,6 +15,7 @@ void test_add(arm_core p)
   // 1110 00 1 0100 0 0000 0001 000000000011
   arm_data_processing_add(p, 0b11100010100000000001000000000011);
   assert(registers_read(p->reg, 1, USR) == 5);
+  // Check ZNCV
   printf("OK\n");
 
   printf("Test : ADD (Unvalid condition) ... ");
