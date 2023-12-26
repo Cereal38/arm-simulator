@@ -108,6 +108,7 @@ int arm_data_processing_shift(arm_core p, uint32_t ins)
   return UNDEFINED_INSTRUCTION;
 }
 
+// TODO: Merge add in it
 int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 {
   return UNDEFINED_INSTRUCTION;
