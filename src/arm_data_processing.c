@@ -84,6 +84,14 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
     uint8_t rotate_imm = get_bits(ins, 11, 8);
     uint32_t shifter_operand = rotate_right(immed_8, rotate_imm * 2);
     rd = rn + shifter_operand;
+    if (s_code == 1)
+    {
+      // Edit N, Z, C, V flags
+      registers_write_N(p->reg, get_bits(rd, 31, 31));
+      registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
+      registers_write_C(p->reg, (rd < rn) ? 1 : 0);
+      registers_write_V(p->reg, (get_bits(rn, 31, 31) == get_bits(shifter_operand, 31, 31) && get_bits(rd, 31, 31) != get_bits(rn, 31, 31)) ? 1 : 0);
+    }
   }
   // Register value
   else
@@ -91,6 +99,14 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
     uint8_t rm_code = get_bits(ins, 3, 0);
     uint32_t rm = registers_read(p->reg, rm_code, mode);
     rd = rn + rm;
+    if (s_code == 1)
+    {
+      // Edit N, Z, C, V flags
+      registers_write_N(p->reg, get_bits(rd, 31, 31));
+      registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
+      registers_write_C(p->reg, (rd < rn) ? 1 : 0);
+      registers_write_V(p->reg, (get_bits(rn, 31, 31) == get_bits(rm, 31, 31) && get_bits(rd, 31, 31) != get_bits(rn, 31, 31)) ? 1 : 0);
+    }
   }
 
   // Set Rd value
@@ -103,19 +119,6 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
     {
       registers_write_cpsr(p->reg, registers_read_spsr(p->reg, mode));
     }
-  }
-  else if (s_code == 1)
-  {
-    // Edit N, Z, C, V flags
-    registers_write_N(p->reg, get_bits(rd, 31, 31));
-    registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
-
-    // TODO: Verify if this implementation is correct (Carry and Overflow flags)
-    // Set the Carry flag based on unsigned overflow
-    registers_write_C(p->reg, (rd < rn) ? 1 : 0);
-
-    // Set the Overflow flag based on signed overflow
-    // TODO
   }
 }
 
