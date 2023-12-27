@@ -49,6 +49,7 @@ void test_add(arm_core p)
 
   printf("Test : ADD (Unvalid condition) ... ");
   registers_write(p->reg, 0, USR, 2);
+  registers_write_Z(p->reg, 0);
   // Cond -- I ---- S Rn   Rd   Shifter
   // 0000 00 1 0100 1 0000 0000 0000 00000011
   arm_data_processing_add(p, 0b00000010100100000000000000000011);
