@@ -44,14 +44,21 @@ int get_s(uint32_t ins)
   return get_bits(ins, 20, 20);
 }
 
-int get_shifter_operand(uint32_t ins)
+int get_i(uint32_t ins)
 {
-  return get_bits(ins, 11, 0);
+  return get_bits(ins, 25, 25);
+}
+
+uint32_t rotate_right(uint32_t value, uint8_t rotate)
+{
+  return (value >> rotate) | (value << (32 - rotate));
 }
 
 // TODO: VERIFY THIS:
 // If the I bit is 0 and both bit[7] and bit[4] of shifter_operand are 1, the instruction is not ADD.
 // Instead, see Extending the instruction set on page A3-32 to determine which instruction it is.
+// TODO: Check bit 25 (register or immediate value)
+// TODO: Write shift right function
 void arm_data_processing_add(arm_core p, uint32_t ins)
 {
 
@@ -64,15 +71,29 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
   uint8_t rn_code = get_rn(ins);
   uint8_t rd_code = get_rd(ins);
   uint8_t s_code = get_s(ins);
-  uint32_t shifter_operand = get_shifter_operand(ins);
+  uint8_t i_code = get_i(ins);
   uint8_t mode = registers_get_mode(p->reg);
-
-  // Get Rn value
   uint32_t rn = registers_read(p->reg, rn_code, mode);
+  uint32_t rd;
+
+  // Shifter operand
+  // Immediate value
+  if (i_code == 1)
+  {
+    uint8_t immed_8 = get_bits(ins, 7, 0);
+    uint8_t rotate_imm = get_bits(ins, 11, 8);
+    uint32_t shifter_operand = rotate_right(immed_8, rotate_imm * 2);
+    rd = rn + shifter_operand;
+  }
+  // Register value
+  else
+  {
+    uint8_t rm_code = get_bits(ins, 3, 0);
+    uint32_t rm = registers_read(p->reg, rm_code, mode);
+    rd = rn + rm;
+  }
 
   // Set Rd value
-  // TODO: This is wrong ! Check A5.1 to fix
-  uint32_t rd = rn + shifter_operand;
   registers_write(p->reg, rd_code, mode, rd);
 
   // Set CPSR if needed
