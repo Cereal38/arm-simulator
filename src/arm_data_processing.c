@@ -112,11 +112,10 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
 
     // TODO: Verify if this implementation is correct (Carry and Overflow flags)
     // Set the Carry flag based on unsigned overflow
-    registers_write_C(p->reg, (rn + shifter_operand) < rn ? 1 : 0);
+    registers_write_C(p->reg, (rd < rn) ? 1 : 0);
 
     // Set the Overflow flag based on signed overflow
-    int32_t result = (int32_t)rn + (int32_t)shifter_operand;
-    registers_write_V(p->reg, (result < rn) != (result < shifter_operand) ? 1 : 0);
+    // TODO
   }
 }
 
