@@ -110,6 +110,32 @@ void test_sub(arm_core p)
   assert(registers_read_C(p->reg) == 0);
   assert(registers_read_V(p->reg) == 0);
   printf("OK\n");
+
+  printf("Test : SUB (Overflow) ... ");
+  registers_write(p->reg, 0, USR, 0x80000000);
+  // sub r1, r0, #1
+  // Cond -- I ---- S Rn   Rd   Shifter
+  // 1110 00 1 0010 1 0000 0001 0000 00000001
+  arm_data_processing_immediate(p, 0b11100010010100000001000000000001);
+  assert(registers_read(p->reg, 1, USR) == 0x7FFFFFFF);
+  assert(registers_read_Z(p->reg) == 0);
+  assert(registers_read_N(p->reg) == 0);
+  assert(registers_read_C(p->reg) == 1);
+  assert(registers_read_V(p->reg) == 1);
+  printf("OK\n");
+
+  printf("Test : SUB (Result is 0) ... ");
+  registers_write(p->reg, 0, USR, 11);
+  // sub r1, r0, #11
+  // Cond -- I ---- S Rn   Rd   Shifter
+  // 1110 00 1 0010 1 0000 0001 0000 00001011
+  arm_data_processing_immediate(p, 0b11100010010100000001000000001011);
+  assert(registers_read(p->reg, 1, USR) == 0);
+  assert(registers_read_Z(p->reg) == 1);
+  assert(registers_read_N(p->reg) == 0);
+  assert(registers_read_C(p->reg) == 1);
+  assert(registers_read_V(p->reg) == 0);
+  printf("OK\n");
 }
 
 int main()
