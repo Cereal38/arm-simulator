@@ -15,7 +15,7 @@ void test_add(arm_core p)
   // add r1, r0, #3
   // Cond -- I ---- S Rn   Rd   Shifter
   // 1110 00 1 0100 1 0000 0001 0000 00000011
-  arm_data_processing_add(p, 0b11100010100100000001000000000011);
+  arm_data_processing_immediate(p, 0b11100010100100000001000000000011);
   assert(registers_read(p->reg, 1, USR) == 5);
   assert(registers_read_Z(p->reg) == 0);
   assert(registers_read_N(p->reg) == 0);
@@ -30,7 +30,7 @@ void test_add(arm_core p)
   // add r1, r0, r2
   // Cond -- I ---- S Rn   Rd   Shifter
   // 1110 00 0 0100 1 0000 0001 0000 0000 0010
-  arm_data_processing_add(p, 0b11100000100100000001000000000010);
+  arm_data_processing_immediate(p, 0b11100000100100000001000000000010);
   assert(registers_read(p->reg, 1, USR) == 6);
   printf("OK\n");
 
@@ -39,7 +39,7 @@ void test_add(arm_core p)
   // add r1, r0, #1
   // Cond -- I ---- S Rn   Rd   Shifter
   // 1110 00 1 0100 1 0000 0001 0000 00000001
-  arm_data_processing_add(p, 0b11100010100100000001000000000001);
+  arm_data_processing_immediate(p, 0b11100010100100000001000000000001);
   assert(registers_read(p->reg, 1, USR) == 0x80000000);
   assert(registers_read_Z(p->reg) == 0);
   assert(registers_read_N(p->reg) == 1);
@@ -52,7 +52,7 @@ void test_add(arm_core p)
   registers_write_Z(p->reg, 0);
   // Cond -- I ---- S Rn   Rd   Shifter
   // 0000 00 1 0100 1 0000 0000 0000 00000011
-  arm_data_processing_add(p, 0b00000010100100000000000000000011);
+  arm_data_processing_immediate(p, 0b00000010100100000000000000000011);
   assert(registers_read(p->reg, 0, USR) == 2);
   printf("OK\n");
 
@@ -61,7 +61,7 @@ void test_add(arm_core p)
   // add r1, r0, #512
   // Cond -- I ---- S Rn   Rd   Shifter
   // 1110 00 1 0100 1 0000 0001 1100 00000010
-  arm_data_processing_add(p, 0b11100010100100000001110000000010);
+  arm_data_processing_immediate(p, 0b11100010100100000001110000000010);
   assert(registers_read(p->reg, 1, USR) == 514);
   assert(registers_read_Z(p->reg) == 0);
   assert(registers_read_N(p->reg) == 0);

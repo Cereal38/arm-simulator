@@ -122,13 +122,67 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
   }
 }
 
+int arm_data_processing_immediate(arm_core p, uint32_t ins)
+{
+  // Check condition
+  if (!verif_cond(ins, p->reg))
+  {
+    return 0;
+  }
+
+  uint8_t rn_code = get_rn(ins);
+  uint8_t rd_code = get_rd(ins);
+  uint8_t s_code = get_s(ins);
+  uint8_t i_code = get_i(ins);
+  uint8_t mode = registers_get_mode(p->reg);
+  uint32_t rn = registers_read(p->reg, rn_code, mode);
+  uint32_t rd;
+  uint32_t right_value;
+
+  // Shifter operand
+  // Immediate value
+  if (i_code == 1)
+  {
+    uint8_t immed_8 = get_bits(ins, 7, 0);
+    uint8_t rotate_imm = get_bits(ins, 11, 8);
+    right_value = rotate_right(immed_8, rotate_imm * 2);
+  }
+  // Register value
+  else
+  {
+    uint8_t rm_code = get_bits(ins, 3, 0);
+    right_value = registers_read(p->reg, rm_code, mode);
+  }
+
+  // Set Rd and Z, N, C, V flags
+  rd = rn + right_value;
+  if (s_code == 1)
+  {
+    registers_write_N(p->reg, get_bits(rd, 31, 31));
+    registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
+    registers_write_C(p->reg, (rd < rn) ? 1 : 0);
+    registers_write_V(p->reg, (get_bits(rn, 31, 31) == get_bits(right_value, 31, 31) && get_bits(rd, 31, 31) != get_bits(rn, 31, 31)) ? 1 : 0);
+  }
+  registers_write(p->reg, rd_code, mode, rd);
+
+  // Set CPSR if needed
+  if (s_code == 1 && rd_code == 15)
+  {
+    if (registers_current_mode_has_spsr(p->reg))
+    {
+      registers_write_cpsr(p->reg, registers_read_spsr(p->reg, mode));
+    }
+  }
+
+  return 1;
+}
+
 /* Decoding functions for different classes of instructions */
 int arm_data_processing_shift(arm_core p, uint32_t ins)
 {
   return UNDEFINED_INSTRUCTION;
 }
 
-// TODO: Merge add in it
 int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 {
   return UNDEFINED_INSTRUCTION;
