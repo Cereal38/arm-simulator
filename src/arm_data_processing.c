@@ -130,6 +130,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     return 0;
   }
 
+  uint8_t opcode = get_bits(ins, 24, 21);
   uint8_t rn_code = get_rn(ins);
   uint8_t rd_code = get_rd(ins);
   uint8_t s_code = get_s(ins);
@@ -154,8 +155,20 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     right_value = registers_read(p->reg, rm_code, mode);
   }
 
-  // Set Rd and Z, N, C, V flags
-  rd = rn + right_value;
+  // Set Rd
+  switch (opcode)
+  {
+  case 0b0100:
+    rd = rn + right_value;
+    break;
+  case 0b0010:
+    rd = rn - right_value;
+    break;
+  default:
+    return UNDEFINED_INSTRUCTION;
+  }
+
+  // Edit N, Z, C, V flags
   if (s_code == 1)
   {
     registers_write_N(p->reg, get_bits(rd, 31, 31));
