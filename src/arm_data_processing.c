@@ -26,55 +26,73 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_branch_other.h"
 #include "arm_instruction.h"
 #include "util.h"
+#include "registers.h"
 #include "debug.h"
 
-int get_rn(uint32_t ins)
+uint32_t rotate_right(uint32_t value, uint8_t rotate)
 {
-  // Return the value of Rn (Bits 19..16)
-  return (ins >> 16) & 0b1111;
-}
-
-int get_rd(uint32_t ins)
-{
-  // Return the value of Rd (Bits 15..12)
-  return (ins >> 12) & 0b1111;
-}
-
-int get_s(uint32_t ins)
-{
-  // Return the value of S bit (Bit 20)
-  return (ins >> 20) & 0b1;
-}
-
-int get_shifter_operand(uint32_t ins)
-{
-  // Return the value of shifter operand (Bits 11..0)
-  return (ins & 0xFFF);
+  return (value >> rotate) | (value << (32 - rotate));
 }
 
 // TODO: VERIFY THIS:
 // If the I bit is 0 and both bit[7] and bit[4] of shifter_operand are 1, the instruction is not ADD.
 // Instead, see Extending the instruction set on page A3-32 to determine which instruction it is.
-void arm_data_processing_add(arm_core p, uint32_t ins)
+// TODO: Check A5.1.1 and correct register shift + implement immediate shift
+int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
-
   // Check condition
   if (!verif_cond(ins, p->reg))
   {
-    return;
+    return 0;
   }
 
-  uint8_t rn_code = get_rn(ins);
-  uint8_t rd_code = get_rd(ins);
-  uint8_t s_code = get_s(ins);
-  uint32_t shifter_operand = get_shifter_operand(ins);
+  uint8_t opcode = get_bits(ins, 24, 21);
+  uint8_t rn_code = get_bits(ins, 19, 16);
+  uint8_t rd_code = get_bits(ins, 15, 12);
+  uint8_t s_code = get_bits(ins, 20, 20);
+  uint8_t i_code = get_bits(ins, 25, 25);
   uint8_t mode = registers_get_mode(p->reg);
-
-  // Get Rn value
   uint32_t rn = registers_read(p->reg, rn_code, mode);
+  uint32_t rd;
+  uint32_t right_value;
 
-  // Set Rd value
-  uint32_t rd = rn + shifter_operand;
+  // Shifter operand
+  // Immediate value
+  if (i_code == 1)
+  {
+    uint8_t immed_8 = get_bits(ins, 7, 0);
+    uint8_t rotate_imm = get_bits(ins, 11, 8);
+    right_value = rotate_right(immed_8, rotate_imm * 2);
+  }
+  // Register value
+  else
+  {
+    uint8_t rm_code = get_bits(ins, 3, 0);
+    right_value = registers_read(p->reg, rm_code, mode);
+  }
+
+  // Set Rd
+  switch (opcode)
+  {
+  case 0b0100:
+    rd = rn + right_value;
+    break;
+  case 0b0010:
+
+    rd = rn - right_value;
+    break;
+  default:
+    return UNDEFINED_INSTRUCTION;
+  }
+
+  // Edit N, Z, C, V flags
+  if (s_code == 1)
+  {
+    registers_write_N(p->reg, get_bits(rd, 31, 31));
+    registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
+    registers_write_C(p->reg, (rd < rn) ? 1 : 0);
+    registers_write_V(p->reg, (get_bits(rn, 31, 31) == get_bits(right_value, 31, 31) && get_bits(rd, 31, 31) != get_bits(rn, 31, 31)) ? 1 : 0);
+  }
   registers_write(p->reg, rd_code, mode, rd);
 
   // Set CPSR if needed
@@ -85,20 +103,8 @@ void arm_data_processing_add(arm_core p, uint32_t ins)
       registers_write_cpsr(p->reg, registers_read_spsr(p->reg, mode));
     }
   }
-  else if (s_code == 1)
-  {
-    // Edit N, Z, C, V flags
-    registers_write_N(p->reg, (rd >> 31) & 0b1);
-    registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
 
-    // TODO: Verify if this implementation is correct (Carry and Overflow flags)
-    // Set the Carry flag based on unsigned overflow
-    registers_write_C(p->reg, (rn + shifter_operand) < rn ? 1 : 0);
-
-    // Set the Overflow flag based on signed overflow
-    int32_t result = (int32_t)rn + (int32_t)shifter_operand;
-    registers_write_V(p->reg, (result < rn) != (result < shifter_operand) ? 1 : 0);
-  }
+  return 1;
 }
 
 /* Decoding functions for different classes of instructions */

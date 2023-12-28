@@ -42,91 +42,91 @@ int verif_cond(uint32_t instruction, registers r)
 
   switch (condition_bits)
   {
-  case 0x0: // EQ (Z == 1)
-    if ((cpsr & Z) != 0)
+  case EQ: // Z == 1
+    if ((cpsr & (1 << Z)) != 0)
     {
       return 1;
     }
     return 0;
-  case 0x1: // NE (Z == 0)
-    if ((cpsr & Z) == 0)
+  case NE: // Z == 0
+    if ((cpsr & (1 << Z)) == 0)
     {
       return 1;
     }
     return 0;
-  case 0x2: // CS/HS (C == 1)
-    if ((cpsr & C) != 0)
+  case CSHS: // CS/HS (C == 1)
+    if ((cpsr & (1 << C)) != 0)
     {
       return 1;
     }
     return 0;
-  case 0x3: // CC/LO (C == 0)
-    if ((cpsr & C) == 0)
+  case CCLO: // CC/LO (C == 0)
+    if ((cpsr & (1 << C)) == 0)
     {
       return 1;
     }
     return 0;
-  case 0x4: // MI (N == 1)
-    if ((cpsr & N) != 0)
+  case MI: // N == 1
+    if ((cpsr & (1 << N)) != 0)
     {
       return 1;
     }
     return 0;
-  case 0x5: // PL (N == 0)
-    if ((cpsr & N) == 0)
+  case PL: // N == 0
+    if ((cpsr & (1 << N)) == 0)
     {
       return 1;
     }
     return 0;
-  case 0x6: // VS (V == 1)
-    if ((cpsr & V) != 0)
+  case VS: // V == 1
+    if ((cpsr & (1 << V)) != 0)
     {
       return 1;
     }
     return 0;
-  case 0x7: // VC (V == 0)
-    if ((cpsr & V) == 0)
+  case VC: // V == 0
+    if ((cpsr & (1 << V)) == 0)
     {
       return 1;
     }
     return 0;
-  case 0x8: // HI (C == 1 && Z == 0)
-    if (((cpsr & C) != 0) && ((cpsr & Z) == 0))
+  case HI: // C == 1 && Z == 0
+    if (((cpsr & (1 << C)) != 0) && ((cpsr & (1 << Z)) == 0))
     {
       return 1;
     }
     return 0;
-  case 0x9: // LS (C == 0 || Z == 1)
-    if (((cpsr & C) == 0) || ((cpsr & Z) != 0))
+  case LS: // C == 0 || Z == 1
+    if (((cpsr & (1 << C)) == 0) || ((cpsr & (1 << Z)) != 0))
     {
       return 1;
     }
     return 0;
-  case 0xA: // GE (N == V)
-    if ((cpsr & N) == (cpsr & V))
+  case GE: // N == V
+    if ((cpsr & (1 << N)) == (cpsr & (1 << V)))
     {
       return 1;
     }
     return 0;
-  case 0xB: // LT (N != V)
-    if ((cpsr & N) != (cpsr & V))
+  case LT: // N != V
+    if ((cpsr & (1 << N)) != (cpsr & (1 << V)))
     {
       return 1;
     }
     return 0;
-  case 0xC: // GT (Z == 0 && N == V)
-    if (((cpsr & Z) == 0) && ((cpsr & N) == (cpsr & V)))
+  case GT: // Z == 0 && N == V
+    if (((cpsr & (1 << Z)) == 0) && ((cpsr & (1 << N)) == (cpsr & (1 << V))))
     {
       return 1;
     }
     return 0;
-  case 0xD: // LE (Z == 1 || N != V)
-    if (((cpsr & Z) != 0) || ((cpsr & N) != (cpsr & V)))
+  case LE: // Z == 1 || N != V
+    if (((cpsr & (1 << Z)) != 0) || ((cpsr & (1 << N)) != (cpsr & (1 << V))))
     {
       return 1;
     }
     return 0;
-  case 0xE: // AL (Always, toujours vrai)
+  case AL: // Toujours vrai
     return 1;
   case 0xF: // - Voir condition code
             // a completer ?

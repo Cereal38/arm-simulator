@@ -22,6 +22,7 @@ Contact: Guillaume.Huard@imag.fr
 */
 #include "registers.h"
 #include "arm_constants.h"
+#include "util.h"
 #include <stdlib.h>
 
 registers registers_create()
@@ -361,14 +362,8 @@ void write_cpsr_bit(registers r, uint8_t bit, uint8_t value)
     fprintf(stderr, "<write_cpsr_bit> Erreur: r est nulle\n");
     exit(EXIT_FAILURE);
   }
-  if (value == 0)
-  {
-    r->cpsr &= ~bit;
-  }
-  else
-  {
-    r->cpsr |= bit;
-  }
+  r->cpsr &= ~(1 << bit);
+  r->cpsr |= value << bit;
 }
 
 void registers_write_Z(registers r, uint8_t value)
@@ -389,4 +384,24 @@ void registers_write_C(registers r, uint8_t value)
 void registers_write_V(registers r, uint8_t value)
 {
   write_cpsr_bit(r, V, value);
+}
+
+int registers_read_Z(registers r)
+{
+  return get_bits(r->cpsr, Z, Z);
+}
+
+int registers_read_N(registers r)
+{
+  return get_bits(r->cpsr, N, N);
+}
+
+int registers_read_C(registers r)
+{
+  return get_bits(r->cpsr, C, C);
+}
+
+int registers_read_V(registers r)
+{
+  return get_bits(r->cpsr, V, V);
 }
