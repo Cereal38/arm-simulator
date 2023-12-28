@@ -37,8 +37,7 @@ uint32_t rotate_right(uint32_t value, uint8_t rotate)
 // TODO: VERIFY THIS:
 // If the I bit is 0 and both bit[7] and bit[4] of shifter_operand are 1, the instruction is not ADD.
 // Instead, see Extending the instruction set on page A3-32 to determine which instruction it is.
-// TODO: Check bit 25 (register or immediate value)
-// TODO: Write shift right function
+// TODO: Check A5.1.1 and correct register shift + implement immediate shift
 int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
   // Check condition
@@ -79,6 +78,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     rd = rn + right_value;
     break;
   case 0b0010:
+
     rd = rn - right_value;
     break;
   default:
