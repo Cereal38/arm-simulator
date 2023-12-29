@@ -36,59 +36,37 @@ memory memory_create(size_t size)
 {
 
   memory mem = malloc(sizeof(struct memory_data));
-  if (mem == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
-  }
+  error_if_null(mem);
   mem->size = size;
   mem->data = malloc(size);
-  if (mem->data == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
-  }
+  error_if_null(mem->data);
 
   return mem;
 }
 
-size_t memory_get_size(memory mem) {
-  if (mem == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
-  }
+size_t memory_get_size(memory mem)
+{
+  error_if_null(mem);
   return mem->size;
 }
 
-void memory_destroy(memory mem) {
-  if (mem == NULL)
+void memory_destroy(memory mem)
+{
+  error_if_null(mem);
+  if (mem->data != NULL)
   {
-    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
+    free(mem->data);
   }
-  if (mem->data == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
-  }
-  free(mem->data);
   free(mem);
 }
 
- 
-
 int memory_read_byte(memory mem, uint32_t address, uint8_t *value)
 {
-  if ( mem == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
-  }
+  error_if_null(mem);
   if (address > mem->size)
   {
     fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
+    exit(1);
   }
   *value = mem->data[address];
 
@@ -99,89 +77,84 @@ int memory_read_half(memory mem, uint32_t address, uint16_t *value, uint8_t be)
 {
 
   uint8_t byte1, byte2;
-  if ( mem == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
-  }
+  error_if_null(mem);
   if (address > mem->size)
   {
     fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
+    exit(1);
   }
-
 
   if (memory_read_byte(mem, address, &byte1) != 0)
   {
-    return -1; 
+    return -1;
   }
 
   if (memory_read_byte(mem, address + 1, &byte2) != 0)
   {
-    return -1; 
+    return -1;
   }
 
   if (be)
   {
-    //BIG ENDIAN 
+    // BIG ENDIAN
     *value = (uint16_t)(byte1 << 8) | byte2;
   }
   else
   {
-    //LITTLE ENDIAN
+    // LITTLE ENDIAN
     *value = (uint16_t)(byte2 << 8) | byte1;
   }
 
   return 0;
-
 }
 
 int memory_read_word(memory mem, uint32_t address, uint32_t *value, uint8_t be)
 {
   uint8_t byte1, byte2, byte3, byte4;
-  
-  if ( mem == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1);
-  }
+
+  error_if_null(mem);
   if (address > mem->size)
   {
     fprintf(stderr, "Erreur lors de l'allocation de la memoire");
-    exit(-1); 
+    exit(1);
   }
-  
 
-  if (memory_read_byte(mem, address, &byte1) != 0) {
+  if (memory_read_byte(mem, address, &byte1) != 0)
+  {
     return -1;
   }
 
-  if (memory_read_byte(mem, address + 1, &byte2) != 0) {
+  if (memory_read_byte(mem, address + 1, &byte2) != 0)
+  {
     return -1;
   }
 
-  if (memory_read_byte(mem, address + 2, &byte3) != 0) {
+  if (memory_read_byte(mem, address + 2, &byte3) != 0)
+  {
     return -1;
   }
 
-  if (memory_read_byte(mem, address + 3, &byte4) != 0) {
+  if (memory_read_byte(mem, address + 3, &byte4) != 0)
+  {
     return -1;
   }
 
-  if (be) {
+  if (be)
+  {
     *value = (uint32_t)(byte1 << 24) | (uint32_t)(byte2 << 16) | (uint32_t)(byte3 << 8) | byte4;
-  } else {
+  }
+  else
+  {
     *value = (uint32_t)(byte4 << 24) | (uint32_t)(byte3 << 16) | (uint32_t)(byte2 << 8) | byte1;
   }
 
-  return 0; 
-  
+  return 0;
 }
 
 int memory_write_byte(memory mem, uint32_t address, uint8_t value)
 {
 
-  if (mem ==NULL || address >= mem->size )
+  if (mem == NULL || address >= mem->size)
     return -1;
   mem->data[address] = value;
   return 0;
@@ -189,16 +162,18 @@ int memory_write_byte(memory mem, uint32_t address, uint8_t value)
 
 int memory_write_half(memory mem, uint32_t address, uint16_t value, uint8_t be)
 {
-  if (mem ==NULL || address +1>= mem->size )
+  if (mem == NULL || address + 1 >= mem->size)
     return -1;
-    
-  if (be) {
-    mem->data[address] =  ((uint8_t *)&value) [1];  //    (uint8_t)(value >> 8) 
-    mem->data[address + 1] =  ((uint8_t *)&value )[0];//  (uint8_t)(value << 8)
+
+  if (be)
+  {
+    mem->data[address] = ((uint8_t *)&value)[1];     //    (uint8_t)(value >> 8)
+    mem->data[address + 1] = ((uint8_t *)&value)[0]; //  (uint8_t)(value << 8)
   }
-  else {
-    mem->data[address] = ((uint8_t *)&value )[0] ;   //   (uint8_t)(value << 8)
-    mem->data[address + 1] = ((uint8_t *)&value) [1];//  (uint8_t)(value >> 8) 
+  else
+  {
+    mem->data[address] = ((uint8_t *)&value)[0];     //   (uint8_t)(value << 8)
+    mem->data[address + 1] = ((uint8_t *)&value)[1]; //  (uint8_t)(value >> 8)
   }
   return 0;
 }

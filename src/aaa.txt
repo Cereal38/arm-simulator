@@ -1,5 +1,0 @@
-file Examples/example1
-target remote localhost:35778
-set endian big
-load
-c

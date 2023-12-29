@@ -28,13 +28,7 @@ Contact: Guillaume.Huard@imag.fr
 registers registers_create()
 {
   registers registers = malloc(sizeof(struct registers_data));
-
-  if (registers == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation des registres");
-    exit(EXIT_FAILURE);
-  }
-
+  error_if_null(registers);
   return registers;
 }
 
@@ -58,11 +52,7 @@ uint8_t registers_get_mode(registers r)
       UND 0x1b (Undefined)
       SYS 0x1f (System)
   */
-  if (r == NULL)
-  {
-    fprintf(stderr, "Erreur lors de la lecture du mode");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde les 5 derniers bits de poids faible du registre cpsr (Manuel A2.5)
   // Pour récupérer le mode
   // 0x1f = 0001 1111
@@ -71,32 +61,20 @@ uint8_t registers_get_mode(registers r)
 
 static int registers_mode_has_spsr(registers r, uint8_t mode)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_mode_has_spsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le mode appartient à la liste des modes qui ont un spsr
   return mode == FIQ || mode == IRQ || mode == SVC || mode == ABT || mode == UND;
 }
 
 int registers_current_mode_has_spsr(registers r)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_current_mode_has_spsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   return registers_mode_has_spsr(r, registers_get_mode(r));
 }
 
 int registers_in_a_privileged_mode(registers r)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_in_a_privileged_mode> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le mode appartient à la liste des modes privilégiés
   uint8_t mode = registers_get_mode(r);
   return mode == FIQ || mode == IRQ || mode == SVC || mode == ABT || mode == UND || mode == SYS;
@@ -104,11 +82,7 @@ int registers_in_a_privileged_mode(registers r)
 
 uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_read> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le registre est un registre unbanked ou le pc (r15)
   if (reg < 8 || reg == 15)
   {
@@ -181,21 +155,13 @@ uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
 
 uint32_t registers_read_cpsr(registers r)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_read_cpsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   return r->cpsr;
 }
 
 uint32_t registers_read_spsr(registers r, uint8_t mode)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_read_spsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le mode appartient à la liste des modes qui ont un spsr
   if (registers_mode_has_spsr(r, mode))
   {
@@ -220,11 +186,7 @@ uint32_t registers_read_spsr(registers r, uint8_t mode)
 
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_write> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le registre est un registre unbanked ou le pc (r15)
   if (reg < 8 || reg == 15)
   {
@@ -313,21 +275,13 @@ void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
 
 void registers_write_cpsr(registers r, uint32_t value)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_write_cpsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   r->cpsr = value;
 }
 
 void registers_write_spsr(registers r, uint8_t mode, uint32_t value)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_write_spsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le mode appartient à la liste des modes qui ont un spsr
   if (registers_mode_has_spsr(r, mode))
   {
@@ -357,11 +311,7 @@ void registers_write_spsr(registers r, uint8_t mode, uint32_t value)
 
 void write_cpsr_bit(registers r, uint8_t bit, uint8_t value)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<write_cpsr_bit> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   r->cpsr &= ~(1 << bit);
   r->cpsr |= value << bit;
 }

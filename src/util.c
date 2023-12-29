@@ -86,3 +86,15 @@ char *to_binary(uint32_t value, int size)
 
   return result;
 }
+
+void error_if_null(void *ptr)
+{
+  /*
+    If the given pointer is null, print an error message and exit the program
+  */
+  if (ptr == NULL)
+  {
+    fprintf(stderr, "Erreur: pointeur null\n");
+    exit(EXIT_FAILURE);
+  }
+}
