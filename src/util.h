@@ -45,6 +45,7 @@ uint32_t ror(uint32_t value, uint8_t rotation);
 
 void log_printf(const char *format, ...);
 char *to_binary(uint32_t value, int size);
+void error_if_null(void *ptr, const char *message);
 
 int is_big_endian();
 #endif
