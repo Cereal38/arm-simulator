@@ -74,12 +74,11 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   // Set Rd
   switch (opcode)
   {
-  case 0b0100:
+  case ADD:
     rd = rn + right_value;
     break;
-  case 0b0010:
-
-    rd = rn - right_value;
+  case SUB:
+    rd = rn + (~right_value + 1);
     break;
   default:
     return UNDEFINED_INSTRUCTION;
@@ -91,7 +90,17 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     registers_write_N(p->reg, get_bits(rd, 31, 31));
     registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
     registers_write_C(p->reg, (rd < rn) ? 1 : 0);
-    registers_write_V(p->reg, (get_bits(rn, 31, 31) == get_bits(right_value, 31, 31) && get_bits(rd, 31, 31) != get_bits(rn, 31, 31)) ? 1 : 0);
+    switch (opcode)
+    {
+    case ADD:
+      registers_write_V(p->reg, ((get_bits(rn, 31, 31) == get_bits(right_value, 31, 31)) && (get_bits(rd, 31, 31) != get_bits(rn, 31, 31))) ? 1 : 0);
+      break;
+    case SUB:
+      registers_write_V(p->reg, ((get_bits(rn, 31, 31) != get_bits(right_value, 31, 31)) && (get_bits(rd, 31, 31) != get_bits(rn, 31, 31))) ? 1 : 0);
+      break;
+    default:
+      return UNDEFINED_INSTRUCTION;
+    }
   }
   registers_write(p->reg, rd_code, mode, rd);
 

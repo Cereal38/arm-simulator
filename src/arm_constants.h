@@ -77,6 +77,24 @@ Contact: Guillaume.Huard@imag.fr
 #define LE 0b1101
 #define AL 0b1110
 
+/* Opcodes */
+#define AND 0b0000
+#define EOR 0b0001
+#define SUB 0b0010
+#define RSB 0b0011
+#define ADD 0b0100
+#define ADC 0b0101
+#define SBC 0b0110
+#define RSC 0b0111
+#define TST 0b1000
+#define TEQ 0b1001
+#define CMP 0b1010
+#define CMN 0b1011
+#define ORR 0b1100
+#define MOV 0b1101
+#define BIC 0b1110
+#define MVN 0b1111
+
 /* Bit mask constants for msr */
 /* We simulate architecture v5T */
 #define UnallocMask 0x0FFFFF00
