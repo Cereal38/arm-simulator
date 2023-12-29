@@ -56,7 +56,7 @@ uint8_t registers_get_mode(registers r)
   // On regarde les 5 derniers bits de poids faible du registre cpsr (Manuel A2.5)
   // Pour récupérer le mode
   // 0x1f = 0001 1111
-  return r->cpsr & 0x1f;
+  return get_bits(r->cpsr, 4, 0);
 }
 
 static int registers_mode_has_spsr(registers r, uint8_t mode)
@@ -93,59 +93,24 @@ uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
   switch (mode)
   {
   case FIQ:
-    switch (reg)
-    {
-    case 8:
-      return r->r8_fiq;
-    case 9:
-      return r->r9_fiq;
-    case 10:
-      return r->r10_fiq;
-    case 11:
-      return r->r11_fiq;
-    case 12:
-      return r->r12_fiq;
-    case 13:
-      return r->r13_fiq;
-    case 14:
-      return r->r14_fiq;
-    }
+    if (reg >= 8 && reg <= 14)
+      return r->registers_fiq[reg - 8];
     break;
   case IRQ:
-    switch (reg)
-    {
-    case 13:
-      return r->r13_irq;
-    case 14:
-      return r->r14_irq;
-    }
+    if (reg == 13 || reg == 14)
+      return r->registers_irq[reg - 13];
     break;
   case SVC:
-    switch (reg)
-    {
-    case 13:
-      return r->r13_svc;
-    case 14:
-      return r->r14_svc;
-    }
+    if (reg == 13 || reg == 14)
+      return r->registers_svc[reg - 13];
     break;
   case ABT:
-    switch (reg)
-    {
-    case 13:
-      return r->r13_abt;
-    case 14:
-      return r->r14_abt;
-    }
+    if (reg == 13 || reg == 14)
+      return r->registers_abt[reg - 13];
     break;
   case UND:
-    switch (reg)
-    {
-    case 13:
-      return r->r13_und;
-    case 14:
-      return r->r14_und;
-    }
+    if (reg == 13 || reg == 14)
+      return r->registers_und[reg - 13];
     break;
   }
 
@@ -198,72 +163,37 @@ void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
   switch (mode)
   {
   case FIQ:
-    switch (reg)
+    if (reg >= 8 && reg <= 14)
     {
-    case 8:
-      r->r8_fiq = value;
-      return;
-    case 9:
-      r->r9_fiq = value;
-      return;
-    case 10:
-      r->r10_fiq = value;
-      return;
-    case 11:
-      r->r11_fiq = value;
-      return;
-    case 12:
-      r->r12_fiq = value;
-      return;
-    case 13:
-      r->r13_fiq = value;
-      return;
-    case 14:
-      r->r14_fiq = value;
+      r->registers_fiq[reg - 8] = value;
       return;
     }
     break;
   case IRQ:
-    switch (reg)
+    if (reg == 13 || reg == 14)
     {
-    case 13:
-      r->r13_irq = value;
-      return;
-    case 14:
-      r->r14_irq = value;
+      r->registers_irq[reg - 13] = value;
       return;
     }
     break;
   case SVC:
-    switch (reg)
+    if (reg == 13 || reg == 14)
     {
-    case 13:
-      r->r13_svc = value;
-      return;
-    case 14:
-      r->r14_svc = value;
+      r->registers_svc[reg - 13] = value;
       return;
     }
     break;
   case ABT:
-    switch (reg)
+    if (reg == 13 || reg == 14)
     {
-    case 13:
-      r->r13_abt = value;
-      return;
-    case 14:
-      r->r14_abt = value;
+      r->registers_abt[reg - 13] = value;
       return;
     }
     break;
   case UND:
-    switch (reg)
+    if (reg == 13 || reg == 14)
     {
-    case 13:
-      r->r13_und = value;
-      return;
-    case 14:
-      r->r14_und = value;
+      r->registers_und[reg - 13] = value;
       return;
     }
     break;
