@@ -94,7 +94,7 @@ void error_if_null(void *ptr)
   */
   if (ptr == NULL)
   {
-    printf("Error: null pointer\n");
-    exit(1);
+    fprintf(stderr, "Erreur: pointeur null\n");
+    exit(EXIT_FAILURE);
   }
 }
