@@ -80,6 +80,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   case SUB:
     rd = rn + (~right_value + 1);
     break;
+  case AND:
+    rd = rn & right_value;
+    break;
   default:
     return UNDEFINED_INSTRUCTION;
   }
@@ -87,16 +90,19 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   // Edit N, Z, C, V flags
   if (s_code == 1)
   {
-    registers_write_N(p->reg, get_bits(rd, 31, 31));
+    registers_write_N(p->reg, get_bit(rd, 31));
     registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
     registers_write_C(p->reg, (rd < rn) ? 1 : 0);
     switch (opcode)
     {
     case ADD:
-      registers_write_V(p->reg, ((get_bits(rn, 31, 31) == get_bits(right_value, 31, 31)) && (get_bits(rd, 31, 31) != get_bits(rn, 31, 31))) ? 1 : 0);
+      registers_write_V(p->reg, ((get_bit(rn, 31) == get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0);
       break;
     case SUB:
-      registers_write_V(p->reg, ((get_bits(rn, 31, 31) != get_bits(right_value, 31, 31)) && (get_bits(rd, 31, 31) != get_bits(rn, 31, 31))) ? 1 : 0);
+      registers_write_V(p->reg, ((get_bit(rn, 31) != get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0);
+      break;
+    case AND:
+      // TODO: "C Flag = shifter_carry_out" (p159) ?
       break;
     default:
       return UNDEFINED_INSTRUCTION;

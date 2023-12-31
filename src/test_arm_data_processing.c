@@ -138,12 +138,55 @@ void test_sub(arm_core p)
   printf("OK\n");
 }
 
+void test_and(arm_core p)
+{
+  printf("Test : AND (Immediate value) ... ");
+  registers_write(p->reg, 0, USR, 0xE4);
+  // and r1, r0, #0x47
+  // Cond -- I ---- S Rn   Rd   Shifter
+  // 1110 00 1 0000 1 0000 0001 0000 01000111
+  // 0xE4 & 0x47 = 11100100 & 01000111 = 01000100 = 0x44
+  arm_data_processing_immediate(p, 0b11100010000100000001000001000111);
+  assert(registers_read(p->reg, 1, USR) == 0x44);
+  assert(registers_read_Z(p->reg) == 0);
+  assert(registers_read_N(p->reg) == 0);
+  // assert(registers_read_C(p->reg) == 0);
+  printf("OK\n");
+
+  printf("Test : AND (Second value from register) ... ");
+  registers_write(p->reg, 0, USR, 0xE4);
+  registers_write(p->reg, 2, USR, 0x47);
+  // and r1, r0, r2
+  // Cond -- I ---- S Rn   Rd   Shifter
+  // 1110 00 0 0000 1 0000 0001 0000 0000 0010
+  arm_data_processing_immediate(p, 0b11100000000100000001000000000010);
+  assert(registers_read(p->reg, 1, USR) == 0x44);
+  assert(registers_read_Z(p->reg) == 0);
+  assert(registers_read_N(p->reg) == 0);
+  // assert(registers_read_C(p->reg) == 0);
+  printf("OK\n");
+
+  printf("Test : AND (Result is 0) ... ");
+  registers_write(p->reg, 0, USR, 0xE4);
+  // and r1, r0, #0x11
+  // Cond -- I ---- S Rn   Rd   Shifter
+  // 1110 00 1 0000 1 0000 0001 0000 00010001
+  // 0xE4 & 0x11 = 11100100 & 00010001 = 00000000 = 0x00
+  arm_data_processing_immediate(p, 0b11100010000100000001000000010001);
+  assert(registers_read(p->reg, 1, USR) == 0x00);
+  assert(registers_read_Z(p->reg) == 1);
+  assert(registers_read_N(p->reg) == 0);
+  // assert(registers_read_C(p->reg) == 0);
+  printf("OK\n");
+}
+
 int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
 
   test_add(p);
   test_sub(p);
+  test_and(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);
