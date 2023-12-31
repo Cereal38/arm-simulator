@@ -102,6 +102,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       registers_write_V(p->reg, ((get_bit(rn, 31) != get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0);
       break;
     case AND:
+      // TODO: "C Flag = shifter_carry_out" (p159) ?
       registers_write_V(p->reg, 0);
       break;
     default:
