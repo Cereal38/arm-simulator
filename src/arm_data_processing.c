@@ -103,7 +103,6 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       break;
     case AND:
       // TODO: "C Flag = shifter_carry_out" (p159) ?
-      registers_write_V(p->reg, 0);
       break;
     default:
       return UNDEFINED_INSTRUCTION;

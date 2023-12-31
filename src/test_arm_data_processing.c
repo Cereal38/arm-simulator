@@ -151,7 +151,6 @@ void test_and(arm_core p)
   assert(registers_read_Z(p->reg) == 0);
   assert(registers_read_N(p->reg) == 0);
   // assert(registers_read_C(p->reg) == 0);
-  assert(registers_read_V(p->reg) == 0);
   printf("OK\n");
 
   printf("Test : AND (Second value from register) ... ");
@@ -165,7 +164,19 @@ void test_and(arm_core p)
   assert(registers_read_Z(p->reg) == 0);
   assert(registers_read_N(p->reg) == 0);
   // assert(registers_read_C(p->reg) == 0);
-  assert(registers_read_V(p->reg) == 0);
+  printf("OK\n");
+
+  printf("Test : AND (Result is 0) ... ");
+  registers_write(p->reg, 0, USR, 0xE4);
+  // and r1, r0, #0x11
+  // Cond -- I ---- S Rn   Rd   Shifter
+  // 1110 00 1 0000 1 0000 0001 0000 00010001
+  // 0xE4 & 0x11 = 11100100 & 00010001 = 00000000 = 0x00
+  arm_data_processing_immediate(p, 0b11100010000100000001000000010001);
+  assert(registers_read(p->reg, 1, USR) == 0x00);
+  assert(registers_read_Z(p->reg) == 1);
+  assert(registers_read_N(p->reg) == 0);
+  // assert(registers_read_C(p->reg) == 0);
   printf("OK\n");
 }
 
