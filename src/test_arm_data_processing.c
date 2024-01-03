@@ -21,10 +21,10 @@ void test_template(
     uint32_t Rn_value,
     uint32_t Rs_value,
     uint32_t expected_Rd,
-    uint8_t expected_Z,
-    uint8_t expected_N,
-    uint8_t expected_C,
-    uint8_t expected_V)
+    int8_t expected_Z,
+    int8_t expected_N,
+    int8_t expected_C,
+    int8_t expected_V)
 {
   printf("Test : %s ... ", name);
   // Set Rn
@@ -57,19 +57,6 @@ void test_template(
 
 void test_add(arm_core p)
 {
-  printf("Test : ADD (Immediate value) ... ");
-  registers_write(p->reg, 0, USR, 2);
-  // add r1, r0, #3
-  // Cond -- I ---- S Rn   Rd   Shifter
-  // 1110 00 1 0100 1 0000 0001 0000 00000011
-  arm_data_processing_immediate(p, 0b11100010100100000001000000000011);
-  assert(registers_read(p->reg, 1, USR) == 5);
-  assert(registers_read_Z(p->reg) == 0);
-  assert(registers_read_N(p->reg) == 0);
-  assert(registers_read_C(p->reg) == 0);
-  assert(registers_read_V(p->reg) == 0);
-  printf("OK\n");
-
   test_template(
       "ADD (Immediate value)",
       p,
@@ -88,38 +75,81 @@ void test_add(arm_core p)
       0,              // Expected C flag
       0);             // Expected V flag
 
-  printf("Test : ADD (Second value from register) ... ");
-  registers_write(p->reg, 0, USR, 2);
-  registers_write(p->reg, 2, USR, 4);
-  registers_write_Z(p->reg, 0);
-  // add r1, r0, r2
-  // Cond -- I ---- S Rn   Rd   Shifter
-  // 1110 00 0 0100 1 0000 0001 0000 0000 0010
-  arm_data_processing_immediate(p, 0b11100000100100000001000000000010);
-  assert(registers_read(p->reg, 1, USR) == 6);
-  printf("OK\n");
+  test_template(
+      "ADD (Second value from register)",
+      p,
+      0b1110,         // Cond : AL
+      0b0,            // I : Register value
+      0b0100,         // Opcode : ADD
+      0b1,            // S : Set condition codes
+      0b0000,         // Rn : r0
+      0b0001,         // Rd : r1
+      0b000000000010, // Shifter : r2
+      2,              // Rn value
+      4,              // Rs value
+      6,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
 
-  printf("Test : ADD (N+V : 0x7FFFFFFF + 0x1) ... ");
-  registers_write(p->reg, 0, USR, 0x7FFFFFFF);
-  // add r1, r0, #1
-  // Cond -- I ---- S Rn   Rd   Shifter
-  // 1110 00 1 0100 1 0000 0001 0000 00000001
-  arm_data_processing_immediate(p, 0b11100010100100000001000000000001);
-  assert(registers_read(p->reg, 1, USR) == 0x80000000);
-  assert(registers_read_Z(p->reg) == 0);
-  assert(registers_read_N(p->reg) == 1);
-  assert(registers_read_C(p->reg) == 0);
-  assert(registers_read_V(p->reg) == 1);
-  printf("OK\n");
+  // printf("Test : ADD (N+V : 0x7FFFFFFF + 0x1) ... ");
+  // registers_write(p->reg, 0, USR, 0x7FFFFFFF);
+  // // add r1, r0, #1
+  // // Cond -- I ---- S Rn   Rd   Shifter
+  // // 1110 00 1 0100 1 0000 0001 0000 00000001
+  // arm_data_processing_immediate(p, 0b11100010100100000001000000000001);
+  // assert(registers_read(p->reg, 1, USR) == 0x80000000);
+  // assert(registers_read_Z(p->reg) == 0);
+  // assert(registers_read_N(p->reg) == 1);
+  // assert(registers_read_C(p->reg) == 0);
+  // assert(registers_read_V(p->reg) == 1);
+  // printf("OK\n");
 
-  printf("Test : ADD (Unvalid condition) ... ");
-  registers_write(p->reg, 0, USR, 2);
-  registers_write_Z(p->reg, 0);
-  // Cond -- I ---- S Rn   Rd   Shifter
-  // 0000 00 1 0100 1 0000 0000 0000 00000011
-  arm_data_processing_immediate(p, 0b00000010100100000000000000000011);
-  assert(registers_read(p->reg, 0, USR) == 2);
-  printf("OK\n");
+  test_template(
+      "ADD (N+V : 0x7FFFFFFF + 0x1) ... ",
+      p,
+      0b1110,         // Cond : AL
+      0b1,            // I : Immediate value
+      0b0100,         // Opcode : ADD
+      0b1,            // S : Set condition codes
+      0b0000,         // Rn : r0
+      0b0001,         // Rd : r1
+      0b000000000001, // Shifter : #1
+      0x7FFFFFFF,     // Rn value
+      0,              // Rs value
+      0x80000000,     // Expected Rd value
+      0,              // Expected Z flag
+      1,              // Expected N flag
+      0,              // Expected C flag
+      1);             // Expected V flag
+
+  // printf("Test : ADD (Unvalid condition) ... ");
+  // registers_write(p->reg, 0, USR, 2);
+  // registers_write_Z(p->reg, 0);
+  // // Cond -- I ---- S Rn   Rd   Shifter
+  // // 0000 00 1 0100 1 0000 0000 0000 00000011
+  // arm_data_processing_immediate(p, 0b00000010100100000000000000000011);
+  // assert(registers_read(p->reg, 0, USR) == 2);
+  // printf("OK\n");
+
+  test_template(
+      "ADD (Unvalid condition) ... ",
+      p,
+      0b0000,         // Cond : EQ
+      0b1,            // I : Immediate value
+      0b0100,         // Opcode : ADD
+      0b1,            // S : Set condition codes
+      0b0000,         // Rn : r0
+      0b0001,         // Rd : r1
+      0b000000000011, // Shifter : #3
+      2,              // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      -1,             // Expected Z flag
+      -1,             // Expected N flag
+      -1,             // Expected C flag
+      -1);            // Expected V flag
 
   printf("Test : ADD (Immediate value with rotation) ... ");
   registers_write(p->reg, 0, USR, 2);
