@@ -8,6 +8,53 @@
 #include "arm_constants.h"
 #include "util.h"
 
+void test_template(
+    char *name,
+    arm_core p,
+    uint8_t cond,
+    uint8_t I,
+    uint8_t opcode,
+    uint8_t S,
+    uint8_t Rn,
+    uint8_t Rd,
+    uint16_t shifter,
+    uint32_t Rn_value,
+    uint32_t Rs_value,
+    uint32_t expected_Rd,
+    uint8_t expected_Z,
+    uint8_t expected_N,
+    uint8_t expected_C,
+    uint8_t expected_V)
+{
+  printf("Test : %s ... ", name);
+  // Set Rn
+  registers_write(p->reg, Rn, USR, Rn_value);
+  // Reset Rd
+  registers_write(p->reg, Rd, USR, 0);
+  // Set Rs
+  registers_write(p->reg, get_bits(shifter, 7, 0), USR, Rs_value);
+  uint32_t ins = (cond << 28) | (I << 25) | (opcode << 21) | (S << 20) | (Rn << 16) | (Rd << 12) | shifter;
+  arm_data_processing_immediate(p, ins);
+  assert(registers_read(p->reg, Rd, USR) == expected_Rd);
+  if (expected_Z != -1)
+  {
+    assert(registers_read_Z(p->reg) == expected_Z);
+  }
+  if (expected_N != -1)
+  {
+    assert(registers_read_N(p->reg) == expected_N);
+  }
+  if (expected_C != -1)
+  {
+    assert(registers_read_C(p->reg) == expected_C);
+  }
+  if (expected_V != -1)
+  {
+    assert(registers_read_V(p->reg) == expected_V);
+  }
+  printf("OK\n");
+}
+
 void test_add(arm_core p)
 {
   printf("Test : ADD (Immediate value) ... ");
@@ -22,6 +69,24 @@ void test_add(arm_core p)
   assert(registers_read_C(p->reg) == 0);
   assert(registers_read_V(p->reg) == 0);
   printf("OK\n");
+
+  test_template(
+      "ADD (Immediate value)",
+      p,
+      0b1110,         // Cond : AL
+      0b1,            // I : Immediate value
+      0b0100,         // Opcode : ADD
+      0b1,            // S : Set condition codes
+      0b0000,         // Rn : r0
+      0b0001,         // Rd : r1
+      0b000000000011, // Shifter : #3
+      2,              // Rn value
+      0,              // Rs value
+      5,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
 
   printf("Test : ADD (Second value from register) ... ");
   registers_write(p->reg, 0, USR, 2);
