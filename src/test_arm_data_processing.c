@@ -151,31 +151,67 @@ void test_add(arm_core p)
       -1,             // Expected C flag
       -1);            // Expected V flag
 
-  printf("Test : ADD (Immediate value with rotation) ... ");
-  registers_write(p->reg, 0, USR, 2);
-  // add r1, r0, #512
-  // Cond -- I ---- S Rn   Rd   Shifter
-  // 1110 00 1 0100 1 0000 0001 1100 00000010
-  arm_data_processing_immediate(p, 0b11100010100100000001110000000010);
-  assert(registers_read(p->reg, 1, USR) == 514);
-  assert(registers_read_Z(p->reg) == 0);
-  assert(registers_read_N(p->reg) == 0);
-  assert(registers_read_C(p->reg) == 0);
-  assert(registers_read_V(p->reg) == 0);
-  printf("OK\n");
+  // printf("Test : ADD (Immediate value with rotation) ... ");
+  // registers_write(p->reg, 0, USR, 2);
+  // // add r1, r0, #512
+  // // Cond -- I ---- S Rn   Rd   Shifter
+  // // 1110 00 1 0100 1 0000 0001 1100 00000010
+  // arm_data_processing_immediate(p, 0b11100010100100000001110000000010);
+  // assert(registers_read(p->reg, 1, USR) == 514);
+  // assert(registers_read_Z(p->reg) == 0);
+  // assert(registers_read_N(p->reg) == 0);
+  // assert(registers_read_C(p->reg) == 0);
+  // assert(registers_read_V(p->reg) == 0);
+  // printf("OK\n");
 
-  printf("Test : ADD (Result is 0) ... ");
-  registers_write(p->reg, 0, USR, 0);
-  // add r1, r0, #0
-  // Cond -- I ---- S Rn   Rd   Shifter
-  // 1110 00 1 0100 1 0000 0001 0000 00000000
-  arm_data_processing_immediate(p, 0b11100010100100000001000000000000);
-  assert(registers_read(p->reg, 1, USR) == 0);
-  assert(registers_read_Z(p->reg) == 1);
-  assert(registers_read_N(p->reg) == 0);
-  assert(registers_read_C(p->reg) == 0);
-  assert(registers_read_V(p->reg) == 0);
-  printf("OK\n");
+  test_template(
+      "ADD (Immediate value with rotation) ... ",
+      p,
+      0b1110,         // Cond : AL
+      0b1,            // I : Immediate value
+      0b0100,         // Opcode : ADD
+      0b1,            // S : Set condition codes
+      0b0000,         // Rn : r0
+      0b0001,         // Rd : r1
+      0b110000000010, // Shifter : #512
+      2,              // Rn value
+      0,              // Rs value
+      514,            // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
+
+  // printf("Test : ADD (Result is 0) ... ");
+  // registers_write(p->reg, 0, USR, 0);
+  // // add r1, r0, #0
+  // // Cond -- I ---- S Rn   Rd   Shifter
+  // // 1110 00 1 0100 1 0000 0001 0000 00000000
+  // arm_data_processing_immediate(p, 0b11100010100100000001000000000000);
+  // assert(registers_read(p->reg, 1, USR) == 0);
+  // assert(registers_read_Z(p->reg) == 1);
+  // assert(registers_read_N(p->reg) == 0);
+  // assert(registers_read_C(p->reg) == 0);
+  // assert(registers_read_V(p->reg) == 0);
+  // printf("OK\n");
+
+  test_template(
+      "ADD (Result is 0) ... ",
+      p,
+      0b1110,         // Cond : AL
+      0b1,            // I : Immediate value
+      0b0100,         // Opcode : ADD
+      0b1,            // S : Set condition codes
+      0b0000,         // Rn : r0
+      0b0001,         // Rd : r1
+      0b000000000000, // Shifter : #0
+      0,              // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      1,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
 }
 
 void test_sub(arm_core p)
