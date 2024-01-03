@@ -74,14 +74,17 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   // Set Rd
   switch (opcode)
   {
+  case AND:
+    rd = rn & right_value;
+    break;
+  case EOR:
+    rd = rn ^ right_value;
+    break;
   case ADD:
     rd = rn + right_value;
     break;
   case SUB:
     rd = rn + (~right_value + 1);
-    break;
-  case AND:
-    rd = rn & right_value;
     break;
   default:
     return UNDEFINED_INSTRUCTION;
@@ -95,14 +98,17 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     registers_write_C(p->reg, (rd < rn) ? 1 : 0);
     switch (opcode)
     {
+    case AND:
+      // TODO: "C Flag = shifter_carry_out" (p159) ?
+      break;
+    case EOR:
+      // TODO: "C Flag = shifter_carry_out" (p183) ?
+      break;
     case ADD:
       registers_write_V(p->reg, ((get_bit(rn, 31) == get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0);
       break;
     case SUB:
       registers_write_V(p->reg, ((get_bit(rn, 31) != get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0);
-      break;
-    case AND:
-      // TODO: "C Flag = shifter_carry_out" (p159) ?
       break;
     default:
       return UNDEFINED_INSTRUCTION;
