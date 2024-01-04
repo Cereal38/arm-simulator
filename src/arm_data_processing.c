@@ -120,10 +120,10 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     rd = rn ^ right_value;
     break;
   case SUB:
-    rd = rn + (~right_value + 1);
+    rd = rn - right_value;
     break;
   case RSB:
-    rd = right_value + (~rn + 1);
+    rd = right_value - rn;
     break;
   case ADD:
     rd = rn + right_value;
