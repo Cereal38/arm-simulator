@@ -63,12 +63,12 @@ void test_add(arm_core p)
   test_template(
       "ADD (Immediate value)",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0100,         // Opcode : ADD
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000011, // Shifter : #3
       2,              // Rn value
       0,              // Rs value
@@ -81,12 +81,12 @@ void test_add(arm_core p)
   test_template(
       "ADD (Second value from register)",
       p,
-      0b1110,         // Cond : AL
-      0b0,            // I : Register value
-      0b0100,         // Opcode : ADD
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      0,              // I : Register value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000010, // Shifter : r2
       2,              // Rn value
       4,              // Rs value
@@ -99,12 +99,12 @@ void test_add(arm_core p)
   test_template(
       "ADD (N+V : 0x7FFFFFFF + 0x1) ... ",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0100,         // Opcode : ADD
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000001, // Shifter : #1
       0x7FFFFFFF,     // Rn value
       0,              // Rs value
@@ -114,15 +114,16 @@ void test_add(arm_core p)
       0,              // Expected C flag
       1);             // Expected V flag
 
+  registers_write_Z(p->reg, 0);
   test_template(
       "ADD (Unvalid condition) ... ",
       p,
-      0b0000,         // Cond : EQ
-      0b1,            // I : Immediate value
-      0b0100,         // Opcode : ADD
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      EQ,             // Cond
+      1,              // I : Immediate value
+      ADD,            // ADD
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000011, // Shifter : #3
       2,              // Rn value
       0,              // Rs value
@@ -135,12 +136,12 @@ void test_add(arm_core p)
   test_template(
       "ADD (Immediate value with rotation) ... ",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0100,         // Opcode : ADD
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b110000000010, // Shifter : #512
       2,              // Rn value
       0,              // Rs value
@@ -153,12 +154,12 @@ void test_add(arm_core p)
   test_template(
       "ADD (Result is 0) ... ",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0100,         // Opcode : ADD
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000000, // Shifter : #0
       0,              // Rn value
       0,              // Rs value
@@ -174,12 +175,12 @@ void test_sub(arm_core p)
   test_template(
       "SUB (Positive result)",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0010,         // Opcode : SUB
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      SUB,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000010, // Shifter : #2
       4,              // Rn value
       0,              // Rs value
@@ -192,12 +193,12 @@ void test_sub(arm_core p)
   test_template(
       "SUB (Negative result)",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0010,         // Opcode : SUB
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      SUB,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000100, // Shifter : #4
       2,              // Rn value
       0,              // Rs value
@@ -210,12 +211,12 @@ void test_sub(arm_core p)
   test_template(
       "SUB (Overflow)",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0010,         // Opcode : SUB
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      SUB,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000001, // Shifter : #1
       0x80000000,     // Rn value
       0,              // Rs value
@@ -228,12 +229,12 @@ void test_sub(arm_core p)
   test_template(
       "SUB (Result is 0)",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0010,         // Opcode : SUB
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      SUB,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000001011, // Shifter : #11
       11,             // Rn value
       0,              // Rs value
@@ -250,12 +251,12 @@ void test_and(arm_core p)
   test_template(
       "AND (Immediate value)",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0000,         // Opcode : AND
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      AND,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
@@ -268,12 +269,12 @@ void test_and(arm_core p)
   test_template(
       "AND (Second value from register)",
       p,
-      0b1110,         // Cond : AL
-      0b0,            // I : Register value
-      0b0000,         // Opcode : AND
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      0,              // I : Register value
+      AND,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
       0x47,           // Rs value
@@ -286,12 +287,12 @@ void test_and(arm_core p)
   test_template(
       "AND (Result is 0)",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0000,         // Opcode : AND
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      AND,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000010001, // Shifter : #0x11
       0xE4,           // Rn value
       0,              // Rs value
@@ -308,12 +309,12 @@ void test_eor(arm_core p)
   test_template(
       "EOR (Immediate value)",
       p,
-      0b1110,         // Cond : AL
-      0b1,            // I : Immediate value
-      0b0001,         // Opcode : EOR
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      1,              // I : Immediate value
+      EOR,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
@@ -326,12 +327,12 @@ void test_eor(arm_core p)
   test_template(
       "EOR (Second value from register)",
       p,
-      0b1110,         // Cond : AL
-      0b0,            // I : Register value
-      0b0001,         // Opcode : EOR
-      0b1,            // S : Set condition codes
-      0b0000,         // Rn : r0
-      0b0001,         // Rd : r1
+      AL,             // Cond
+      0,              // I : Register value
+      EOR,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
       0x47,           // Rs value
