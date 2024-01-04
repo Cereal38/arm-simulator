@@ -34,6 +34,11 @@ uint32_t rotate_right(uint32_t value, uint8_t rotate)
   return (value >> rotate) | (value << (32 - rotate));
 }
 
+uint8_t overflow_from(uint32_t rd, uint32_t rn, uint32_t right_value)
+{
+  return ((get_bit(rn, 31) == get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0;
+}
+
 // TODO: VERIFY THIS:
 // If the I bit is 0 and both bit[7] and bit[4] of shifter_operand are 1, the instruction is not ADD.
 // Instead, see Extending the instruction set on page A3-32 to determine which instruction it is.
@@ -80,11 +85,14 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   case EOR:
     rd = rn ^ right_value;
     break;
-  case ADD:
-    rd = rn + right_value;
-    break;
   case SUB:
     rd = rn + (~right_value + 1);
+    break;
+  case RSB:
+    rd = right_value + (~rn + 1);
+    break;
+  case ADD:
+    rd = rn + right_value;
     break;
   default:
     return UNDEFINED_INSTRUCTION;
@@ -104,11 +112,14 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     case EOR:
       // TODO: "C Flag = shifter_carry_out" (p183) ?
       break;
-    case ADD:
-      registers_write_V(p->reg, ((get_bit(rn, 31) == get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0);
-      break;
     case SUB:
-      registers_write_V(p->reg, ((get_bit(rn, 31) != get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0);
+      registers_write_V(p->reg, overflow_from(rd, rn, right_value));
+      break;
+    case RSB:
+      registers_write_V(p->reg, overflow_from(rd, rn, right_value));
+      break;
+    case ADD:
+      registers_write_V(p->reg, overflow_from(rd, rn, right_value));
       break;
     default:
       return UNDEFINED_INSTRUCTION;
