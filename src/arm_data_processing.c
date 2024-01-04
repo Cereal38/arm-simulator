@@ -55,6 +55,24 @@ uint8_t overflow_from(uint32_t rn, uint32_t shifter_operand, int add)
   }
 }
 
+uint8_t carry_from(uint32_t rn, uint32_t shifter_operand)
+{
+  /*
+    Returns 1 if the addition specified as its parameter caused a carry (true result is bigger than 232−1, where
+    the operands are treated as unsigned integers), and returns 0 in all other cases.
+  */
+  return (rn + shifter_operand) < rn;
+}
+
+uint8_t borrow_from(uint32_t rn, uint32_t shifter_operand)
+{
+  /*
+    Returns 1 if the subtraction specified as its parameter caused a borrow (the true result is less than 0, where
+    the operands are treated as unsigned integers), and returns 0 in all other cases.
+  */
+  return (rn - shifter_operand) > rn;
+}
+
 // TODO: VERIFY THIS:
 // If the I bit is 0 and both bit[7] and bit[4] of shifter_operand are 1, the instruction is not ADD.
 // Instead, see Extending the instruction set on page A3-32 to determine which instruction it is.
@@ -119,7 +137,6 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   {
     registers_write_N(p->reg, get_bit(rd, 31));
     registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
-    registers_write_C(p->reg, (rd < rn) ? 1 : 0);
     switch (opcode)
     {
     case AND:
@@ -129,12 +146,15 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       // TODO: "C Flag = shifter_carry_out" (p183) ?
       break;
     case SUB:
+      registers_write_C(p->reg, !borrow_from(rn, right_value));
       registers_write_V(p->reg, overflow_from(rn, right_value, 0));
       break;
     case RSB:
+      registers_write_C(p->reg, !borrow_from(right_value, rn));
       registers_write_V(p->reg, overflow_from(rn, right_value, 0));
       break;
     case ADD:
+      registers_write_C(p->reg, carry_from(rn, right_value));
       registers_write_V(p->reg, overflow_from(rn, right_value, 1));
       break;
     default:
