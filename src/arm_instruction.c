@@ -34,7 +34,7 @@ static int arm_execute_instruction(arm_core p)
   uint32_t instruction;
   int resultat = arm_fetch(p, &instruction);
 
-  if (resultat)
+  if (resultat == -1)
   {
     // return arm_exception(p, resultat); // venant de arm step.. pas sur
     // // Doit retrun 1 si il y a une erreur (d'apres fun arm step)
