@@ -34,9 +34,25 @@ uint32_t rotate_right(uint32_t value, uint8_t rotate)
   return (value >> rotate) | (value << (32 - rotate));
 }
 
-uint8_t overflow_from(uint32_t rd, uint32_t rn, uint32_t right_value)
+uint8_t overflow_from(uint32_t rn, uint32_t shifter_operand, int add)
 {
-  return ((get_bit(rn, 31) == get_bit(right_value, 31)) && (get_bit(rd, 31) != get_bit(rn, 31))) ? 1 : 0;
+  /*
+    Returns 1 if the addition or subtraction specified as its parameter caused a 32-bit signed overflow.
+
+    Param rn: The first operand of the addition or subtraction.
+    Param shifter_operand: The second operand of the addition or subtraction.
+    Param add: 1 if the operation is an addition, 0 if it is a subtraction.
+  */
+  uint8_t rn_sign = get_bit(rn, 31);
+  uint8_t shifter_operand_sign = get_bit(shifter_operand, 31);
+  if (add)
+  {
+    return (rn_sign == shifter_operand_sign) && (rn_sign != get_bit(rn + shifter_operand, 31));
+  }
+  else
+  {
+    return (rn_sign != shifter_operand_sign) && (rn_sign != get_bit(rn - shifter_operand, 31));
+  }
 }
 
 // TODO: VERIFY THIS:
@@ -113,13 +129,13 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       // TODO: "C Flag = shifter_carry_out" (p183) ?
       break;
     case SUB:
-      registers_write_V(p->reg, overflow_from(rd, rn, right_value));
+      registers_write_V(p->reg, overflow_from(rn, right_value, 0));
       break;
     case RSB:
-      registers_write_V(p->reg, overflow_from(rd, rn, right_value));
+      registers_write_V(p->reg, overflow_from(rn, right_value, 0));
       break;
     case ADD:
-      registers_write_V(p->reg, overflow_from(rd, rn, right_value));
+      registers_write_V(p->reg, overflow_from(rn, right_value, 1));
       break;
     default:
       return UNDEFINED_INSTRUCTION;
