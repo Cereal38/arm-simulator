@@ -22,18 +22,13 @@ Contact: Guillaume.Huard@imag.fr
 */
 #include "registers.h"
 #include "arm_constants.h"
+#include "util.h"
 #include <stdlib.h>
 
 registers registers_create()
 {
   registers registers = malloc(sizeof(struct registers_data));
-
-  if (registers == NULL)
-  {
-    fprintf(stderr, "Erreur lors de l'allocation des registres");
-    exit(EXIT_FAILURE);
-  }
-
+  error_if_null(registers);
   return registers;
 }
 
@@ -57,45 +52,29 @@ uint8_t registers_get_mode(registers r)
       UND 0x1b (Undefined)
       SYS 0x1f (System)
   */
-  if (r == NULL)
-  {
-    fprintf(stderr, "Erreur lors de la lecture du mode");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde les 5 derniers bits de poids faible du registre cpsr (Manuel A2.5)
   // Pour récupérer le mode
   // 0x1f = 0001 1111
-  return r->cpsr & 0x1f;
+  return get_bits(r->cpsr, 4, 0);
 }
 
 static int registers_mode_has_spsr(registers r, uint8_t mode)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_mode_has_spsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le mode appartient à la liste des modes qui ont un spsr
   return mode == FIQ || mode == IRQ || mode == SVC || mode == ABT || mode == UND;
 }
 
 int registers_current_mode_has_spsr(registers r)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_current_mode_has_spsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   return registers_mode_has_spsr(r, registers_get_mode(r));
 }
 
 int registers_in_a_privileged_mode(registers r)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_in_a_privileged_mode> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le mode appartient à la liste des modes privilégiés
   uint8_t mode = registers_get_mode(r);
   return mode == FIQ || mode == IRQ || mode == SVC || mode == ABT || mode == UND || mode == SYS;
@@ -103,11 +82,7 @@ int registers_in_a_privileged_mode(registers r)
 
 uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_read> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le registre est un registre unbanked ou le pc (r15)
   if (reg < 8 || reg == 15)
   {
@@ -118,59 +93,24 @@ uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
   switch (mode)
   {
   case FIQ:
-    switch (reg)
-    {
-    case 8:
-      return r->r8_fiq;
-    case 9:
-      return r->r9_fiq;
-    case 10:
-      return r->r10_fiq;
-    case 11:
-      return r->r11_fiq;
-    case 12:
-      return r->r12_fiq;
-    case 13:
-      return r->r13_fiq;
-    case 14:
-      return r->r14_fiq;
-    }
+    if (reg >= 8 && reg <= 14)
+      return r->registers_fiq[reg - 8];
     break;
   case IRQ:
-    switch (reg)
-    {
-    case 13:
-      return r->r13_irq;
-    case 14:
-      return r->r14_irq;
-    }
+    if (reg == 13 || reg == 14)
+      return r->registers_irq[reg - 13];
     break;
   case SVC:
-    switch (reg)
-    {
-    case 13:
-      return r->r13_svc;
-    case 14:
-      return r->r14_svc;
-    }
+    if (reg == 13 || reg == 14)
+      return r->registers_svc[reg - 13];
     break;
   case ABT:
-    switch (reg)
-    {
-    case 13:
-      return r->r13_abt;
-    case 14:
-      return r->r14_abt;
-    }
+    if (reg == 13 || reg == 14)
+      return r->registers_abt[reg - 13];
     break;
   case UND:
-    switch (reg)
-    {
-    case 13:
-      return r->r13_und;
-    case 14:
-      return r->r14_und;
-    }
+    if (reg == 13 || reg == 14)
+      return r->registers_und[reg - 13];
     break;
   }
 
@@ -180,21 +120,13 @@ uint32_t registers_read(registers r, uint8_t reg, uint8_t mode)
 
 uint32_t registers_read_cpsr(registers r)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_read_cpsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   return r->cpsr;
 }
 
 uint32_t registers_read_spsr(registers r, uint8_t mode)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_read_spsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le mode appartient à la liste des modes qui ont un spsr
   if (registers_mode_has_spsr(r, mode))
   {
@@ -219,11 +151,7 @@ uint32_t registers_read_spsr(registers r, uint8_t mode)
 
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_write> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le registre est un registre unbanked ou le pc (r15)
   if (reg < 8 || reg == 15)
   {
@@ -235,72 +163,37 @@ void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
   switch (mode)
   {
   case FIQ:
-    switch (reg)
+    if (reg >= 8 && reg <= 14)
     {
-    case 8:
-      r->r8_fiq = value;
-      return;
-    case 9:
-      r->r9_fiq = value;
-      return;
-    case 10:
-      r->r10_fiq = value;
-      return;
-    case 11:
-      r->r11_fiq = value;
-      return;
-    case 12:
-      r->r12_fiq = value;
-      return;
-    case 13:
-      r->r13_fiq = value;
-      return;
-    case 14:
-      r->r14_fiq = value;
+      r->registers_fiq[reg - 8] = value;
       return;
     }
     break;
   case IRQ:
-    switch (reg)
+    if (reg == 13 || reg == 14)
     {
-    case 13:
-      r->r13_irq = value;
-      return;
-    case 14:
-      r->r14_irq = value;
+      r->registers_irq[reg - 13] = value;
       return;
     }
     break;
   case SVC:
-    switch (reg)
+    if (reg == 13 || reg == 14)
     {
-    case 13:
-      r->r13_svc = value;
-      return;
-    case 14:
-      r->r14_svc = value;
+      r->registers_svc[reg - 13] = value;
       return;
     }
     break;
   case ABT:
-    switch (reg)
+    if (reg == 13 || reg == 14)
     {
-    case 13:
-      r->r13_abt = value;
-      return;
-    case 14:
-      r->r14_abt = value;
+      r->registers_abt[reg - 13] = value;
       return;
     }
     break;
   case UND:
-    switch (reg)
+    if (reg == 13 || reg == 14)
     {
-    case 13:
-      r->r13_und = value;
-      return;
-    case 14:
-      r->r14_und = value;
+      r->registers_und[reg - 13] = value;
       return;
     }
     break;
@@ -312,21 +205,13 @@ void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value)
 
 void registers_write_cpsr(registers r, uint32_t value)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_write_cpsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   r->cpsr = value;
 }
 
 void registers_write_spsr(registers r, uint8_t mode, uint32_t value)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<registers_write_spsr> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
+  error_if_null(r);
   // On regarde si le mode appartient à la liste des modes qui ont un spsr
   if (registers_mode_has_spsr(r, mode))
   {
@@ -356,19 +241,9 @@ void registers_write_spsr(registers r, uint8_t mode, uint32_t value)
 
 void write_cpsr_bit(registers r, uint8_t bit, uint8_t value)
 {
-  if (r == NULL)
-  {
-    fprintf(stderr, "<write_cpsr_bit> Erreur: r est nulle\n");
-    exit(EXIT_FAILURE);
-  }
-  if (value == 0)
-  {
-    r->cpsr &= ~bit;
-  }
-  else
-  {
-    r->cpsr |= bit;
-  }
+  error_if_null(r);
+  r->cpsr &= ~(1 << bit);
+  r->cpsr |= value << bit;
 }
 
 void registers_write_Z(registers r, uint8_t value)
@@ -389,4 +264,24 @@ void registers_write_C(registers r, uint8_t value)
 void registers_write_V(registers r, uint8_t value)
 {
   write_cpsr_bit(r, V, value);
+}
+
+int registers_read_Z(registers r)
+{
+  return get_bits(r->cpsr, Z, Z);
+}
+
+int registers_read_N(registers r)
+{
+  return get_bits(r->cpsr, N, N);
+}
+
+int registers_read_C(registers r)
+{
+  return get_bits(r->cpsr, C, C);
+}
+
+int registers_read_V(registers r)
+{
+  return get_bits(r->cpsr, V, V);
 }

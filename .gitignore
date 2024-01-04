@@ -18,6 +18,13 @@ arm_*.*
 scanner.l 
 README 
 Makefile.*
+Examples 
+aclocal.m4
+config.h.in
+config.h.in~
+configure
+logs.txt
+test_arm_data_processing
 
 
 
