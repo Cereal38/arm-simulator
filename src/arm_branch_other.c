@@ -27,23 +27,34 @@ Contact: Guillaume.Huard@imag.fr
 
 
 int arm_branch(arm_core p, uint32_t ins) {
-    // Verification L ( with Link )
-    int L = (ins >> 24) & 0x01;
-    uint32_t address;
-    // Extraction bits pour le branchement
-    uint32_t offset = ((ins << 8) >> 8);
+
     // Recuperation de l'adresse de PC
+    uint32_t address;
     uint8_t mode = registers_get_mode(p->reg);
     address = registers_read(p->reg, 15, mode);
-    // Mettre PC au bon endroit pour le branchement
-    registers_write(p->reg, 15, mode, address + offset);
+
+    // Verification L ( with Link )
     // On met dans LR Le retour à l'instruction suivant PC si L
-    if (L){
-        // LR registre 14, adress (PC depart) + 4 car 32 bits 
-        registers_write(p->reg, 15, mode, address + 4);
+    if (get_bit(ins,24)){
+        // LR registre 14, adress (PC depart)
+        registers_write(p->reg, 14, mode, address);
     }
+
+    // recuperation des 24 premiers bits
+    int32_t immed = get_bits (ins,23,0);
+
+    // extention du bit de poid fort ( 32 bits )
+    if ( get_bit (immed,23) ) {
+        immed = immed | (0x3F << 24) ;
+    }
+
+    // decalage pour former 32 bits
+    immed = (immed << 2);
+
+
+    // Mettre PC au bon endroit pour le branchement
+    registers_write(p->reg, 15, mode, address + immed);
     
-    return UNDEFINED_INSTRUCTION;
 } 
 
 int arm_coprocessor_others_swi(arm_core p, uint32_t ins) {
