@@ -257,7 +257,7 @@ int arm_coprocessor_load_store(arm_core p, uint32_t ins) {
     if(P == 0 && W == 1){// Immediate post-indexed
 
     }
-    else{// Inindexed
+    else{// Unindexed
 
     }
     return 0;
