@@ -225,6 +225,40 @@ int arm_load_store_multiple(arm_core p, uint32_t ins) {
 }
 
 int arm_coprocessor_load_store(arm_core p, uint32_t ins) {
-    /* Not implemented */
-    return UNDEFINED_INSTRUCTION;
+    uint8_t posP = 24;
+    uint8_t posU = 23;
+    uint8_t posW = 21;
+    uint8_t posL = 20;
+
+    uint8_t P = (ins >> posP) & 0b1;
+    uint8_t U = (ins >> posU) & 0b1;
+    uint8_t W = (ins >> posW) & 0b1;
+    uint8_t L = (ins >> posL) & 0b1;
+
+    uint8_t posRn = 16; // 19 à 16
+    uint8_t rn = (ins >> posRn) & 0b1111;
+
+    uint8_t pos_cp_num = 8;
+    uint8_t cp_num = (ins >> pos_cp_num) & 0b1111; // 11 à 8
+
+    uint8_t pos_CRd = 12;
+    uint8_t CRd = (ins >> pos_CRd) & 0b1111; // 12 à 15
+
+    uint8_t offset_8 = ins & 0b111111111; // 7 à 0
+
+    uint32_t base = arm_read_register(p, rn);
+
+    if(P == 1 && W == 0){// Immedite offset
+
+    }
+    if(P == 1 && W == 1){// Immediate pre-indexed
+
+    }
+    if(P == 0 && W == 1){// Immediate post-indexed
+
+    }
+    else{// Inindexed
+
+    }
+    return 0;
 }
