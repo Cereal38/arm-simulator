@@ -34,34 +34,41 @@ uint32_t rotate_right(uint32_t value, uint8_t rotate)
   return (value >> rotate) | (value << (32 - rotate));
 }
 
-uint8_t overflow_from(uint32_t rn, uint32_t shifter_operand, int add)
+uint8_t overflow_from(uint32_t rn, uint32_t shifter_operand, uint8_t c_flag, int add)
 {
   /*
     Returns 1 if the addition or subtraction specified as its parameter caused a 32-bit signed overflow.
 
     Param rn: The first operand of the addition or subtraction.
     Param shifter_operand: The second operand of the addition or subtraction.
+    Param c_flag: The value of the C flag (if the instruction need to add the carry flag)
     Param add: 1 if the operation is an addition, 0 if it is a subtraction.
   */
   uint8_t rn_sign = get_bit(rn, 31);
   uint8_t shifter_operand_sign = get_bit(shifter_operand, 31);
   if (add)
   {
-    return (rn_sign == shifter_operand_sign) && (rn_sign != get_bit(rn + shifter_operand, 31));
+    return (rn_sign == shifter_operand_sign) && (rn_sign != get_bit(rn + shifter_operand + c_flag, 31));
   }
   else
   {
-    return (rn_sign != shifter_operand_sign) && (rn_sign != get_bit(rn - shifter_operand, 31));
+    return (rn_sign != shifter_operand_sign) && (rn_sign != get_bit(rn - shifter_operand - !c_flag, 31));
   }
 }
 
-uint8_t carry_from(uint32_t rn, uint32_t shifter_operand)
+uint8_t carry_from(uint32_t rn, uint32_t shifter_operand, uint8_t c_flag)
 {
   /*
     Returns 1 if the addition specified as its parameter caused a carry (true result is bigger than 232−1, where
     the operands are treated as unsigned integers), and returns 0 in all other cases.
   */
-  return (rn + shifter_operand) < rn;
+  uint32_t sum = rn + shifter_operand;
+  uint8_t carry = sum < rn || sum < shifter_operand;
+
+  sum += c_flag;
+  carry |= sum < c_flag;
+
+  return carry;
 }
 
 uint8_t borrow_from(uint32_t rn, uint32_t shifter_operand)
@@ -128,6 +135,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   case ADD:
     rd = rn + right_value;
     break;
+  case ADC:
+    rd = rn + right_value + registers_read_C(p->reg);
+    break;
   default:
     return UNDEFINED_INSTRUCTION;
   }
@@ -147,15 +157,20 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       break;
     case SUB:
       registers_write_C(p->reg, !borrow_from(rn, right_value));
-      registers_write_V(p->reg, overflow_from(rn, right_value, 0));
+      registers_write_V(p->reg, overflow_from(rn, right_value, 0, 0));
       break;
     case RSB:
       registers_write_C(p->reg, !borrow_from(right_value, rn));
-      registers_write_V(p->reg, overflow_from(rn, right_value, 0));
+      registers_write_V(p->reg, overflow_from(rn, right_value, 0, 0));
       break;
     case ADD:
-      registers_write_C(p->reg, carry_from(rn, right_value));
-      registers_write_V(p->reg, overflow_from(rn, right_value, 1));
+      registers_write_C(p->reg, carry_from(rn, right_value, 0));
+      registers_write_V(p->reg, overflow_from(rn, right_value, 0, 1));
+      break;
+    case ADC:
+      uint8_t c_flag = registers_read_C(p->reg);
+      registers_write_C(p->reg, carry_from(rn, right_value, c_flag));
+      registers_write_V(p->reg, overflow_from(rn, right_value, c_flag, 1));
       break;
     default:
       return UNDEFINED_INSTRUCTION;
