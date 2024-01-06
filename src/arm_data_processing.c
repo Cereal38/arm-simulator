@@ -154,6 +154,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   case TST:
     result = rn & right_value;
     break;
+  case TEQ:
+    result = rn ^ right_value;
+    break;
   default:
     return UNDEFINED_INSTRUCTION;
   }
@@ -208,6 +211,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       break;
     case TST:
       // TODO: "C Flag = shifter_carry_out" (p380) ?
+      break;
+    case TEQ:
+      // TODO: "C Flag = shifter_carry_out" (p378) ?
       break;
     default:
       return UNDEFINED_INSTRUCTION;
