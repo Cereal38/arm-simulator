@@ -510,6 +510,49 @@ void test_sbc(arm_core p)
       1);             // Expected V flag
 }
 
+void test_rsc(arm_core p)
+{
+  // 2 - 4 - 1 = -3
+  registers_write_C(p->reg, 0);
+  test_template(
+      "RSC (Immediate value)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      RSC,            // Opcode
+      1,              // S : Set condition codes
+      1,              // Rn : r1
+      0,              // Rd : r0
+      0b000000000010, // Shifter : 2
+      4,              // Rn value
+      0,              // Rs value
+      -3,             // Expected Rd value
+      0,              // Expected Z flag
+      1,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
+
+  // 4 - 2 - 0 = 2
+  registers_write_C(p->reg, 1);
+  test_template(
+      "RSC (No borrow)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      RSC,            // Opcode
+      1,              // S : Set condition codes
+      1,              // Rn : r1
+      0,              // Rd : r0
+      0b000000000100, // Shifter : 4
+      2,              // Rn value
+      0,              // Rs value
+      2,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      1,              // Expected C flag
+      0);             // Expected V flag
+}
+
 int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
@@ -521,6 +564,7 @@ int main()
   test_rsb(p);
   test_adc(p);
   test_sbc(p);
+  test_rsc(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);

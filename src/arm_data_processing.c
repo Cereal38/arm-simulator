@@ -148,6 +148,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   case SBC:
     rd = rn - right_value - !registers_read_C(p->reg);
     break;
+  case RSC:
+    rd = right_value - rn - !registers_read_C(p->reg);
+    break;
   default:
     return UNDEFINED_INSTRUCTION;
   }
@@ -186,6 +189,11 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       c_flag = registers_read_C(p->reg);
       registers_write_C(p->reg, !borrow_from(rn, right_value, c_flag));
       registers_write_V(p->reg, overflow_from(rn, right_value, c_flag, 0));
+      break;
+    case RSC:
+      c_flag = registers_read_C(p->reg);
+      registers_write_C(p->reg, !borrow_from(right_value, rn, c_flag));
+      registers_write_V(p->reg, overflow_from(right_value, rn, c_flag, 0));
       break;
     default:
       return UNDEFINED_INSTRUCTION;
