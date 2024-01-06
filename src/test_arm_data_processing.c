@@ -793,6 +793,46 @@ void test_orr(arm_core p)
       -1);            // Expected V flag
 }
 
+void test_mov(arm_core p)
+{
+  registers_write(p->reg, 2, USR, 0);
+  test_template(
+      "MOV (Immediate value)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      MOV,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b000000001011, // Shifter : 11
+      0,              // Rn value
+      0,              // Rs value
+      11,             // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      -1,             // Expected C flag
+      -1);            // Expected V flag
+
+  test_template(
+      "MOV (Value from register)",
+      p,
+      AL,             // Cond
+      0,              // I : Register value
+      MOV,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b000000000010, // Shifter : r2
+      0,              // Rn value
+      -4,             // Rs value
+      -4,             // Expected Rd value
+      0,              // Expected Z flag
+      1,              // Expected N flag
+      -1,             // Expected C flag
+      -1);            // Expected V flag
+}
+
 int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
@@ -810,6 +850,7 @@ int main()
   test_cmp(p);
   test_cmn(p);
   test_orr(p);
+  test_mov(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);
