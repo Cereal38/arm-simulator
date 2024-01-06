@@ -636,6 +636,63 @@ void test_teq(arm_core p)
       -1);            // Expected V flag
 }
 
+void test_cmp(arm_core p)
+{
+  test_template(
+      "CMP (Positive result)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      CMP,            // Opcode
+      1,              // S : Set condition codes
+      1,              // Rn : r1
+      0,              // Rd : r0
+      0b000000000010, // Shifter : 2
+      4,              // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      1,              // Expected C flag
+      0);             // Expected V flag
+
+  test_template(
+      "CMP (Negative result)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      CMP,            // Opcode
+      1,              // S : Set condition codes
+      1,              // Rn : r1
+      0,              // Rd : r0
+      0b000000000100, // Shifter : 4
+      2,              // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      0,              // Expected Z flag
+      1,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
+
+  test_template(
+      "CMP (Overflow)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      CMP,            // Opcode
+      1,              // S : Set condition codes
+      1,              // Rn : r1
+      0,              // Rd : r0
+      0b000000000001, // Shifter : 1
+      0x80000000,     // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      1,              // Expected C flag
+      1);             // Expected V flag
+}
+
 int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
@@ -650,6 +707,7 @@ int main()
   test_rsc(p);
   test_tst(p);
   test_teq(p);
+  test_cmp(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);
