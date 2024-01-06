@@ -163,6 +163,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   case CMN:
     result = rn + right_value;
     break;
+  case ORR:
+    result = rn | right_value;
+    break;
   default:
     return UNDEFINED_INSTRUCTION;
   }
@@ -228,6 +231,10 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     case CMN:
       registers_write_C(p->reg, carry_from(rn, right_value, -1));
       registers_write_V(p->reg, overflow_from(rn, right_value, -1, 1));
+      break;
+    case ORR:
+      // TODO: "C Flag = shifter_carry_out" (p235) ?
+      registers_write(p->reg, rd_code, mode, result);
       break;
     default:
       return UNDEFINED_INSTRUCTION;

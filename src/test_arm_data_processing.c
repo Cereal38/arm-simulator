@@ -753,6 +753,46 @@ void test_cmn(arm_core p)
       0);             // Expected V flag
 }
 
+void test_orr(arm_core p)
+{
+  // 0xE4 | 0x47 = 11100100 | 01000111 = 11100111 = 0xE7
+  test_template(
+      "ORR (Immediate value)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      ORR,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b000001000111, // Shifter : #0x47
+      0xE4,           // Rn value
+      0,              // Rs value
+      0xE7,           // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      -1,             // Expected C flag
+      -1);            // Expected V flag
+
+  test_template(
+      "ORR (Result is 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      ORR,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b000000000000, // Shifter : 0
+      0,              // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      1,              // Expected Z flag
+      0,              // Expected N flag
+      -1,             // Expected C flag
+      -1);            // Expected V flag
+}
+
 int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
@@ -769,6 +809,7 @@ int main()
   test_teq(p);
   test_cmp(p);
   test_cmn(p);
+  test_orr(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);
