@@ -34,43 +34,57 @@ uint32_t rotate_right(uint32_t value, uint8_t rotate)
   return (value >> rotate) | (value << (32 - rotate));
 }
 
-uint8_t overflow_from(uint32_t rn, uint32_t shifter_operand, int add)
+uint8_t overflow_from(uint32_t rn, uint32_t shifter_operand, int c_flag, int add)
 {
   /*
     Returns 1 if the addition or subtraction specified as its parameter caused a 32-bit signed overflow.
 
     Param rn: The first operand of the addition or subtraction.
     Param shifter_operand: The second operand of the addition or subtraction.
+    Param c_flag: The value of the C flag (-1 if the C flag is not considered).
     Param add: 1 if the operation is an addition, 0 if it is a subtraction.
   */
   uint8_t rn_sign = get_bit(rn, 31);
   uint8_t shifter_operand_sign = get_bit(shifter_operand, 31);
+  uint8_t c_flag_value;
   if (add)
   {
-    return (rn_sign == shifter_operand_sign) && (rn_sign != get_bit(rn + shifter_operand, 31));
+    c_flag_value = c_flag == -1 ? 0 : c_flag;
+    return (rn_sign == shifter_operand_sign) && (rn_sign != get_bit(rn + shifter_operand + c_flag_value, 31));
   }
   else
   {
-    return (rn_sign != shifter_operand_sign) && (rn_sign != get_bit(rn - shifter_operand, 31));
+    c_flag_value = c_flag == -1 ? 1 : c_flag;
+    return (rn_sign != shifter_operand_sign) && (rn_sign != get_bit(rn - shifter_operand - !c_flag_value, 31));
   }
 }
 
-uint8_t carry_from(uint32_t rn, uint32_t shifter_operand)
+uint8_t carry_from(uint64_t rn, uint64_t shifter_operand, int c_flag)
 {
   /*
     Returns 1 if the addition specified as its parameter caused a carry (true result is bigger than 232−1, where
     the operands are treated as unsigned integers), and returns 0 in all other cases.
+
+    Param rn: The first operand of the addition.
+    Param shifter_operand: The second operand of the addition.
+    Param c_flag: The value of the C flag (-1 if the C flag is not considered).
   */
-  return (rn + shifter_operand) < rn;
+  uint64_t c_flag_value = c_flag == -1 ? 0 : c_flag;
+  return (rn + shifter_operand + c_flag_value) > 0xFFFFFFFF;
 }
 
-uint8_t borrow_from(uint32_t rn, uint32_t shifter_operand)
+uint8_t borrow_from(uint32_t rn, uint32_t shifter_operand, int c_flag)
 {
   /*
     Returns 1 if the subtraction specified as its parameter caused a borrow (the true result is less than 0, where
     the operands are treated as unsigned integers), and returns 0 in all other cases.
+
+    Param rn: The first operand of the subtraction.
+    Param shifter_operand: The second operand of the subtraction.
+    Param c_flag: The value of the C flag (-1 if the C flag is not considered).
   */
-  return (rn - shifter_operand) > rn;
+  uint8_t c_flag_value = c_flag == -1 ? 1 : c_flag;
+  return rn < shifter_operand + !c_flag_value;
 }
 
 // TODO: VERIFY THIS:
@@ -92,7 +106,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   uint8_t i_code = get_bits(ins, 25, 25);
   uint8_t mode = registers_get_mode(p->reg);
   uint32_t rn = registers_read(p->reg, rn_code, mode);
-  uint32_t rd;
+  uint32_t result;
   uint32_t right_value;
 
   // Shifter operand
@@ -114,19 +128,52 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   switch (opcode)
   {
   case AND:
-    rd = rn & right_value;
+    result = rn & right_value;
     break;
   case EOR:
-    rd = rn ^ right_value;
+    result = rn ^ right_value;
     break;
   case SUB:
-    rd = rn - right_value;
+    result = rn - right_value;
     break;
   case RSB:
-    rd = right_value - rn;
+    result = right_value - rn;
     break;
   case ADD:
-    rd = rn + right_value;
+    result = rn + right_value;
+    break;
+  case ADC:
+    result = rn + right_value + registers_read_C(p->reg);
+    break;
+  case SBC:
+    result = rn - right_value - !registers_read_C(p->reg);
+    break;
+  case RSC:
+    result = right_value - rn - !registers_read_C(p->reg);
+    break;
+  case TST:
+    result = rn & right_value;
+    break;
+  case TEQ:
+    result = rn ^ right_value;
+    break;
+  case CMP:
+    result = rn - right_value;
+    break;
+  case CMN:
+    result = rn + right_value;
+    break;
+  case ORR:
+    result = rn | right_value;
+    break;
+  case MOV:
+    result = right_value;
+    break;
+  case BIC:
+    result = rn & ~right_value;
+    break;
+  case MVN:
+    result = ~right_value;
     break;
   default:
     return UNDEFINED_INSTRUCTION;
@@ -135,33 +182,84 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   // Edit N, Z, C, V flags
   if (s_code == 1)
   {
-    registers_write_N(p->reg, get_bit(rd, 31));
-    registers_write_Z(p->reg, (rd == 0) ? 1 : 0);
+    registers_write_N(p->reg, get_bit(result, 31));
+    registers_write_Z(p->reg, (result == 0) ? 1 : 0);
     switch (opcode)
     {
     case AND:
       // TODO: "C Flag = shifter_carry_out" (p159) ?
+      registers_write(p->reg, rd_code, mode, result);
       break;
     case EOR:
       // TODO: "C Flag = shifter_carry_out" (p183) ?
+      registers_write(p->reg, rd_code, mode, result);
       break;
     case SUB:
-      registers_write_C(p->reg, !borrow_from(rn, right_value));
-      registers_write_V(p->reg, overflow_from(rn, right_value, 0));
+      registers_write_C(p->reg, !borrow_from(rn, right_value, -1));
+      registers_write_V(p->reg, overflow_from(rn, right_value, -1, 0));
+      registers_write(p->reg, rd_code, mode, result);
       break;
     case RSB:
-      registers_write_C(p->reg, !borrow_from(right_value, rn));
-      registers_write_V(p->reg, overflow_from(rn, right_value, 0));
+      registers_write_C(p->reg, !borrow_from(right_value, rn, -1));
+      registers_write_V(p->reg, overflow_from(rn, right_value, -1, 0));
+      registers_write(p->reg, rd_code, mode, result);
       break;
     case ADD:
-      registers_write_C(p->reg, carry_from(rn, right_value));
-      registers_write_V(p->reg, overflow_from(rn, right_value, 1));
+      registers_write_C(p->reg, carry_from(rn, right_value, -1));
+      registers_write_V(p->reg, overflow_from(rn, right_value, -1, 1));
+      registers_write(p->reg, rd_code, mode, result);
       break;
+    case ADC:
+      uint8_t c_flag = registers_read_C(p->reg);
+      registers_write_C(p->reg, carry_from(rn, right_value, c_flag));
+      registers_write_V(p->reg, overflow_from(rn, right_value, c_flag, 1));
+      registers_write(p->reg, rd_code, mode, result);
+      break;
+    case SBC:
+      c_flag = registers_read_C(p->reg);
+      registers_write_C(p->reg, !borrow_from(rn, right_value, c_flag));
+      registers_write_V(p->reg, overflow_from(rn, right_value, c_flag, 0));
+      registers_write(p->reg, rd_code, mode, result);
+      break;
+    case RSC:
+      c_flag = registers_read_C(p->reg);
+      registers_write_C(p->reg, !borrow_from(right_value, rn, c_flag));
+      registers_write_V(p->reg, overflow_from(right_value, rn, c_flag, 0));
+      registers_write(p->reg, rd_code, mode, result);
+      break;
+    case TST:
+      // TODO: "C Flag = shifter_carry_out" (p380) ?
+      break;
+    case TEQ:
+      // TODO: "C Flag = shifter_carry_out" (p378) ?
+      break;
+    case CMP:
+      registers_write_C(p->reg, !borrow_from(rn, right_value, -1));
+      registers_write_V(p->reg, overflow_from(rn, right_value, -1, 0));
+      break;
+    case CMN:
+      registers_write_C(p->reg, carry_from(rn, right_value, -1));
+      registers_write_V(p->reg, overflow_from(rn, right_value, -1, 1));
+      break;
+    case ORR:
+      // TODO: "C Flag = shifter_carry_out" (p235) ?
+      registers_write(p->reg, rd_code, mode, result);
+      break;
+    case MOV:
+      // TODO: "C Flag = shifter_carry_out" (p219) ?
+      registers_write(p->reg, rd_code, mode, result);
+      break;
+    case BIC:
+      // TODO: "C Flag = shifter_carry_out" (p163) ?
+      registers_write(p->reg, rd_code, mode, result);
+      break;
+    case MVN:
+      // TODO: "C Flag = shifter_carry_out" (p233) ?
+      registers_write(p->reg, rd_code, mode, result);
     default:
       return UNDEFINED_INSTRUCTION;
     }
   }
-  registers_write(p->reg, rd_code, mode, rd);
 
   // Set CPSR if needed
   if (s_code == 1 && rd_code == 15)
