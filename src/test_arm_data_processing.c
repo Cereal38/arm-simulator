@@ -691,6 +691,66 @@ void test_cmp(arm_core p)
       0,              // Expected N flag
       1,              // Expected C flag
       1);             // Expected V flag
+
+  test_template(
+      "CMP (Minus 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      CMP,            // Opcode
+      1,              // S : Set condition codes
+      1,              // Rn : r1
+      0,              // Rd : r0
+      0b000000000000, // Shifter : 0
+      11,             // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      1,              // Expected C flag
+      0);             // Expected V flag
+}
+
+void test_cmn(arm_core p)
+{
+  // 4 + 2 = 6
+  registers_write_C(p->reg, 1);
+  test_template(
+      "CMN (Positive result)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      CMN,            // Opcode
+      1,              // S : Set condition codes
+      1,              // Rn : r1
+      0,              // Rd : r0
+      0b000000000010, // Shifter : 2
+      4,              // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
+
+  registers_write_C(p->reg, 0);
+  test_template(
+      "CMN (Add 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      CMN,            // Opcode
+      1,              // S : Set condition codes
+      1,              // Rn : r1
+      0,              // Rd : r0
+      0b000000000000, // Shifter : 0
+      2,              // Rn value
+      0,              // Rs value
+      0,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
 }
 
 int main()
@@ -708,6 +768,7 @@ int main()
   test_tst(p);
   test_teq(p);
   test_cmp(p);
+  test_cmn(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);

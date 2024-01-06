@@ -160,6 +160,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   case CMP:
     result = rn - right_value;
     break;
+  case CMN:
+    result = rn + right_value;
+    break;
   default:
     return UNDEFINED_INSTRUCTION;
   }
@@ -221,6 +224,10 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     case CMP:
       registers_write_C(p->reg, !borrow_from(rn, right_value, -1));
       registers_write_V(p->reg, overflow_from(rn, right_value, -1, 0));
+      break;
+    case CMN:
+      registers_write_C(p->reg, carry_from(rn, right_value, -1));
+      registers_write_V(p->reg, overflow_from(rn, right_value, -1, 1));
       break;
     default:
       return UNDEFINED_INSTRUCTION;
