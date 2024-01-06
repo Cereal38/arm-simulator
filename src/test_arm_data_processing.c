@@ -855,6 +855,28 @@ void test_bic(arm_core p)
       -1);            // Expected V flag
 }
 
+void test_mvn(arm_core p)
+{
+  // ~0xE4 = ~0x000000E4 = 0xFFFFFF1B
+  test_template(
+      "MVN (Immediate value)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      MVN,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b000011100100, // Shifter : 0
+      0,              // Rn value
+      0,              // Rs value
+      0xFFFFFF1B,     // Expected Rd value
+      0,              // Expected Z flag
+      1,              // Expected N flag
+      -1,             // Expected C flag
+      -1);            // Expected V flag
+}
+
 int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
@@ -874,6 +896,7 @@ int main()
   test_orr(p);
   test_mov(p);
   test_bic(p);
+  test_mvn(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);
