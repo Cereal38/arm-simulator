@@ -56,19 +56,13 @@ uint8_t overflow_from(uint32_t rn, uint32_t shifter_operand, uint8_t c_flag, int
   }
 }
 
-uint8_t carry_from(uint32_t rn, uint32_t shifter_operand, uint8_t c_flag)
+uint8_t carry_from(uint64_t rn, uint64_t shifter_operand, uint64_t c_flag)
 {
   /*
     Returns 1 if the addition specified as its parameter caused a carry (true result is bigger than 232−1, where
     the operands are treated as unsigned integers), and returns 0 in all other cases.
   */
-  uint32_t sum = rn + shifter_operand;
-  uint8_t carry = sum < rn || sum < shifter_operand;
-
-  sum += c_flag;
-  carry |= sum < c_flag;
-
-  return carry;
+  return (rn + shifter_operand + c_flag) > 0xFFFFFFFF;
 }
 
 uint8_t borrow_from(uint32_t rn, uint32_t shifter_operand)
