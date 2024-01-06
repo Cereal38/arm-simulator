@@ -833,6 +833,28 @@ void test_mov(arm_core p)
       -1);            // Expected V flag
 }
 
+void test_bic(arm_core p)
+{
+  // 0xE4 & ~0x47 = 11100100 & 10111000 = 10100000 = 0xA0
+  test_template(
+      "BIC (Immediate value)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      BIC,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b000001000111, // Shifter : #0x47
+      0xE4,           // Rn value
+      0,              // Rs value
+      0xA0,           // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      -1,             // Expected C flag
+      -1);            // Expected V flag
+}
+
 int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
@@ -851,6 +873,7 @@ int main()
   test_cmn(p);
   test_orr(p);
   test_mov(p);
+  test_bic(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);

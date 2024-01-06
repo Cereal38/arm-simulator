@@ -169,6 +169,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   case MOV:
     result = right_value;
     break;
+  case BIC:
+    result = rn & ~right_value;
+    break;
   default:
     return UNDEFINED_INSTRUCTION;
   }
@@ -243,6 +246,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       // TODO: "C Flag = shifter_carry_out" (p219) ?
       registers_write(p->reg, rd_code, mode, result);
       break;
+    case BIC:
+      // TODO: "C Flag = shifter_carry_out" (p163) ?
+      registers_write(p->reg, rd_code, mode, result);
     default:
       return UNDEFINED_INSTRUCTION;
     }
