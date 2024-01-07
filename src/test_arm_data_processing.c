@@ -650,6 +650,7 @@ void test_rsc(arm_core p)
 void test_tst(arm_core p)
 {
   registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 0);
   test_template(
       "TST (Immediate value)",
       p,
@@ -666,11 +667,12 @@ void test_tst(arm_core p)
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 
   // 0xE4 & 0x1B = 11100100 & 00011011 = 0
   registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 1);
   test_template(
       "TST (Result is 0)",
       p,
@@ -687,7 +689,7 @@ void test_tst(arm_core p)
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 }
 
@@ -994,7 +996,7 @@ int main()
   test_add(p);
   test_sub(p);
   test_and(p);
-  test_eor(p); // TODO: shifter_carry_out
+  test_eor(p);
   test_rsb(p);
   test_adc(p);
   test_sbc(p);
