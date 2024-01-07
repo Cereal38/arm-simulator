@@ -140,7 +140,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   uint32_t shifter_operand;
   uint8_t shifter_carry_out = 0;
 
-  // Shifter operand and shifter carry out
+  // Shifter operand and shifter carry out (A5.1)
   // 32-bit immediate
   if (i_code == 1)
   {
