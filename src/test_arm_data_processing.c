@@ -696,6 +696,7 @@ void test_tst(arm_core p)
 void test_teq(arm_core p)
 {
   registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 0);
   test_template(
       "TEQ (Immediate value)",
       p,
@@ -712,10 +713,11 @@ void test_teq(arm_core p)
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 
   registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 1);
   test_template(
       "TEQ (Result is 0)",
       p,
@@ -732,7 +734,7 @@ void test_teq(arm_core p)
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 }
 
@@ -862,6 +864,7 @@ void test_cmn(arm_core p)
 void test_orr(arm_core p)
 {
   // 0xE4 | 0x47 = 11100100 | 01000111 = 11100111 = 0xE7
+  registers_write_C(p->reg, 1);
   test_template(
       "ORR (Immediate value)",
       p,
@@ -878,9 +881,10 @@ void test_orr(arm_core p)
       0xE7,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 0);
   test_template(
       "ORR (Result is 0)",
       p,
@@ -897,13 +901,14 @@ void test_orr(arm_core p)
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
 void test_mov(arm_core p)
 {
   registers_write(p->reg, 2, USR, 0);
+  registers_write_C(p->reg, 1);
   test_template(
       "MOV (Immediate value)",
       p,
@@ -920,9 +925,10 @@ void test_mov(arm_core p)
       11,             // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 0);
   test_template(
       "MOV (Value from register)",
       p,
@@ -939,13 +945,14 @@ void test_mov(arm_core p)
       -4,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
 void test_bic(arm_core p)
 {
   // 0xE4 & ~0x47 = 11100100 & 10111000 = 10100000 = 0xA0
+  registers_write_C(p->reg, 1);
   test_template(
       "BIC (Immediate value)",
       p,
@@ -962,13 +969,14 @@ void test_bic(arm_core p)
       0xA0,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 }
 
 void test_mvn(arm_core p)
 {
   // ~0xE4 = ~0x000000E4 = 0xFFFFFF1B
+  registers_write_C(p->reg, 0);
   test_template(
       "MVN (Immediate value)",
       p,
@@ -985,7 +993,7 @@ void test_mvn(arm_core p)
       0xFFFFFF1B,     // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
@@ -1001,14 +1009,14 @@ int main()
   test_adc(p);
   test_sbc(p);
   test_rsc(p);
-  test_tst(p); // TODO: shifter_carry_out
-  test_teq(p); // TODO: shifter_carry_out
+  test_tst(p);
+  test_teq(p);
   test_cmp(p);
   test_cmn(p);
-  test_orr(p); // TODO: shifter_carry_out
-  test_mov(p); // TODO: shifter_carry_out
-  test_bic(p); // TODO: shifter_carry_out
-  test_mvn(p); // TODO: shifter_carry_out
+  test_orr(p);
+  test_mov(p);
+  test_bic(p);
+  test_mvn(p);
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);
