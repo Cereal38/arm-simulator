@@ -111,7 +111,6 @@ uint32_t logical_shift_right(uint32_t value, uint8_t shift)
   return value >> shift;
 }
 
-// TODO: Check A5.1.1 and correct register shift + implement immediate shift
 int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
 
@@ -195,6 +194,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       return UNDEFINED_INSTRUCTION;
     }
   }
+  // TODO: Register shifts
 
   // Set Rd
   switch (opcode)
