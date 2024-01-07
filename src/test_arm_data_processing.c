@@ -302,6 +302,7 @@ void test_sub(arm_core p)
 void test_and(arm_core p)
 {
   // 0xE4 & 0x47 = 11100100 & 01000111 = 01000100 = 0x44
+  registers_write_C(p->reg, 0);
   test_template(
       "AND (Immediate value)",
       p,
@@ -318,9 +319,10 @@ void test_and(arm_core p)
       0x44,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 1);
   test_template(
       "AND (Second value from register)",
       p,
@@ -337,9 +339,10 @@ void test_and(arm_core p)
       0x44,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 0);
   test_template(
       "AND (Result is 0)",
       p,
@@ -356,7 +359,7 @@ void test_and(arm_core p)
       0x00,           // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
