@@ -386,6 +386,7 @@ void test_and(arm_core p)
 void test_eor(arm_core p)
 {
   // 0xE4 ^ 0x47 = 11100100 ^ 01000111 = 10100011 = 0xA3
+  registers_write_C(p->reg, 0);
   test_template(
       "EOR (Immediate value)",
       p,
@@ -402,9 +403,10 @@ void test_eor(arm_core p)
       0xA3,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 1);
   test_template(
       "EOR (Second value from register)",
       p,
@@ -421,7 +423,7 @@ void test_eor(arm_core p)
       0xA3,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 }
 
