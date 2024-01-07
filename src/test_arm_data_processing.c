@@ -342,7 +342,7 @@ void test_and(arm_core p)
       1,              // Expected C flag
       -1);            // Expected V flag
 
-  registers_write_C(p->reg, 0);
+  registers_write_C(p->reg, 1);
   test_template(
       "AND (Result is 0)",
       p,
@@ -358,6 +358,26 @@ void test_and(arm_core p)
       0,              // Rm value
       0x00,           // Expected Rd value
       1,              // Expected Z flag
+      0,              // Expected N flag
+      1,              // Expected C flag
+      -1);            // Expected V flag
+
+  // (0xD0 => 0x34) & 0x20 = 00110100 & 00100000 = 00100000 = 0x20
+  test_template(
+      "AND (Immediate shift with rotate_imm != 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Register value
+      AND,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
+      0b000111010000, // Shifter : 0xD0 => 0x34
+      0x20,           // Rn value
+      0,              // Rs value
+      0,              // Rm value
+      0x20,           // Expected Rd value
+      0,              // Expected Z flag
       0,              // Expected N flag
       0,              // Expected C flag
       -1);            // Expected V flag
@@ -971,7 +991,7 @@ int main()
 
   test_add(p);
   test_sub(p);
-  test_and(p); // TODO: shifter_carry_out
+  test_and(p);
   test_eor(p); // TODO: shifter_carry_out
   test_rsb(p);
   test_adc(p);
