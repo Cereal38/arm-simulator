@@ -199,6 +199,25 @@ void test_add(arm_core p)
       0,              // Expected N flag
       0,              // Expected C flag
       0);             // Expected V flag
+
+  test_template(
+      "ADD (Immediate shift LSR#4)",
+      p,
+      AL,             // Cond
+      0,              // I : Register value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b001000100010, // Shifter : r2
+      0x9,            // Rn value
+      0,              // Rs value
+      0b1101100,      // Rm value
+      15,             // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
 }
 
 /*
