@@ -28,6 +28,8 @@ Contact: Guillaume.Huard@imag.fr
 #include "util.h"
 #include "registers.h"
 #include "debug.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 uint32_t rotate_right(uint32_t value, uint8_t rotate)
 {
@@ -87,12 +89,18 @@ uint8_t borrow_from(uint32_t rn, uint32_t shifter_operand, int c_flag)
   return rn < shifter_operand + !c_flag_value;
 }
 
-// TODO: VERIFY THIS:
-// If the I bit is 0 and both bit[7] and bit[4] of shifter_operand are 1, the instruction is not ADD.
-// Instead, see Extending the instruction set on page A3-32 to determine which instruction it is.
 // TODO: Check A5.1.1 and correct register shift + implement immediate shift
 int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
+
+  // If all three of the following bits have the values shown, the instruction is not a data-processing instruction,
+  // but lies in the arithmetic or Load/Store instruction extension space
+  if (!get_bit(ins, 25) && get_bit(ins, 7) && get_bit(ins, 4))
+  {
+    fprintf(stderr, "Instruction is not a data-processing instruction\n");
+    exit(EXIT_FAILURE);
+  }
+
   // Check condition
   if (!verif_cond(ins, p->reg))
   {
