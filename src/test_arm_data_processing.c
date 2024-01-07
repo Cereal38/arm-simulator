@@ -220,7 +220,6 @@ void test_add(arm_core p)
       0);             // Expected V flag
 }
 
-/*
 void test_sub(arm_core p)
 {
   test_template(
@@ -235,6 +234,7 @@ void test_sub(arm_core p)
       0b000000000010, // Shifter : #2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       2,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -253,6 +253,7 @@ void test_sub(arm_core p)
       0b000000000100, // Shifter : #4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       -2,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -271,6 +272,7 @@ void test_sub(arm_core p)
       0b000000000001, // Shifter : #1
       0x80000000,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x7FFFFFFF,     // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -289,6 +291,7 @@ void test_sub(arm_core p)
       0b000000001011, // Shifter : #11
       11,             // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
@@ -311,6 +314,7 @@ void test_and(arm_core p)
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x44,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -328,7 +332,8 @@ void test_and(arm_core p)
       1,              // Rd : r1
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
-      0x47,           // Rs value
+      0,              // Rs value
+      0x47,           // Rm value
       0x44,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -347,6 +352,7 @@ void test_and(arm_core p)
       0b000000010001, // Shifter : #0x11
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x00,           // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
@@ -369,6 +375,7 @@ void test_eor(arm_core p)
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0xA3,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -386,7 +393,8 @@ void test_eor(arm_core p)
       1,              // Rd : r1
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
-      0x47,           // Rs value
+      0,              // Rs value
+      0x47,           // Rm value
       0xA3,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -409,6 +417,7 @@ void test_rsb(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       -2,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -428,6 +437,7 @@ void test_rsb(arm_core p)
       0b000000000100, // Shifter : 4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       2,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -451,6 +461,7 @@ void test_adc(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       7,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -471,6 +482,7 @@ void test_adc(arm_core p)
       0b000000000100, // Shifter : 4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       6,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -491,6 +503,7 @@ void test_adc(arm_core p)
       0b000000000001, // Shifter : 1
       0xFFFFFFFE,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
@@ -514,6 +527,7 @@ void test_sbc(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       1,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -534,6 +548,7 @@ void test_sbc(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       2,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -554,6 +569,7 @@ void test_sbc(arm_core p)
       0b000000000001, // Shifter
       0x80000001,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x7FFFFFFF,     // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -577,6 +593,7 @@ void test_rsc(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       -3,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -597,6 +614,7 @@ void test_rsc(arm_core p)
       0b000000000100, // Shifter : 4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       2,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -619,6 +637,7 @@ void test_tst(arm_core p)
       0b000000000001, // Shifter : 1
       1,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -638,7 +657,8 @@ void test_tst(arm_core p)
       0,              // Rd : r0
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
-      0x1B,           // Rs value
+      0,              // Rs value
+      0x1B,           // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
@@ -661,6 +681,7 @@ void test_teq(arm_core p)
       0b000000000000, // Shifter : 0
       0xF,            // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -679,7 +700,8 @@ void test_teq(arm_core p)
       0,              // Rd : r0
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
-      0xE4,           // Rs value
+      0,              // Rs value
+      0xE4,           // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
@@ -701,6 +723,7 @@ void test_cmp(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -719,6 +742,7 @@ void test_cmp(arm_core p)
       0b000000000100, // Shifter : 4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -737,6 +761,7 @@ void test_cmp(arm_core p)
       0b000000000001, // Shifter : 1
       0x80000000,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -755,6 +780,7 @@ void test_cmp(arm_core p)
       0b000000000000, // Shifter : 0
       11,             // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -778,6 +804,7 @@ void test_cmn(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -797,6 +824,7 @@ void test_cmn(arm_core p)
       0b000000000000, // Shifter : 0
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -819,6 +847,7 @@ void test_orr(arm_core p)
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0xE7,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -837,6 +866,7 @@ void test_orr(arm_core p)
       0b000000000000, // Shifter : 0
       0,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
@@ -859,6 +889,7 @@ void test_mov(arm_core p)
       0b000000001011, // Shifter : 11
       0,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       11,             // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -876,7 +907,8 @@ void test_mov(arm_core p)
       2,              // Rd : r2
       0b000000000010, // Shifter : r2
       0,              // Rn value
-      -4,             // Rs value
+      0,              // Rs value
+      -4,             // Rm value
       -4,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -899,6 +931,7 @@ void test_bic(arm_core p)
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0xA0,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -921,34 +954,34 @@ void test_mvn(arm_core p)
       0b000011100100, // Shifter : 0
       0,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0xFFFFFF1B,     // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
       -1,             // Expected C flag
       -1);            // Expected V flag
 }
-*/
 
 int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
 
   test_add(p);
-  // test_sub(p);
-  // test_and(p); // TODO: shifter_carry_out
-  // test_eor(p); // TODO: shifter_carry_out
-  // test_rsb(p);
-  // test_adc(p);
-  // test_sbc(p);
-  // test_rsc(p);
-  // test_tst(p); // TODO: shifter_carry_out
-  // test_teq(p); // TODO: shifter_carry_out
-  // test_cmp(p);
-  // test_cmn(p);
-  // test_orr(p); // TODO: shifter_carry_out
-  // test_mov(p); // TODO: shifter_carry_out
-  // test_bic(p); // TODO: shifter_carry_out
-  // test_mvn(p); // TODO: shifter_carry_out
+  test_sub(p);
+  test_and(p); // TODO: shifter_carry_out
+  test_eor(p); // TODO: shifter_carry_out
+  test_rsb(p);
+  test_adc(p);
+  test_sbc(p);
+  test_rsc(p);
+  test_tst(p); // TODO: shifter_carry_out
+  test_teq(p); // TODO: shifter_carry_out
+  test_cmp(p);
+  test_cmn(p);
+  test_orr(p); // TODO: shifter_carry_out
+  test_mov(p); // TODO: shifter_carry_out
+  test_bic(p); // TODO: shifter_carry_out
+  test_mvn(p); // TODO: shifter_carry_out
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);
