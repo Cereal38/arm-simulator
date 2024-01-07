@@ -883,20 +883,20 @@ int main()
 
   test_add(p);
   test_sub(p);
-  test_and(p);
-  test_eor(p);
+  test_and(p); // TODO: shifter_carry_out
+  test_eor(p); // TODO: shifter_carry_out
   test_rsb(p);
   test_adc(p);
   test_sbc(p);
   test_rsc(p);
-  test_tst(p);
-  test_teq(p);
+  test_tst(p); // TODO: shifter_carry_out
+  test_teq(p); // TODO: shifter_carry_out
   test_cmp(p);
   test_cmn(p);
-  test_orr(p);
-  test_mov(p);
-  test_bic(p);
-  test_mvn(p);
+  test_orr(p); // TODO: shifter_carry_out
+  test_mov(p); // TODO: shifter_carry_out
+  test_bic(p); // TODO: shifter_carry_out
+  test_mvn(p); // TODO: shifter_carry_out
 
   memory_destroy(p->mem);
   registers_destroy(p->reg);
