@@ -163,23 +163,36 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     uint8_t shift = get_bits(ins, 6, 5);
     uint8_t rm = get_bits(ins, 3, 0);
     uint32_t rm_value = registers_read(p->reg, rm, mode);
-    if (shift_imm == 0)
+    switch (shift)
     {
-      shifter_operand = rm_value;
-      shifter_carry_out = registers_read_C(p->reg);
-    }
-    else
-    {
-      switch (shift)
+    case 0b00:
+      if (shift_imm == 0)
       {
-      case 0b00:
+        shifter_operand = rm_value;
+        shifter_carry_out = registers_read_C(p->reg);
+      }
+      else
+      {
+
         shifter_operand = logical_shift_left(rm_value, shift_imm);
         shifter_carry_out = get_bit(rm_value, 32 - shift_imm);
-        break;
-      // TODO: Other cases
-      default:
-        return UNDEFINED_INSTRUCTION;
       }
+      break;
+    case 0b01:
+      if (shift_imm == 0)
+      {
+        shifter_operand = logical_shift_right(rm_value, 32);
+        shifter_carry_out = get_bit(rm_value, 31);
+      }
+      else
+      {
+        shifter_operand = logical_shift_right(rm_value, shift_imm);
+        shifter_carry_out = get_bit(rm_value, shift_imm - 1);
+      }
+      break;
+    // TODO: Other cases
+    default:
+      return UNDEFINED_INSTRUCTION;
     }
   }
 
