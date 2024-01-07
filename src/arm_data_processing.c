@@ -89,6 +89,28 @@ uint8_t borrow_from(uint32_t rn, uint32_t shifter_operand, int c_flag)
   return rn < shifter_operand + !c_flag_value;
 }
 
+uint32_t logical_shift_left(uint32_t value, uint8_t shift)
+{
+  /*
+    Returns the result of a logical shift left operation on the value specified as its parameter.
+
+    Param value: The value to shift.
+    Param shift: The number of bits to shift by.
+  */
+  return value << shift;
+}
+
+uint32_t logical_shift_right(uint32_t value, uint8_t shift)
+{
+  /*
+    Returns the result of a logical shift right operation on the value specified as its parameter.
+
+    Param value: The value to shift.
+    Param shift: The number of bits to shift by.
+  */
+  return value >> shift;
+}
+
 // TODO: Check A5.1.1 and correct register shift + implement immediate shift
 int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
@@ -119,7 +141,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   uint8_t shifter_carry_out = 0;
 
   // Shifter operand and shifter carry out
-  // Immediate value
+  // 32-bit immediate
   if (i_code == 1)
   {
     uint8_t immed_8 = get_bits(ins, 7, 0);
@@ -134,14 +156,32 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       shifter_carry_out = get_bit(shifter_operand, 31);
     }
   }
-  // Register value
-  else
+  // Immediate shifts
+  else if (get_bit(ins, 4) == 0)
   {
-    uint8_t rm_code = get_bits(ins, 3, 0);
-    shifter_operand = registers_read(p->reg, rm_code, mode);
+    uint8_t shift_imm = get_bits(ins, 11, 7);
+    uint8_t shift = get_bits(ins, 6, 5);
+    uint8_t rm = get_bits(ins, 3, 0);
+    uint32_t rm_value = registers_read(p->reg, rm, mode);
+    if (shift_imm == 0)
+    {
+      shifter_operand = rm_value;
+      shifter_carry_out = registers_read_C(p->reg);
+    }
+    else
+    {
+      switch (shift)
+      {
+      case 0b00:
+        shifter_operand = logical_shift_left(rm_value, shift_imm);
+        shifter_carry_out = get_bit(rm_value, 32 - shift_imm);
+        break;
+      // TODO: Other cases
+      default:
+        return UNDEFINED_INSTRUCTION;
+      }
+    }
   }
-
-  printf("shifter_carry_out: %d\n", shifter_carry_out);
 
   // Set Rd
   switch (opcode)
