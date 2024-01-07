@@ -20,6 +20,7 @@ void test_template(
     uint16_t shifter,
     uint32_t Rn_value,
     uint32_t Rs_value,
+    uint32_t Rm_value,
     uint32_t expected_Rd,
     int8_t expected_Z,
     int8_t expected_N,
@@ -32,9 +33,14 @@ void test_template(
   // Reset Rd
   registers_write(p->reg, Rd, USR, 0);
   // Set Rs
-  if (I == 0)
+  if (I == 0 && !get_bit(shifter, 7) && get_bit(shifter, 4))
   {
-    registers_write(p->reg, get_bits(shifter, 7, 0), USR, Rs_value);
+    registers_write(p->reg, get_bits(shifter, 11, 8), USR, Rs_value);
+  }
+  // Set Rm
+  if (I == 0 && !get_bit(shifter, 4))
+  {
+    registers_write(p->reg, get_bits(shifter, 3, 0), USR, Rm_value);
   }
   uint32_t ins = (cond << 28) | (I << 25) | (opcode << 21) | (S << 20) | (Rn << 16) | (Rd << 12) | shifter;
   arm_data_processing_immediate(p, ins);
@@ -72,6 +78,7 @@ void test_add(arm_core p)
       0b000000000011, // Shifter : #3
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       5,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -89,7 +96,8 @@ void test_add(arm_core p)
       1,              // Rd : r1
       0b000000000010, // Shifter : r2
       2,              // Rn value
-      4,              // Rs value
+      0,              // Rs value
+      4,              // Rm value
       6,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -97,7 +105,7 @@ void test_add(arm_core p)
       0);             // Expected V flag
 
   test_template(
-      "ADD (N+V : 0x7FFFFFFF + 0x1) ... ",
+      "ADD (N+V : 0x7FFFFFFF + 0x1)",
       p,
       AL,             // Cond
       1,              // I : Immediate value
@@ -108,6 +116,7 @@ void test_add(arm_core p)
       0b000000000001, // Shifter : #1
       0x7FFFFFFF,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x80000000,     // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -116,7 +125,7 @@ void test_add(arm_core p)
 
   registers_write_Z(p->reg, 0);
   test_template(
-      "ADD (Unvalid condition) ... ",
+      "ADD (Unvalid condition)",
       p,
       EQ,             // Cond
       1,              // I : Immediate value
@@ -127,6 +136,7 @@ void test_add(arm_core p)
       0b000000000011, // Shifter : #3
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       -1,             // Expected Z flag
       -1,             // Expected N flag
@@ -134,7 +144,7 @@ void test_add(arm_core p)
       -1);            // Expected V flag
 
   test_template(
-      "ADD (Immediate value with rotation) ... ",
+      "ADD (Immediate value with rotation)",
       p,
       AL,             // Cond
       1,              // I : Immediate value
@@ -145,6 +155,7 @@ void test_add(arm_core p)
       0b110000000010, // Shifter : #512
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       514,            // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -152,7 +163,7 @@ void test_add(arm_core p)
       0);             // Expected V flag
 
   test_template(
-      "ADD (Result is 0) ... ",
+      "ADD (Result is 0)",
       p,
       AL,             // Cond
       1,              // I : Immediate value
@@ -163,8 +174,47 @@ void test_add(arm_core p)
       0b000000000000, // Shifter : #0
       0,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
+
+  test_template(
+      "ADD (Immediate shift LSL#4)",
+      p,
+      AL,             // Cond
+      0,              // I : Register value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
+      0b001000000010, // Shifter : r2
+      7,              // Rn value
+      0,              // Rs value
+      3,              // Rm value
+      55,             // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
+
+  test_template(
+      "ADD (Immediate shift LSR#4)",
+      p,
+      AL,             // Cond
+      0,              // I : Register value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b001000100010, // Shifter : r2
+      0x9,            // Rn value
+      0,              // Rs value
+      0b1101100,      // Rm value
+      15,             // Expected Rd value
+      0,              // Expected Z flag
       0,              // Expected N flag
       0,              // Expected C flag
       0);             // Expected V flag
@@ -184,6 +234,7 @@ void test_sub(arm_core p)
       0b000000000010, // Shifter : #2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       2,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -202,6 +253,7 @@ void test_sub(arm_core p)
       0b000000000100, // Shifter : #4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       -2,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -220,6 +272,7 @@ void test_sub(arm_core p)
       0b000000000001, // Shifter : #1
       0x80000000,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x7FFFFFFF,     // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -238,6 +291,7 @@ void test_sub(arm_core p)
       0b000000001011, // Shifter : #11
       11,             // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
@@ -248,6 +302,7 @@ void test_sub(arm_core p)
 void test_and(arm_core p)
 {
   // 0xE4 & 0x47 = 11100100 & 01000111 = 01000100 = 0x44
+  registers_write_C(p->reg, 0);
   test_template(
       "AND (Immediate value)",
       p,
@@ -260,12 +315,14 @@ void test_and(arm_core p)
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x44,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 1);
   test_template(
       "AND (Second value from register)",
       p,
@@ -277,13 +334,15 @@ void test_and(arm_core p)
       1,              // Rd : r1
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
-      0x47,           // Rs value
+      0,              // Rs value
+      0x47,           // Rm value
       0x44,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 1);
   test_template(
       "AND (Result is 0)",
       p,
@@ -296,16 +355,38 @@ void test_and(arm_core p)
       0b000000010001, // Shifter : #0x11
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x00,           // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
+      -1);            // Expected V flag
+
+  // (0xD0 => 0x34) & 0x20 = 00110100 & 00100000 = 00100000 = 0x20
+  test_template(
+      "AND (Immediate shift with rotate_imm != 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Register value
+      AND,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
+      0b000111010000, // Shifter : 0xD0 => 0x34
+      0x20,           // Rn value
+      0,              // Rs value
+      0,              // Rm value
+      0x20,           // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
 void test_eor(arm_core p)
 {
   // 0xE4 ^ 0x47 = 11100100 ^ 01000111 = 10100011 = 0xA3
+  registers_write_C(p->reg, 0);
   test_template(
       "EOR (Immediate value)",
       p,
@@ -318,12 +399,14 @@ void test_eor(arm_core p)
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0xA3,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 1);
   test_template(
       "EOR (Second value from register)",
       p,
@@ -335,11 +418,12 @@ void test_eor(arm_core p)
       1,              // Rd : r1
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
-      0x47,           // Rs value
+      0,              // Rs value
+      0x47,           // Rm value
       0xA3,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 }
 
@@ -358,6 +442,7 @@ void test_rsb(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       -2,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -377,6 +462,7 @@ void test_rsb(arm_core p)
       0b000000000100, // Shifter : 4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       2,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -400,6 +486,7 @@ void test_adc(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       7,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -420,6 +507,7 @@ void test_adc(arm_core p)
       0b000000000100, // Shifter : 4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       6,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -440,6 +528,7 @@ void test_adc(arm_core p)
       0b000000000001, // Shifter : 1
       0xFFFFFFFE,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
@@ -463,6 +552,7 @@ void test_sbc(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       1,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -483,6 +573,7 @@ void test_sbc(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       2,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -503,6 +594,7 @@ void test_sbc(arm_core p)
       0b000000000001, // Shifter
       0x80000001,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0x7FFFFFFF,     // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -526,6 +618,7 @@ void test_rsc(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       -3,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -546,6 +639,7 @@ void test_rsc(arm_core p)
       0b000000000100, // Shifter : 4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       2,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -556,6 +650,7 @@ void test_rsc(arm_core p)
 void test_tst(arm_core p)
 {
   registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 0);
   test_template(
       "TST (Immediate value)",
       p,
@@ -568,14 +663,16 @@ void test_tst(arm_core p)
       0b000000000001, // Shifter : 1
       1,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 
   // 0xE4 & 0x1B = 11100100 & 00011011 = 0
   registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 1);
   test_template(
       "TST (Result is 0)",
       p,
@@ -587,17 +684,19 @@ void test_tst(arm_core p)
       0,              // Rd : r0
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
-      0x1B,           // Rs value
+      0,              // Rs value
+      0x1B,           // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 }
 
 void test_teq(arm_core p)
 {
   registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 0);
   test_template(
       "TEQ (Immediate value)",
       p,
@@ -610,13 +709,15 @@ void test_teq(arm_core p)
       0b000000000000, // Shifter : 0
       0xF,            // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 
   registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 1);
   test_template(
       "TEQ (Result is 0)",
       p,
@@ -628,11 +729,12 @@ void test_teq(arm_core p)
       0,              // Rd : r0
       0b000000000010, // Shifter : r2
       0xE4,           // Rn value
-      0xE4,           // Rs value
+      0,              // Rs value
+      0xE4,           // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 }
 
@@ -650,6 +752,7 @@ void test_cmp(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -668,6 +771,7 @@ void test_cmp(arm_core p)
       0b000000000100, // Shifter : 4
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
@@ -686,6 +790,7 @@ void test_cmp(arm_core p)
       0b000000000001, // Shifter : 1
       0x80000000,     // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -704,6 +809,7 @@ void test_cmp(arm_core p)
       0b000000000000, // Shifter : 0
       11,             // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -727,6 +833,7 @@ void test_cmn(arm_core p)
       0b000000000010, // Shifter : 2
       4,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -746,6 +853,7 @@ void test_cmn(arm_core p)
       0b000000000000, // Shifter : 0
       2,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
@@ -756,6 +864,7 @@ void test_cmn(arm_core p)
 void test_orr(arm_core p)
 {
   // 0xE4 | 0x47 = 11100100 | 01000111 = 11100111 = 0xE7
+  registers_write_C(p->reg, 1);
   test_template(
       "ORR (Immediate value)",
       p,
@@ -768,12 +877,14 @@ void test_orr(arm_core p)
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0xE7,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 0);
   test_template(
       "ORR (Result is 0)",
       p,
@@ -786,16 +897,18 @@ void test_orr(arm_core p)
       0b000000000000, // Shifter : 0
       0,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0,              // Expected Rd value
       1,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
 void test_mov(arm_core p)
 {
   registers_write(p->reg, 2, USR, 0);
+  registers_write_C(p->reg, 1);
   test_template(
       "MOV (Immediate value)",
       p,
@@ -808,12 +921,14 @@ void test_mov(arm_core p)
       0b000000001011, // Shifter : 11
       0,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       11,             // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 
+  registers_write_C(p->reg, 0);
   test_template(
       "MOV (Value from register)",
       p,
@@ -825,17 +940,19 @@ void test_mov(arm_core p)
       2,              // Rd : r2
       0b000000000010, // Shifter : r2
       0,              // Rn value
-      -4,             // Rs value
+      0,              // Rs value
+      -4,             // Rm value
       -4,             // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
 void test_bic(arm_core p)
 {
   // 0xE4 & ~0x47 = 11100100 & 10111000 = 10100000 = 0xA0
+  registers_write_C(p->reg, 1);
   test_template(
       "BIC (Immediate value)",
       p,
@@ -848,16 +965,18 @@ void test_bic(arm_core p)
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
+      0,              // Rm value
       0xA0,           // Expected Rd value
       0,              // Expected Z flag
       0,              // Expected N flag
-      -1,             // Expected C flag
+      1,              // Expected C flag
       -1);            // Expected V flag
 }
 
 void test_mvn(arm_core p)
 {
   // ~0xE4 = ~0x000000E4 = 0xFFFFFF1B
+  registers_write_C(p->reg, 0);
   test_template(
       "MVN (Immediate value)",
       p,
@@ -870,10 +989,11 @@ void test_mvn(arm_core p)
       0b000011100100, // Shifter : 0
       0,              // Rn value
       0,              // Rs value
+      0,              // Rm value
       0xFFFFFF1B,     // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
-      -1,             // Expected C flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
