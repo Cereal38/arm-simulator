@@ -38,7 +38,7 @@ void test_template(
     registers_write(p->reg, get_bits(shifter, 11, 8), USR, Rs_value);
   }
   // Set Rm
-  if (I == 0 && !get_bit(shifter, 4))
+  if (I == 0)
   {
     registers_write(p->reg, get_bits(shifter, 3, 0), USR, Rm_value);
   }
@@ -208,7 +208,7 @@ void test_add(arm_core p)
       ADD,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b001000100010, // Shifter : r2
       0x9,            // Rn value
       0,              // Rs value
@@ -229,7 +229,7 @@ void test_add(arm_core p)
       ADD,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b001001000010, // Shifter : r2
       0xA,            // Rn value
       0,              // Rs value
@@ -250,7 +250,7 @@ void test_add(arm_core p)
       ADD,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b010001100010, // Shifter : r2
       0xA,            // Rn value
       0,              // Rs value
@@ -272,7 +272,7 @@ void test_add(arm_core p)
       ADD,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b000001100010, // Shifter : r2
       0xA,            // Rn value
       0,              // Rs value
@@ -280,6 +280,26 @@ void test_add(arm_core p)
       0xC8000019,     // Expected Rd value
       0,              // Expected Z flag
       1,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
+
+  registers_write_C(p->reg, 1);
+  test_template(
+      "Add (Register shift LSL [0])",
+      p,
+      AL,             // Cond
+      0,              // I : Register value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
+      0b001100010010, // Shifter : Rs = r3, Rm = r2
+      3,              // Rn value
+      0,              // Rs value
+      2,              // Rm value
+      5,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
       0,              // Expected C flag
       0);             // Expected V flag
 }
@@ -937,7 +957,7 @@ void test_orr(arm_core p)
       ORR,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
@@ -957,7 +977,7 @@ void test_orr(arm_core p)
       ORR,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b000000000000, // Shifter : 0
       0,              // Rn value
       0,              // Rs value
@@ -981,7 +1001,7 @@ void test_mov(arm_core p)
       MOV,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b000000001011, // Shifter : 11
       0,              // Rn value
       0,              // Rs value
@@ -1001,7 +1021,7 @@ void test_mov(arm_core p)
       MOV,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b000000000010, // Shifter : r2
       0,              // Rn value
       0,              // Rs value
@@ -1025,7 +1045,7 @@ void test_bic(arm_core p)
       BIC,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b000001000111, // Shifter : #0x47
       0xE4,           // Rn value
       0,              // Rs value
@@ -1049,7 +1069,7 @@ void test_mvn(arm_core p)
       MVN,            // Opcode
       1,              // S : Set condition codes
       0,              // Rn : r0
-      2,              // Rd : r2
+      1,              // Rd : r1
       0b000011100100, // Shifter : 0
       0,              // Rn value
       0,              // Rs value
