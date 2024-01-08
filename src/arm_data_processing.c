@@ -253,6 +253,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     uint32_t rm_value = registers_read(p->reg, rm, mode);
     uint32_t rs_value = registers_read(p->reg, rs, mode);
     uint8_t rs_value_8bits = get_bits(rs_value, 7, 0);
+    uint8_t rs_value_5bits = get_bits(rs_value, 4, 0);
     switch (shift)
     {
     case LSL:
@@ -322,6 +323,23 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
           shifter_operand = 0xFFFFFFFF;
           shifter_carry_out = get_bit(rm_value, 31);
         }
+      }
+      break;
+    case ROR:
+      if (rs_value_8bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = registers_read_C(p->reg);
+      }
+      else if (rs_value_5bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = get_bit(rm_value, 31);
+      }
+      else
+      {
+        shifter_operand = rotate_right(rm_value, rs_value_5bits);
+        shifter_carry_out = get_bit(rm_value, rs_value_5bits - 1);
       }
       break;
     default:
