@@ -144,6 +144,7 @@ int bits_a_0(arm_core p, uint32_t instruction)
   int result = 0;
   if (get_bit(instruction, 4) & get_bit(instruction, 7))
   {
+    // TODO
     // multiplies
     // Extra load/stores
     // A REVOIR !!!
@@ -239,7 +240,7 @@ static int arm_execute_instruction(arm_core p)
     return UNDEFINED_INSTRUCTION;
   }
   // Extraction des 3 prochains bits 27 - 25
-  uint8_t code = (uint8_t)(((instruction << 3) >> 25) & 0b0111);
+  uint8_t code = (uint8_t)get_bits(instruction, 27, 25);
 
   switch (code)
   {
