@@ -55,6 +55,8 @@ int arm_branch(arm_core p, uint32_t ins) {
     // Mettre PC au bon endroit pour le branchement
     registers_write(p->reg, 15, mode, address + immed);
     
+    // TODO Vérifier la valeur de retour
+    return 0;
 } 
 
 int arm_coprocessor_others_swi(arm_core p, uint32_t ins) {
@@ -74,56 +76,58 @@ uint8_t rotateRight8(uint8_t value, int rotateBy) {
 }
 
 int arm_miscellaneous(arm_core p, uint32_t ins) {
+    int8_t operand;
+
     // MSR 
-    if get_bit (ins , 25) {
+    if (get_bit(ins, 25)) {
         // Cas Immediate operand
-        int8_t bit_immediate_8 = get_bits (ins, 7, 0);
-        int8_t rotate_imm = get_bits (ins, 11 , 8);
-        int8_t operand = rotateRight8 ( bit_immediate_8 , (rotate_imm * 2)) ;  
-    }
-    else {
+        int8_t bit_immediate_8 = get_bits(ins, 7, 0);
+        int8_t rotate_imm = get_bits(ins, 11, 8);
+        operand = rotateRight8(bit_immediate_8, (rotate_imm * 2));
+    } else {
         // Cas Register
-        int8_t operand = get_bits (3 , 0);
+        operand = get_bits(ins, 3, 0);
     }
-    if ( (operand & UnallocMask) != 0) {
-        // TODO Verifier UNDEF Ou UNPREDICTABLE
+
+    if ((operand & UnallocMask) != 0) {
+        // TODO Vérifier UNDEF Ou UNPREDICTABLE
         return UNDEFINED_INSTRUCTION;
     }
 
-    int8_t field_mask = get_bits ( ins, 19, 16 ); 
-    int8_t byte_mask = ((field_mask[0] == 1) ? 0x000000FF : 0x00000000) |
-                     ((field_mask[1] == 1) ? 0x0000FF00 : 0x00000000) |
-                     ((field_mask[2] == 1) ? 0x00FF0000 : 0x00000000) |
-                     ((field_mask[3] == 1) ? 0xFF000000 : 0x00000000);
-    
-    if (!get_bit (ins, 22)) /*R = 0*/ {
+    int8_t field_mask = get_bits(ins, 19, 16);
+    int8_t byte_mask = ((get_bit(field_mask, 0) == 1) ? 0x000000FF : 0x00000000) |
+                       ((get_bit(field_mask, 1) == 1) ? 0x0000FF00 : 0x00000000) |
+                       ((get_bit(field_mask, 2) == 1) ? 0x00FF0000 : 0x00000000) |
+                       ((get_bit(field_mask, 3) == 1) ? 0xFF000000 : 0x00000000);
+
+    uint32_t mask;  // Declare mask here
+
+    if (!get_bit(ins, 22)) /*R = 0*/ {
         if (registers_in_a_privileged_mode(p->reg)) {
-            if ( ( operand & StateMask) != 0 ) {
-                // TODO Verifier UNDEF Ou UNPREDICTABLE
+            if ((operand & StateMask) != 0) {
+                // TODO Vérifier UNDEF Ou UNPREDICTABLE
                 return UNDEFINED_INSTRUCTION;
+            } else {
+                mask = byte_mask & (UserMask | PrivMask);
             }
-            else {
-                uint32_t mask = byte_mask & ( UserMask | PrivMask );
-            }
+        } else {
+            mask = byte_mask & UserMask;
         }
-        else {
-            uint32_t mask = byte_mask & UserMask;
-        }
-        uint32_t CPSR_register = registers_read_cpsr( p->reg);
-        CPSR_register = ( CPSR_register & ( ~ mask) ) | (operand & mask)
-        registers_write_cpsr( p->reg , CPSR_register);
-    }
-    else /* R == 1 */ {
-        if( arm_current_mode_has_spsr(p) ) {
-            uint32_t mask = byte_mask & ( UserMask | PrivMask | StateMask );
-            uint8_t mode = registers_get_mode( p->reg ) 
-            uint32_t SPSR_register = registers_read_spsr( p->r , mode);
-            SPSR_register = ( SPSR_register & (~ mask)) | (operand & mask);
-            register_write_spsr ( p->reg, mode, SPSR_register);
-        }
-        else {
-            // TODO Verifier UNDEF Ou UNPREDICTABLE
+        uint32_t CPSR_register = registers_read_cpsr(p->reg);
+        CPSR_register = (CPSR_register & (~mask)) | (operand & mask);
+        registers_write_cpsr(p->reg, CPSR_register);
+    } else /* R == 1 */ {
+        if (arm_current_mode_has_spsr(p)) {
+            mask = byte_mask & (UserMask | PrivMask | StateMask);
+            uint8_t mode = registers_get_mode(p->reg);
+            uint32_t SPSR_register = registers_read_spsr(p->reg, mode);
+            SPSR_register = (SPSR_register & (~mask)) | (operand & mask);
+            registers_write_spsr(p->reg, mode, SPSR_register);
+        } else {
+            // TODO Vérifier UNDEF Ou UNPREDICTABLE
             return UNDEFINED_INSTRUCTION;
         }
     }
+    // TODO Vérifier la valeur de retour
+    return 0;
 }
