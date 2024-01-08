@@ -435,22 +435,28 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       registers_write(p->reg, rd_code, mode, result);
       break;
     case ADC:
+    {
       uint8_t c_flag = registers_read_C(p->reg);
       registers_write_C(p->reg, carry_from(rn, shifter_operand, c_flag));
       registers_write_V(p->reg, overflow_from(rn, shifter_operand, c_flag, 1));
       registers_write(p->reg, rd_code, mode, result);
+    }
       break;
     case SBC:
-      c_flag = registers_read_C(p->reg);
+    {
+      uint8_t c_flag = registers_read_C(p->reg);
       registers_write_C(p->reg, !borrow_from(rn, shifter_operand, c_flag));
       registers_write_V(p->reg, overflow_from(rn, shifter_operand, c_flag, 0));
       registers_write(p->reg, rd_code, mode, result);
+    }
       break;
     case RSC:
-      c_flag = registers_read_C(p->reg);
+    {
+      uint8_t c_flag = registers_read_C(p->reg);
       registers_write_C(p->reg, !borrow_from(shifter_operand, rn, c_flag));
       registers_write_V(p->reg, overflow_from(shifter_operand, rn, c_flag, 0));
       registers_write(p->reg, rd_code, mode, result);
+    }
       break;
     case TST:
       registers_write_C(p->reg, shifter_carry_out);

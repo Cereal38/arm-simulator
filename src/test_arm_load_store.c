@@ -7,70 +7,64 @@
 #include "memory.h"
 #include "arm_constants.h"
 #include "util.h"
+#include "arm_load_store.h"
 
-void test_template(
+void test_template_load_store(
     char *name,
     arm_core p,
-    uint8_t cond,
-    uint8_t I,
-    uint8_t opcode,
-    uint8_t S,
-    uint8_t Rn,
-    uint8_t Rd,
-    uint16_t shifter,
+    uint8_t cond,  // Bits 31-28
+    uint8_t code,  // Bits 27-20
+    uint8_t Rn,    // Bits 19-16
+    uint8_t Rd,    // Bits 15-12
+    uint16_t addr, // Bits 11-0
     uint32_t Rn_value,
-    uint32_t Rs_value,
-    uint32_t Rm_value,
-    uint32_t expected_Rd,
-    int8_t expected_Z,
-    int8_t expected_N,
-    int8_t expected_C,
-    int8_t expected_V)
+    uint32_t expected_Rd)
 {
     printf("Test : %s ... ", name);
     // Set Rn
     registers_write(p->reg, Rn, USR, Rn_value);
     // Reset Rd
     registers_write(p->reg, Rd, USR, 0);
-    // Set Rs
-    if (I == 0 && !get_bit(shifter, 7) && get_bit(shifter, 4))
-    {
-        registers_write(p->reg, get_bits(shifter, 11, 8), USR, Rs_value);
-    }
-    // Set Rm
-    if (I == 0)
-    {
-        registers_write(p->reg, get_bits(shifter, 3, 0), USR, Rm_value);
-    }
-    uint32_t ins = (cond << 28) | (I << 25) | (opcode << 21) | (S << 20) | (Rn << 16) | (Rd << 12) | shifter;
-    arm_data_processing_immediate(p, ins);
+    // Set instruction
+    uint32_t ins = (cond << 28) | (code << 20) | (Rn << 16) | (Rd << 12) | addr;
+    // Execute
+    printf("Before execution, Rn = %u\n", registers_read(p->reg, Rn, USR));
+    arm_load_store(p, ins);
+    printf("After execution, Rd = %u\n", registers_read(p->reg, Rd, USR));
+    // Check result
     assert(registers_read(p->reg, Rd, USR) == expected_Rd);
-    if (expected_Z != -1)
-    {
-        assert(registers_read_Z(p->reg) == expected_Z);
-    }
-    if (expected_N != -1)
-    {
-        assert(registers_read_N(p->reg) == expected_N);
-    }
-    if (expected_C != -1)
-    {
-        assert(registers_read_C(p->reg) == expected_C);
-    }
-    if (expected_V != -1)
-    {
-        assert(registers_read_V(p->reg) == expected_V);
-    }
-    printf("OK\n");
 }
 
-void test_LDR(arm_core p){
-    
+void test_LDR(arm_core p)
+{
+   // Test 1 : LDR avec une valeur immédiate
+   test_template_load_store(
+       "LDR (Immediate value)",
+       p,
+       AL,             // Cond
+       0b01011001,     // Opcode
+       0,              // Rn : r0
+       1,              // Rd : r1
+       0b000000000000,
+       2,              // Rn value
+       2);             // Expected Rd value
+
+   // Test 2 : LDR avec une valeur provenant du registre
+   test_template_load_store(
+       "LDR (Value from register)",
+       p,
+       AL,             // Cond
+       0b01011001,     // Opcode
+       0,              // Rn : r0
+       1,              // Rd : r1
+       0b000000000010, // Shifter : r2
+       2,              // Rn value
+       6);             // Expected Rd value
 }
 
 int main(){
     arm_core p = arm_create(registers_create(), memory_create(2048));
-
+    test_LDR(p);
     memory_destroy(p->mem);
     registers_destroy(p->reg);
     arm_destroy(p);
