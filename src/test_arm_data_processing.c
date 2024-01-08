@@ -260,6 +260,28 @@ void test_add(arm_core p)
       0,              // Expected N flag
       0,              // Expected C flag
       0);             // Expected V flag
+
+  // 0x9000001F RRX (C_flag = 1) = 0xC800000F
+  // 0xC800000F + 0xA = 0xC8000019
+  registers_write_C(p->reg, 1);
+  test_template(
+      "Add (Immediate shift RRX)",
+      p,
+      AL,             // Cond
+      0,              // I : Register value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      2,              // Rd : r2
+      0b000001100010, // Shifter : r2
+      0xA,            // Rn value
+      0,              // Rs value
+      0x9000001F,     // Rm value
+      0xC8000019,     // Expected Rd value
+      0,              // Expected Z flag
+      1,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
 }
 
 void test_sub(arm_core p)
