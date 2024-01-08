@@ -29,80 +29,251 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_constants.h"
 #include "util.h"
 
+// verif_cond prend en parametre l'instruction en cours
+// et verifie si sa condition est verifiée
+// renvoie 1 si ok 0 sinon
+int verif_cond(uint32_t instruction, registers r)
+{
+
+  // Extraire les bits de condition (bits 28-31)
+  uint8_t condition_bits = (uint8_t)get_bits(instruction, 31, 28);
+  // récupération de l'état des flags
+  uint32_t cpsr = registers_read_cpsr(r);
+
+  switch (condition_bits)
+  {
+  case EQ: // Z == 1
+    if ((cpsr & (1 << Z)) != 0)
+    {
+      return 1;
+    }
+    return 0;
+  case NE: // Z == 0
+    if ((cpsr & (1 << Z)) == 0)
+    {
+      return 1;
+    }
+    return 0;
+  case CSHS: // CS/HS (C == 1)
+    if ((cpsr & (1 << C)) != 0)
+    {
+      return 1;
+    }
+    return 0;
+  case CCLO: // CC/LO (C == 0)
+    if ((cpsr & (1 << C)) == 0)
+    {
+      return 1;
+    }
+    return 0;
+  case MI: // N == 1
+    if ((cpsr & (1 << N)) != 0)
+    {
+      return 1;
+    }
+    return 0;
+  case PL: // N == 0
+    if ((cpsr & (1 << N)) == 0)
+    {
+      return 1;
+    }
+    return 0;
+  case VS: // V == 1
+    if ((cpsr & (1 << V)) != 0)
+    {
+      return 1;
+    }
+    return 0;
+  case VC: // V == 0
+    if ((cpsr & (1 << V)) == 0)
+    {
+      return 1;
+    }
+    return 0;
+  case HI: // C == 1 && Z == 0
+    if (((cpsr & (1 << C)) != 0) && ((cpsr & (1 << Z)) == 0))
+    {
+      return 1;
+    }
+    return 0;
+  case LS: // C == 0 || Z == 1
+    if (((cpsr & (1 << C)) == 0) || ((cpsr & (1 << Z)) != 0))
+    {
+      return 1;
+    }
+    return 0;
+  case GE: // N == V
+    if ((cpsr & (1 << N)) == (cpsr & (1 << V)))
+    {
+      return 1;
+    }
+    return 0;
+  case LT: // N != V
+    if ((cpsr & (1 << N)) != (cpsr & (1 << V)))
+    {
+      return 1;
+    }
+    return 0;
+  case GT: // Z == 0 && N == V
+    if (((cpsr & (1 << Z)) == 0) && ((cpsr & (1 << N)) == (cpsr & (1 << V))))
+    {
+      return 1;
+    }
+    return 0;
+  case LE: // Z == 1 || N != V
+    if (((cpsr & (1 << Z)) != 0) || ((cpsr & (1 << N)) != (cpsr & (1 << V))))
+    {
+      return 1;
+    }
+    return 0;
+  case AL: // Toujours vrai
+    return 1;
+  case 0xF: // - Voir condition code
+            // a completer ?
+    return 1;
+  default:
+    fprintf(stderr, "Condition inconnue : %d\n", condition_bits);
+    return -1;
+  }
+}
+
+int bits_a_0(arm_core p, uint32_t instruction)
+{
+  // Extractions des bits qui nous interesse pour distinguer les cas
+
+  int result = 0;
+  if (get_bit(instruction, 4) & get_bit(instruction, 7))
+  {
+    // TODO
+    // multiplies
+    // Extra load/stores
+    // A REVOIR !!!
+    result = arm_load_store_multiple(p, instruction);
+  }
+  else
+  {
+    if ((get_bits(instruction, 24, 23) == 0b10) & ~get_bit(instruction, 20))
+    {
+      result = arm_miscellaneous(p, instruction);
+    }
+    else
+    {
+      result = arm_data_processing_shift(p, instruction);
+    }
+  }
+  return result;
+}
+
+int bits_a_1(arm_core p, uint32_t instruction)
+{
+  if ((get_bits(instruction, 24, 23)) == 0b10)
+  {
+    if (get_bits(instruction, 21, 20) == 0b10)
+    {
+      return arm_data_processing_immediate_msr(p, instruction);
+    }
+    if (get_bits(instruction, 21, 20) == 0b00)
+    {
+      return UNDEFINED_INSTRUCTION;
+    }
+  }
+  return arm_data_processing_immediate_msr(p, instruction);
+}
+
+int bits_a_3(arm_core p, uint32_t instruction)
+{
+  if ((get_bits(instruction, 24, 20) == 0b11111) && (get_bits(instruction, 7, 4) == 0b1111))
+  {
+    // Load/store immediate offset
+    return UNDEFINED_INSTRUCTION;
+  }
+  if (get_bit(instruction, 4))
+  {
+    // Media instructions
+    return UNDEFINED_INSTRUCTION;
+  }
+  // Load/store register offset
+  return arm_load_store(p, instruction);
+}
+
+int bits_a_7(arm_core p, uint32_t instruction)
+{
+  if (get_bit(instruction, 24))
+  {
+    return SOFTWARE_INTERRUPT;
+  }
+  if (get_bit(instruction, 4))
+  {
+    // coprocessor register transfers
+    return arm_coprocessor_others_swi(p, instruction);
+  }
+  // coprocessor registers transfers
+  return arm_coprocessor_others_swi(p, instruction);
+}
+
 static int arm_execute_instruction(arm_core p)
 {
   uint32_t instruction;
   int resultat = arm_fetch(p, &instruction);
 
+  log_printf(">>> READ INSTRUCTION :\n%s\n", to_binary(instruction, 32));
+
   if (resultat)
   {
-    // return arm_exception(p, resultat); // venant de arm step.. pas sur
-    // // Doit retrun 1 si il y a une erreur (d'apres fun arm step)
-    return 1;
+    // gestion interruption fetch
+    return PREFETCH_ABORT;
   }
-  //  << 24 or >> 21 c'est sur 8 ou 4 bits?
-  uint8_t codeInstruction = (uint8_t)((instruction >> 21) & 0b1111);
 
-  switch (codeInstruction)
+  // Verfification de la condition
+  int cond = verif_cond(instruction, p->reg);
+
+  if (cond == 0)
   {
-  case 0b0000: // AND
-    printf("Implement AND\n");
+    fprintf(stderr, "Condition non satisfaite \n");
+    /// A MODIFIER ?
+    return UNDEFINED_INSTRUCTION;
+  }
+  if (cond == -1)
+  {
+    fprintf(stderr, "Condition non existante \n");
+    // Gestion interruption conditon non existante
+    return UNDEFINED_INSTRUCTION;
+  }
+  // Extraction des 3 prochains bits 27 - 25
+  uint8_t code = (uint8_t)get_bits(instruction, 27, 25);
+
+  switch (code)
+  {
+  case 0b000: // Data processing immediate shift
+    resultat = bits_a_0(p, instruction);
     break;
-  case 0b0001:
-    printf("Implement EOR\n");
+  case 0b001: // Data processing immediate
+    resultat = bits_a_1(p, instruction);
     break;
-  case 0b0010:
-    printf("Implement SUB\n");
+  case 0b010: // Load/store immediate offset
+    resultat = arm_load_store(p, instruction);
     break;
-  case 0b0011:
-    printf("Implement RSB\n");
+  case 0b011: // Load/store register offset
+    resultat = bits_a_3(p, instruction);
     break;
-  case 0b0100:
-    printf("Implement ADD\n");
+  case 0b100: // Load/store multiple
+    resultat = arm_load_store_multiple(p, instruction);
     break;
-  case 0b0101:
-    printf("Implement ADC\n");
+  case 0b101: // Branch and branch with link
+    resultat = arm_branch(p, instruction);
     break;
-  case 0b0110:
-    printf("Implement SBC\n");
+  case 0b110: // Coprocessor load/store and double register transfers
+    resultat = arm_coprocessor_load_store(p, instruction);
     break;
-  case 0b0111:
-    printf("Implement RSC\n");
-    break;
-  case 0b1000:
-    printf("Implement TST\n");
-    break;
-  case 0b1001:
-    printf("Implement TEQ\n");
-    break;
-  case 0b1010:
-    printf("Implement CMP\n");
-    break;
-  case 0b1011:
-    printf("Implement CMN\n");
-    break;
-  case 0b1100:
-    printf("Implement ORR\n");
-    break;
-  case 0b1101:
-    printf("Implement MOV\n");
-    break;
-  case 0b1110:
-    printf("Implement BIC\n");
-    break;
-  case 0b1111:
-    printf("Implement MVN\n");
+  case 0b111: // Cop data process / Cop register transfers / Software interrupt
+    resultat = bits_a_7(p, instruction);
     break;
   default: // ne dois jamais arriver
     fprintf(stderr, "<arm_execute_instruction> Erreur default dans switch\n");
-    exit(1);
+    return UNDEFINED_INSTRUCTION;
   }
 
-  // Incrémente le PC
-  uint32_t mode = registers_get_mode(p->reg);
-  registers_write(p->reg, 0xF, mode, p->reg->registers[15] + 4);
-
-  return 0;
+  return resultat;
 }
 
 int arm_step(arm_core p)

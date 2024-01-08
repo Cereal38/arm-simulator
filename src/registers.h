@@ -37,12 +37,11 @@ struct registers_data
   // pc est le même pour tous les modes (r15)
   uint32_t registers[16];
 
-  // Modes spécifiques de SVC, ABT, UND, IRQ, FIQ
-  uint32_t r13_svc, r14_svc, spsr_svc;
-  uint32_t r13_abt, r14_abt, spsr_abt;
-  uint32_t r13_und, r14_und, spsr_und;
-  uint32_t r13_irq, r14_irq, spsr_irq;
-  uint32_t r8_fiq, r9_fiq, r10_fiq, r11_fiq, r12_fiq, r13_fiq, r14_fiq, spsr_fiq;
+  // Registres spécifiques de SVC, ABT, UND, IRQ, FIQ
+  uint32_t registers_svc[2], registers_abt[2], registers_und[2], registers_irq[2], registers_fiq[7];
+
+  // spsr spécifique à chaque mode
+  uint32_t spsr_svc, spsr_abt, spsr_und, spsr_irq, spsr_fiq;
 
   // cpsr est le même pour tous les modes
   uint32_t cpsr;
@@ -62,5 +61,14 @@ uint32_t registers_read_spsr(registers r, uint8_t mode);
 void registers_write(registers r, uint8_t reg, uint8_t mode, uint32_t value);
 void registers_write_cpsr(registers r, uint32_t value);
 void registers_write_spsr(registers r, uint8_t mode, uint32_t value);
+
+void registers_write_Z(registers r, uint8_t value);
+void registers_write_N(registers r, uint8_t value);
+void registers_write_C(registers r, uint8_t value);
+void registers_write_V(registers r, uint8_t value);
+int registers_read_Z(registers r);
+int registers_read_N(registers r);
+int registers_read_C(registers r);
+int registers_read_V(registers r);
 
 #endif
