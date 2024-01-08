@@ -64,7 +64,7 @@ void test_template(
   printf("OK\n");
 }
 
-void test_add(arm_core p)
+void test_ADD(arm_core p)
 {
   test_template(
       "ADD (Immediate value)",
@@ -222,7 +222,7 @@ void test_add(arm_core p)
   // 0x9000001F ASR#4 = 0xF9000001
   // 0xF9000001 + 0xA = 0xF900000B
   test_template(
-      "Add (Immediate shift ASR#4)",
+      "ADD (Immediate shift ASR#4)",
       p,
       AL,             // Cond
       0,              // I : Register value
@@ -243,7 +243,7 @@ void test_add(arm_core p)
   // 0x9000001F ROR#8 = 0x1F900000
   // 0x1F900000 + 0xA = 0x1F90000A
   test_template(
-      "Add (Immediate shift ROR#4)",
+      "ADD (Immediate shift ROR#4)",
       p,
       AL,             // Cond
       0,              // I : Register value
@@ -265,7 +265,7 @@ void test_add(arm_core p)
   // 0xC800000F + 0xA = 0xC8000019
   registers_write_C(p->reg, 1);
   test_template(
-      "Add (Immediate shift RRX)",
+      "ADD (Immediate shift RRX)",
       p,
       AL,             // Cond
       0,              // I : Register value
@@ -284,7 +284,7 @@ void test_add(arm_core p)
       0);             // Expected V flag
 
   test_template(
-      "Add (Register shift LSL [0])",
+      "ADD (Register shift LSL [0])",
       p,
       AL,             // Cond
       0,              // I : Register value
@@ -303,7 +303,7 @@ void test_add(arm_core p)
       0);             // Expected V flag
 
   test_template(
-      "Add (Register shift LSL [3])",
+      "ADD (Register shift LSL [3])",
       p,
       AL,             // Cond
       0,              // I : Register value
@@ -322,7 +322,7 @@ void test_add(arm_core p)
       0);             // Expected V flag
 
   test_template(
-      "Add (Register shift LSL [32])",
+      "ADD (Register shift LSL [32])",
       p,
       AL,             // Cond
       0,              // I : Register value
@@ -341,7 +341,7 @@ void test_add(arm_core p)
       0);             // Expected V flag
 
   test_template(
-      "Add (Register shift LSL [40])",
+      "ADD (Register shift LSL [40])",
       p,
       AL,             // Cond
       0,              // I : Register value
@@ -360,7 +360,7 @@ void test_add(arm_core p)
       0);             // Expected V flag
 
   test_template(
-      "Add (Register shift LS3 [3])",
+      "ADD (Register shift LS3 [3])",
       p,
       AL,             // Cond
       0,              // I : Register value
@@ -1001,7 +1001,7 @@ void test_cmn(arm_core p)
 
   registers_write_C(p->reg, 0);
   test_template(
-      "CMN (Add 0)",
+      "CMN (ADD 0)",
       p,
       AL,             // Cond
       1,              // I : Immediate value
@@ -1160,7 +1160,7 @@ int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
 
-  test_add(p);
+  test_ADD(p);
   test_sub(p);
   test_and(p);
   test_eor(p);
