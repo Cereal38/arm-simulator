@@ -140,11 +140,12 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     exit(EXIT_FAILURE);
   }
 
-  // Check condition
+  // ---------- START CHECK CONDITION ----------
   if (!verif_cond(ins, p->reg))
   {
     return 0;
   }
+  // ---------- END CHECK CONDITION ------------
 
   uint8_t opcode = get_bits(ins, 24, 21);
   uint8_t rn_code = get_bits(ins, 19, 16);
@@ -157,7 +158,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   uint32_t shifter_operand;
   uint8_t shifter_carry_out = 0;
 
-  // Shifter operand and shifter carry out (A5.1)
+  // ---------- START SHIFT OPERAND ----------
   // 32-bit immediate
   if (i_code == 1)
   {
@@ -244,8 +245,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     }
   }
   // TODO: Register shifts
+  // ---------- END SHIFT OPERAND ----------
 
-  // Set Rd
+  // ---------- START COMPUTE RESULT ----------
   switch (opcode)
   {
   case AND:
@@ -299,8 +301,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   default:
     return UNDEFINED_INSTRUCTION;
   }
+  // ---------- END COMPUTE RESULT ----------
 
-  // Edit N, Z, C, V flags
+  // ---------- START WRITE RESULT AND SET FLAGS ----------
   if (s_code == 1)
   {
     registers_write_N(p->reg, get_bit(result, 31));
@@ -381,6 +384,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       return UNDEFINED_INSTRUCTION;
     }
   }
+  // ---------- END WRITE RESULT AND SET FLAGS ----------
 
   // Set CPSR if needed
   if (s_code == 1 && rd_code == 15)
