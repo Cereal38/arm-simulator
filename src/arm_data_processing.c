@@ -111,6 +111,24 @@ uint32_t logical_shift_right(uint32_t value, uint8_t shift)
   return value >> shift;
 }
 
+uint32_t arithmetic_shift_right(uint32_t value, uint8_t shift)
+{
+  /*
+    Performs a right shift, repeatedly inserting the original left-most bit (the sign bit) in the vacated bit positions
+    on the left.
+
+    Param value: The value to shift.
+    Param shift: The number of bits to shift by.
+  */
+  uint32_t sign_bit = get_bit(value, 31);
+  uint32_t result = value >> shift;
+  for (int i = 0; i < shift; i++)
+  {
+    result = result | (sign_bit << (31 - i));
+  }
+  return result;
+}
+
 int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
 
@@ -164,7 +182,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     uint32_t rm_value = registers_read(p->reg, rm, mode);
     switch (shift)
     {
-    case 0b00:
+    case LSL:
       if (shift_imm == 0)
       {
         shifter_operand = rm_value;
@@ -177,7 +195,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
         shifter_carry_out = get_bit(rm_value, 32 - shift_imm);
       }
       break;
-    case 0b01:
+    case LSR:
       if (shift_imm == 0)
       {
         shifter_operand = logical_shift_right(rm_value, 32);
@@ -186,6 +204,26 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       else
       {
         shifter_operand = logical_shift_right(rm_value, shift_imm);
+        shifter_carry_out = get_bit(rm_value, shift_imm - 1);
+      }
+      break;
+    case ASR:
+      if (shift_imm == 0)
+      {
+        if (get_bit(rm_value, 31) == 0)
+        {
+          shifter_operand = 0;
+          shifter_carry_out = 0;
+        }
+        else
+        {
+          shifter_operand = 0xFFFFFFFF;
+          shifter_carry_out = 1;
+        }
+      }
+      else
+      {
+        shifter_operand = arithmetic_shift_right(rm_value, shift_imm);
         shifter_carry_out = get_bit(rm_value, shift_imm - 1);
       }
       break;
