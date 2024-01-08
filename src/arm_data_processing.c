@@ -277,6 +277,28 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
         shifter_carry_out = 0;
       }
       break;
+    case LSR:
+      if (rs_value_8bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = registers_read_C(p->reg);
+      }
+      else if (rs_value_8bits < 32)
+      {
+        shifter_operand = logical_shift_right(rm_value, rs_value_8bits);
+        shifter_carry_out = get_bit(rm_value, rs_value_8bits - 1);
+      }
+      else if (rs_value_8bits == 32)
+      {
+        shifter_operand = 0;
+        shifter_carry_out = get_bit(rm_value, 31);
+      }
+      else
+      {
+        shifter_operand = 0;
+        shifter_carry_out = 0;
+      }
+      break;
     default:
       return UNDEFINED_INSTRUCTION;
     }
