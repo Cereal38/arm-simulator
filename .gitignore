@@ -25,6 +25,7 @@ config.h.in~
 configure
 logs.txt
 test_arm_data_processing
+test_arm_load_store
 
 
 

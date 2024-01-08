@@ -64,7 +64,7 @@ void test_template(
   printf("OK\n");
 }
 
-void test_ADD(arm_core p)
+void test_add(arm_core p)
 {
   test_template(
       "ADD (Immediate value)",
@@ -1202,7 +1202,7 @@ int main()
 {
   arm_core p = arm_create(registers_create(), memory_create(2048));
 
-  test_ADD(p);
+  test_add(p);
   test_sub(p);
   test_and(p);
   test_eor(p);
