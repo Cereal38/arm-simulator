@@ -377,6 +377,27 @@ void test_ADD(arm_core p)
       0,              // Expected N flag
       0,              // Expected C flag
       0);             // Expected V flag
+
+  // 0x9000001F ASR#4 = 0xF9000001
+  // 0xF9000001 + 0xA = 0xF900000B
+  test_template(
+      "ADD (Register shift ASR [4])",
+      p,
+      AL,             // Cond
+      0,              // I : Register value
+      ADD,            // ADD
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : 1
+      0b001101010010, // Shifter : Rs = r3, Rm = r2
+      3,              // Rn value
+      4,              // Rs value
+      0x9000001F,     // Rm value
+      0xF9000004,     // Expected Rd value
+      0,              // Expected Z flag
+      1,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
 }
 
 void test_sub(arm_core p)
