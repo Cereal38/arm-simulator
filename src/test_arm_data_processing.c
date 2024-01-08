@@ -358,6 +358,25 @@ void test_add(arm_core p)
       0,              // Expected N flag
       0,              // Expected C flag
       0);             // Expected V flag
+
+  test_template(
+      "Add (Register shift LS3 [3])",
+      p,
+      AL,             // Cond
+      0,              // I : Register value
+      ADD,            // Opcode
+      1,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
+      0b001100110010, // Shifter : Rs = r3, Rm = r2
+      3,              // Rn value
+      3,              // Rs value
+      32,             // Rm value
+      7,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
 }
 
 void test_sub(arm_core p)
