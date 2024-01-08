@@ -227,7 +227,18 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
         shifter_carry_out = get_bit(rm_value, shift_imm - 1);
       }
       break;
-    // TODO: Other cases
+    case ROR:
+      if (shift_imm == 0) // RRX
+      {
+        shifter_operand = (logical_shift_left(registers_read_C(p->reg), 31)) | (logical_shift_right(rm_value, 1));
+        shifter_carry_out = get_bit(rm_value, 0);
+      }
+      else
+      {
+        shifter_operand = rotate_right(rm_value, shift_imm);
+        shifter_carry_out = get_bit(rm_value, shift_imm - 1);
+      }
+      break;
     default:
       return UNDEFINED_INSTRUCTION;
     }
