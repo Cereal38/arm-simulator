@@ -244,7 +244,43 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       return UNDEFINED_INSTRUCTION;
     }
   }
-  // TODO: Register shifts
+  // Register shifts
+  else
+  {
+    uint8_t rm = get_bits(ins, 3, 0);
+    uint8_t shift = get_bits(ins, 6, 5);
+    uint8_t rs = get_bits(ins, 11, 8);
+    uint32_t rm_value = registers_read(p->reg, rm, mode);
+    uint32_t rs_value = registers_read(p->reg, rs, mode);
+    uint8_t rs_value_8bits = get_bits(rs_value, 7, 0);
+    switch (shift)
+    {
+    case LSL:
+      if (rs_value_8bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = registers_read_C(p->reg);
+      }
+      else if (rs_value_8bits < 32)
+      {
+        shifter_operand = logical_shift_left(rm_value, rs_value_8bits);
+        shifter_carry_out = get_bit(rm_value, 32 - rs_value_8bits);
+      }
+      else if (rs_value_8bits == 32)
+      {
+        shifter_operand = 0;
+        shifter_carry_out = get_bit(rm_value, 0);
+      }
+      else
+      {
+        shifter_operand = 0;
+        shifter_carry_out = 0;
+      }
+      break;
+    default:
+      return UNDEFINED_INSTRUCTION;
+    }
+  }
   // ---------- END SHIFT OPERAND ----------
 
   // ---------- START COMPUTE RESULT ----------
