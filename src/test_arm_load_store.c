@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "arm_core.h"
+#include "arm_load_store.h"
 #include "registers.h"
 #include "memory.h"
 #include "arm_constants.h"
