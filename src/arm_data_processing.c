@@ -111,6 +111,24 @@ uint32_t logical_shift_right(uint32_t value, uint8_t shift)
   return value >> shift;
 }
 
+uint32_t arithmetic_shift_right(uint32_t value, uint8_t shift)
+{
+  /*
+    Performs a right shift, repeatedly inserting the original left-most bit (the sign bit) in the vacated bit positions
+    on the left.
+
+    Param value: The value to shift.
+    Param shift: The number of bits to shift by.
+  */
+  uint32_t sign_bit = get_bit(value, 31);
+  uint32_t result = value >> shift;
+  for (int i = 0; i < shift; i++)
+  {
+    result = result | (sign_bit << (31 - i));
+  }
+  return result;
+}
+
 int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
 
@@ -122,11 +140,12 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     exit(EXIT_FAILURE);
   }
 
-  // Check condition
+  // ---------- START CHECK CONDITION ----------
   if (!verif_cond(ins, p->reg))
   {
     return 0;
   }
+  // ---------- END CHECK CONDITION ------------
 
   uint8_t opcode = get_bits(ins, 24, 21);
   uint8_t rn_code = get_bits(ins, 19, 16);
@@ -139,7 +158,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   uint32_t shifter_operand;
   uint8_t shifter_carry_out = 0;
 
-  // Shifter operand and shifter carry out (A5.1)
+  // ---------- START SHIFT OPERAND ----------
   // 32-bit immediate
   if (i_code == 1)
   {
@@ -164,7 +183,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     uint32_t rm_value = registers_read(p->reg, rm, mode);
     switch (shift)
     {
-    case 0b00:
+    case LSL:
       if (shift_imm == 0)
       {
         shifter_operand = rm_value;
@@ -177,7 +196,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
         shifter_carry_out = get_bit(rm_value, 32 - shift_imm);
       }
       break;
-    case 0b01:
+    case LSR:
       if (shift_imm == 0)
       {
         shifter_operand = logical_shift_right(rm_value, 32);
@@ -189,14 +208,147 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
         shifter_carry_out = get_bit(rm_value, shift_imm - 1);
       }
       break;
-    // TODO: Other cases
+    case ASR:
+      if (shift_imm == 0)
+      {
+        if (get_bit(rm_value, 31) == 0)
+        {
+          shifter_operand = 0;
+          shifter_carry_out = 0;
+        }
+        else
+        {
+          shifter_operand = 0xFFFFFFFF;
+          shifter_carry_out = 1;
+        }
+      }
+      else
+      {
+        shifter_operand = arithmetic_shift_right(rm_value, shift_imm);
+        shifter_carry_out = get_bit(rm_value, shift_imm - 1);
+      }
+      break;
+    case ROR:
+      if (shift_imm == 0) // RRX
+      {
+        shifter_operand = (logical_shift_left(registers_read_C(p->reg), 31)) | (logical_shift_right(rm_value, 1));
+        shifter_carry_out = get_bit(rm_value, 0);
+      }
+      else
+      {
+        shifter_operand = rotate_right(rm_value, shift_imm);
+        shifter_carry_out = get_bit(rm_value, shift_imm - 1);
+      }
+      break;
     default:
       return UNDEFINED_INSTRUCTION;
     }
   }
-  // TODO: Register shifts
+  // Register shifts
+  else
+  {
+    uint8_t rm = get_bits(ins, 3, 0);
+    uint8_t shift = get_bits(ins, 6, 5);
+    uint8_t rs = get_bits(ins, 11, 8);
+    uint32_t rm_value = registers_read(p->reg, rm, mode);
+    uint32_t rs_value = registers_read(p->reg, rs, mode);
+    uint8_t rs_value_8bits = get_bits(rs_value, 7, 0);
+    uint8_t rs_value_5bits = get_bits(rs_value, 4, 0);
+    switch (shift)
+    {
+    case LSL:
+      if (rs_value_8bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = registers_read_C(p->reg);
+      }
+      else if (rs_value_8bits < 32)
+      {
+        shifter_operand = logical_shift_left(rm_value, rs_value_8bits);
+        shifter_carry_out = get_bit(rm_value, 32 - rs_value_8bits);
+      }
+      else if (rs_value_8bits == 32)
+      {
+        shifter_operand = 0;
+        shifter_carry_out = get_bit(rm_value, 0);
+      }
+      else
+      {
+        shifter_operand = 0;
+        shifter_carry_out = 0;
+      }
+      break;
+    case LSR:
+      if (rs_value_8bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = registers_read_C(p->reg);
+      }
+      else if (rs_value_8bits < 32)
+      {
+        shifter_operand = logical_shift_right(rm_value, rs_value_8bits);
+        shifter_carry_out = get_bit(rm_value, rs_value_8bits - 1);
+      }
+      else if (rs_value_8bits == 32)
+      {
+        shifter_operand = 0;
+        shifter_carry_out = get_bit(rm_value, 31);
+      }
+      else
+      {
+        shifter_operand = 0;
+        shifter_carry_out = 0;
+      }
+      break;
+    case ASR:
+      if (rs_value_8bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = registers_read_C(p->reg);
+      }
+      else if (rs_value_8bits < 32)
+      {
+        shifter_operand = arithmetic_shift_right(rm_value, rs_value_8bits);
+        shifter_carry_out = get_bit(rm_value, rs_value_8bits - 1);
+      }
+      else
+      {
+        if (get_bit(rm_value, 31) == 0)
+        {
+          shifter_operand = 0;
+          shifter_carry_out = get_bit(rm_value, 31);
+        }
+        else
+        {
+          shifter_operand = 0xFFFFFFFF;
+          shifter_carry_out = get_bit(rm_value, 31);
+        }
+      }
+      break;
+    case ROR:
+      if (rs_value_8bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = registers_read_C(p->reg);
+      }
+      else if (rs_value_5bits == 0)
+      {
+        shifter_operand = rm_value;
+        shifter_carry_out = get_bit(rm_value, 31);
+      }
+      else
+      {
+        shifter_operand = rotate_right(rm_value, rs_value_5bits);
+        shifter_carry_out = get_bit(rm_value, rs_value_5bits - 1);
+      }
+      break;
+    default:
+      return UNDEFINED_INSTRUCTION;
+    }
+  }
+  // ---------- END SHIFT OPERAND ----------
 
-  // Set Rd
+  // ---------- START COMPUTE RESULT ----------
   switch (opcode)
   {
   case AND:
@@ -250,8 +402,9 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   default:
     return UNDEFINED_INSTRUCTION;
   }
+  // ---------- END COMPUTE RESULT ----------
 
-  // Edit N, Z, C, V flags
+  // ---------- START WRITE RESULT AND SET FLAGS ----------
   if (s_code == 1)
   {
     registers_write_N(p->reg, get_bit(result, 31));
@@ -332,6 +485,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       return UNDEFINED_INSTRUCTION;
     }
   }
+  // ---------- END WRITE RESULT AND SET FLAGS ----------
 
   // Set CPSR if needed
   if (s_code == 1 && rd_code == 15)
@@ -353,5 +507,10 @@ int arm_data_processing_shift(arm_core p, uint32_t ins)
 
 int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 {
-  return UNDEFINED_INSTRUCTION;
+  // Cas MSR Immediate operand
+  int8_t bit_immediate_8 = get_bits(ins, 7, 0);
+  int8_t rotate_imm = get_bits(ins, 11, 8);
+  int8_t operand = rotateRight8(bit_immediate_8, (rotate_imm * 2));
+  int result = msr_instruction_commun_code(p, ins ,operand);
+  return result; 
 }
