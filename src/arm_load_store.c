@@ -222,7 +222,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
   if (W == 1)
   {
     arm_write_register(p, rn, address); // address sera déjà à la bonne valeur normalement (address +/- 4 * nbr_register_list)
-  }
+  }//Erreur ici? si w==0 il ne faut pas changer l'adresse alors que la elle le sera dans tous les cas?
   return 0;
 }
 
