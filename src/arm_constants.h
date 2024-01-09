@@ -53,6 +53,7 @@ Contact: Guillaume.Huard@imag.fr
 #define Z 30
 #define C 29
 #define V 28
+#define T 5
 
 /* shift operations */
 #define LSL 0
