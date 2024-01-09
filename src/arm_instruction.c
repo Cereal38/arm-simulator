@@ -137,6 +137,8 @@ int verif_cond(uint32_t instruction, registers r)
   }
 }
 
+
+
 int bits_a_0(arm_core p, uint32_t instruction)
 {
   // Extractions des bits qui nous interesse pour distinguer les cas
@@ -158,11 +160,13 @@ int bits_a_0(arm_core p, uint32_t instruction)
     }
     else
     {
-      result = arm_data_processing_shift(p, instruction);
+      result = arm_data_processing_immediate(p, instruction);
     }
   }
   return result;
 }
+
+
 
 int bits_a_1(arm_core p, uint32_t instruction)
 {
@@ -180,6 +184,8 @@ int bits_a_1(arm_core p, uint32_t instruction)
   return arm_data_processing_immediate_msr(p, instruction);
 }
 
+
+
 int bits_a_3(arm_core p, uint32_t instruction)
 {
   if ((get_bits(instruction, 24, 20) == 0b11111) && (get_bits(instruction, 7, 4) == 0b1111))
@@ -196,6 +202,8 @@ int bits_a_3(arm_core p, uint32_t instruction)
   return arm_load_store(p, instruction);
 }
 
+
+
 int bits_a_7(arm_core p, uint32_t instruction)
 {
   if (get_bit(instruction, 24))
@@ -210,6 +218,7 @@ int bits_a_7(arm_core p, uint32_t instruction)
   // coprocessor registers transfers
   return arm_coprocessor_others_swi(p, instruction);
 }
+
 
 static int arm_execute_instruction(arm_core p)
 {
@@ -244,16 +253,39 @@ static int arm_execute_instruction(arm_core p)
 
   switch (code)
   {
-  case 0b000: // Data processing immediate shift
-    resultat = bits_a_0(p, instruction);
+  case 0b000: // Data processing immediate shift or register shift
+    printf (" case  data processing \n") ;
+    if (get_bits(instruction, 24, 20) == 0b10000 || get_bits(instruction, 24, 20) == 0b10010 || get_bits(instruction, 24, 20) == 0b10110 || get_bits(instruction, 24, 20) == 0b10100 ) 
+    {
+      resultat = arm_miscellaneous(p, instruction);
+    }
+    else if (get_bit(instruction, 4) & get_bit(instruction, 7))
+    {
+            // case offset 
+      resultat = arm_load_store (p, instruction);
+    }
+    else 
+    {
+      resultat = arm_data_processing_immediate(p, instruction);
+    }
+ 
     break;
-  case 0b001: // Data processing immediate
+  case 0b001: // Data processing immediate or move immediate to status register
+
+
+
+
+
+
+
+
+
     resultat = bits_a_1(p, instruction);
     break;
   case 0b010: // Load/store immediate offset
     resultat = arm_load_store(p, instruction);
     break;
-  case 0b011: // Load/store register offset
+  case 0b011: // Load/store register offset 
     resultat = bits_a_3(p, instruction);
     break;
   case 0b100: // Load/store multiple
@@ -279,7 +311,7 @@ static int arm_execute_instruction(arm_core p)
 int arm_step(arm_core p)
 {
   int result;
-
+  printf ("step\n");
   result = arm_execute_instruction(p);
   if (result)
   {

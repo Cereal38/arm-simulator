@@ -132,6 +132,8 @@ uint32_t arithmetic_shift_right(uint32_t value, uint8_t shift)
 int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
 
+
+  printf("arm_data_processing_immediate\n");
   // If all three of the following bits have the values shown, the instruction is not a data-processing instruction,
   // but lies in the arithmetic or Load/Store instruction extension space
   if (!get_bit(ins, 25) && get_bit(ins, 7) && get_bit(ins, 4))
