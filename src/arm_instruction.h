@@ -26,5 +26,6 @@ Contact: Guillaume.Huard@imag.fr
 
 int arm_step(arm_core p);
 int verif_cond(uint32_t instruction, registers r);
-
+int msr_instruction_commun_code(arm_core p, uint32_t ins, int8_t operand);
+uint8_t rotateRight8(uint8_t value, int rotateBy);
 #endif
