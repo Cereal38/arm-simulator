@@ -130,5 +130,10 @@ int arm_data_processing_shift(arm_core p, uint32_t ins)
 
 int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
 {
-  return UNDEFINED_INSTRUCTION;
+  // Cas MSR Immediate operand
+  int8_t bit_immediate_8 = get_bits(ins, 7, 0);
+  int8_t rotate_imm = get_bits(ins, 11, 8);
+  int8_t operand = rotateRight8(bit_immediate_8, (rotate_imm * 2));
+  int result = msr_instruction_commun_code(p, ins ,operand);
+  return result; 
 }

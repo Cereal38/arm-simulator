@@ -75,20 +75,7 @@ uint8_t rotateRight8(uint8_t value, int rotateBy) {
     return (value >> rotateBy) | (value << (size - rotateBy));
 }
 
-int arm_miscellaneous(arm_core p, uint32_t ins) {
-    int8_t operand;
-
-    // MSR 
-    if (get_bit(ins, 25)) {
-        // Cas Immediate operand
-        int8_t bit_immediate_8 = get_bits(ins, 7, 0);
-        int8_t rotate_imm = get_bits(ins, 11, 8);
-        operand = rotateRight8(bit_immediate_8, (rotate_imm * 2));
-    } else {
-        // Cas Register
-        operand = get_bits(ins, 3, 0);
-    }
-
+int msr_instruction_commun_code(arm_core p, uint32_t ins, int8_t operand){
     if ((operand & UnallocMask) != 0) {
         // TODO Vérifier UNDEF Ou UNPREDICTABLE
         return UNDEFINED_INSTRUCTION;
@@ -130,4 +117,35 @@ int arm_miscellaneous(arm_core p, uint32_t ins) {
     }
     // TODO Vérifier la valeur de retour
     return 0;
+}
+
+int mrs_instruction (arm_core p, uint32_t ins){
+    uint8_t rd = get_bits(ins,15,12);
+    if (rd == 15) {
+        // TODO Verifier UNDEF ou UNPREDICTABLE
+        return UNDEFINED_INSTRUCTION;
+    }
+
+    if( get_bit(ins,22) ) /* R == 1 */ {
+        uint8_t mode = registers_get_mode(p->reg);
+        uint32_t SPSR_register = registers_read_spsr(p->reg, mode);
+        arm_write_register(p,rd,SPSR_register);
+    } else /* R == 0 */ {
+        uint32_t CPSR_register = registers_read_cpsr(p->reg);
+        arm_write_register(p,rd,CPSR_register);
+    }
+    return 0;
+}
+int arm_miscellaneous(arm_core p, uint32_t ins) {
+
+    if (get_bit(ins,21) & (get_bits(ins,7,4)==0)){
+        // Cas MSR Register operand
+        int8_t operand = get_bits(ins, 3, 0);
+        int result = msr_instruction_commun_code(p, ins, operand);
+        return result;
+    }
+
+    // MRS
+    int result = mrs_instruction(p,ins);
+    return result;
 }
