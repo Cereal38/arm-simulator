@@ -43,25 +43,38 @@ void test_template_load_store_multiple(
     uint8_t Rn,    // Bits 19-16
     uint16_t register_list,//Bits 15-0
     uint32_t Rn_value,
-    uint32_t expected_Rd)
+    uint32_t expected_value)
 {
     printf("Test : %s ... ", name);
     // Set Rn
     registers_write(p->reg, Rn, USR, Rn_value);
-    // Reset Rd
-    registers_write(p->reg, Rd, USR, 0);
     // Set instruction
-    uint32_t ins = (cond << 28) | (code << 20) | (Rn << 16) | (Rd << 12) | addr;
+    uint32_t ins = (cond << 28) | (code << 20) | (Rn << 16) | register_list;
     // Execute
     //printf("Before execution, Rn = %u\n", registers_read(p->reg, Rn, USR));
-    arm_load_store(p, ins);
+    arm_load_store_multiple(p, ins);
     //printf("After execution, Rd = %u\n", registers_read(p->reg, Rd, USR));
     // Check result
-    assert(registers_read(p->reg, Rd, USR) == expected_Rd);
+    assert(registers_read(p->reg, 0, USR) == expected_value);
 }
 
 void test_LDM(arm_core p){
-    
+
+    uint8_t Rn = 0;
+    uint16_t register_list = 0b1;
+
+    registers_write(p->reg, 0, USR, 2);
+
+    uint32_t expected_value = 2;
+
+    test_template_load_store_multiple("LDM incremente AFTER 1 element",
+                                      p,
+                                      AL,
+                                      0b10001011,
+                                      Rn,
+                                      register_list,
+                                      2,
+                                      expected_value);
 }
 
 /*
