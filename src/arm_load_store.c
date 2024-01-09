@@ -160,7 +160,6 @@ int number_registers(uint16_t register_list){
     return compteur;
 }
 
-//Manque les cas avec le bit S. Manuel page 482.
 //LDM et STM info plus générale page 134.
 //LDM(1) (apparement c'est lui qu'il faut faire) page 186 du manuel.
 //STM(1) page 339 du Manuel.
