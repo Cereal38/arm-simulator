@@ -132,21 +132,6 @@ uint32_t arithmetic_shift_right(uint32_t value, uint8_t shift)
 int arm_data_processing_immediate(arm_core p, uint32_t ins)
 {
 
-  // If all three of the following bits have the values shown, the instruction is not a data-processing instruction,
-  // but lies in the arithmetic or Load/Store instruction extension space
-  if (!get_bit(ins, 25) && get_bit(ins, 7) && get_bit(ins, 4))
-  {
-    fprintf(stderr, "Instruction is not a data-processing instruction\n");
-    exit(EXIT_FAILURE);
-  }
-
-  // ---------- START CHECK CONDITION ----------
-  if (!verif_cond(ins, p->reg))
-  {
-    return 0;
-  }
-  // ---------- END CHECK CONDITION ------------
-
   uint8_t opcode = get_bits(ins, 24, 21);
   uint8_t rn_code = get_bits(ins, 19, 16);
   uint8_t rd_code = get_bits(ins, 15, 12);
@@ -510,7 +495,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     }
   }
 
-  return 1;
+  return 0;
 }
 
 /* Decoding functions for different classes of instructions */
