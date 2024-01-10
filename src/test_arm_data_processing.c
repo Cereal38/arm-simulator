@@ -911,6 +911,27 @@ void test_tst(arm_core p)
       0,              // Expected N flag
       1,              // Expected C flag
       -1);            // Expected V flag
+
+  registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 0);
+  test_template(
+      "TST (S = 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      TST,            // Opcode
+      0,              // S : Set condition codes
+      1,              // Rn : r0
+      0,              // Rd : r0
+      0b000000000001, // Shifter : 1
+      1,              // Rn value
+      0,              // Rs value
+      0,              // Rm value
+      0,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      -1);            // Expected V flag
 }
 
 void test_teq(arm_core p)
