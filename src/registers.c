@@ -295,3 +295,4 @@ int registers_read_T(registers r)
 {
   return get_bits(r->cpsr, T, T);
 }
+

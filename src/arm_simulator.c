@@ -208,6 +208,7 @@ int main(int argc, char *argv[]) {
     shared.mem = memory_create(0x8000);
     shared.reg = registers_create();
     shared.arm = arm_create(shared.reg, shared.mem);
+    
 
     pthread_mutex_init(&shared.lock, NULL);
     pthread_create(&gdb_thread, NULL, gdb_listener, &shared);

@@ -40,62 +40,56 @@ int arm_load_store(arm_core p, uint32_t ins)
   uint8_t endianess = is_big_endian();
   uint8_t mode = registers_get_mode(p->reg);
 
+
+  uint32_t address;
+  
+
   switch (bitL)
   {
-    uint32_t address;
   // Load instructions
   case 1:
     // LDRH
+
     if (bitI == 0 && get_bits(ins, 27, 26) == 0b00)
     {
-      // data = Memory[address,2]
-      address = arm_read_register(p, rn);
-      uint16_t data;
+      
+      uint16_t dataHalf;
+      uint32_t addressRn = registers_get_address(p, rn);
+      int res = arm_read_half(p, addressRn, &dataHalf);
+      arm_write_half(p, rd, dataHalf);
 
-      if (memory_read_half(p->mem, address, &data, endianess) != 0)
-      {
-        return UNDEFINED_INSTRUCTION;
-      }
-
-      arm_write_register(p, rd, (uint32_t)data);
     }
 
     // LDRB
     else if (bitB == 1 && get_bits(ins, 27, 26) == 0b01)
     {
-      address = arm_read_register(p, rn);
-      uint8_t data;
-      if (memory_read_byte(p->mem, address, &data) != 0)
-      {
-        return UNDEFINED_INSTRUCTION;
-      }
-      arm_write_register(p, rd, (uint32_t)data);
+
+      uint8_t dataByte;
+      uint32_t addressRn = registers_get_address(p, rn);
+      int res = arm_read_byte(p, addressRn ,&dataByte);
+      arm_write_byte(p, rd, dataByte);
+      
     }
 
     // LDR
     else if (bitB == 0 && get_bits(ins, 27, 26) == 0b01)
     {
       // data = Memory[address,4]
-      address = arm_read_register(p, rn);
+      uint32_t dataWord = arm_read_register(p, rn);
 
-      //????
-      uint32_t data;
-      if (memory_read_word(p->mem, address, &data, endianess) != 0)
-      {
-        return UNDEFINED_INSTRUCTION;
-      }
 
       if (rd == 15)
       {
         // PC = data AND 0xFFFFFFFE
         // T Bit = data[0]
-        registers_write(p->reg, 15, mode, data & 0xFFFFFFFE);
-        registers_write_T(p->reg, get_bit(data, 0));
+        registers_write(p->reg, 15, mode, dataWord & 0xFFFFFFFE);
+        registers_write_T(p->reg, get_bit(dataWord, 0));
       }
       else
       {
         // Rd = data
-        registers_write(p->reg, rd, mode, data);
+        //registers_write(p->reg, rd, mode, dataWord);
+        arm_write_word(p, rd, dataWord);
       }
     }
 

@@ -65,6 +65,7 @@ int memory_read_byte(memory mem, uint32_t address, uint8_t *value)
   error_if_null(mem);
   if (address > mem->size)
   {
+    printf("address = %hx , size= %lx\n", address, mem->size);
     fprintf(stderr, "Erreur lors de l'allocation de la memoire");
     exit(1);
   }
