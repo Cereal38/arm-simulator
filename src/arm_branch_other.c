@@ -37,7 +37,7 @@ int arm_branch(arm_core p, uint32_t ins) {
     // On met dans LR Le retour à l'instruction suivant PC si L
     if (get_bit(ins,24)){
         // LR registre 14, adress (PC depart)
-        registers_write(p->reg, 14, mode, address);
+        registers_write(p->reg, 14, mode, address );
     }
 
     // recuperation des 24 premiers bits
@@ -53,7 +53,7 @@ int arm_branch(arm_core p, uint32_t ins) {
 
 
     // Mettre PC au bon endroit pour le branchement
-    registers_write(p->reg, 15, mode, address + immed);
+    registers_write(p->reg, 15, mode, address + immed -4 );
     
     // TODO Vérifier la valeur de retour
     return 0;

@@ -136,17 +136,17 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   printf("arm_data_processing_immediate\n");
   // If all three of the following bits have the values shown, the instruction is not a data-processing instruction,
   // but lies in the arithmetic or Load/Store instruction extension space
-  if (!get_bit(ins, 25) && get_bit(ins, 7) && get_bit(ins, 4))
-  {
-    fprintf(stderr, "Instruction is not a data-processing instruction\n");
-    exit(EXIT_FAILURE);
-  }
+  // if (!get_bit(ins, 25) && get_bit(ins, 7) && get_bit(ins, 4))
+  // {
+  //   fprintf(stderr, "Instruction is not a data-processing instruction\n");
+  //   exit(EXIT_FAILURE);
+  // }
 
   // ---------- START CHECK CONDITION ----------
-  if (!verif_cond(ins, p->reg))
-  {
-    return 0;
-  }
+  // if (!verif_cond(ins, p->reg))
+  // {
+    // return UNDEFINED_INSTRUCTION;
+  // }
   // ---------- END CHECK CONDITION ------------
 
   uint8_t opcode = get_bits(ins, 24, 21);
@@ -367,6 +367,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     break;
   case ADD:
     result = rn + shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case ADC:
     result = rn + shifter_operand + registers_read_C(p->reg);
@@ -393,7 +394,10 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     result = rn | shifter_operand;
     break;
   case MOV:
+    printf("MOV1\n");
     result = shifter_operand;
+    // on met la valeur de shifter_operand dans le registre rd
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case BIC:
     result = rn & ~shifter_operand;
@@ -409,6 +413,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   // ---------- START WRITE RESULT AND SET FLAGS ----------
   if (s_code == 1)
   {
+    printf("MOV2\n");
     registers_write_N(p->reg, get_bit(result, 31));
     registers_write_Z(p->reg, (result == 0) ? 1 : 0);
     switch (opcode)
@@ -473,6 +478,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
       registers_write(p->reg, rd_code, mode, result);
       break;
     case MOV:
+      printf("MOV\n");  
       registers_write_C(p->reg, shifter_carry_out);
       registers_write(p->reg, rd_code, mode, result);
       break;
@@ -498,7 +504,7 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     }
   }
 
-  return 1;
+  return 0;
 }
 
 /* Decoding functions for different classes of instructions */

@@ -10,7 +10,6 @@ fi
 port=$1
 arm-none-eabi-gdb 
 #< file Examples/example1 < target remote localhost:$port
-
- $gdb -ex file Examples/example1
- $gdb -ex target remote localhost:
+ file Examples/example1
+target remote localhost:35511
 
