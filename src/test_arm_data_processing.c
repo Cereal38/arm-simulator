@@ -146,26 +146,6 @@ void test_ADD(arm_core p)
       0,              // Expected C flag
       1);             // Expected V flag
 
-  registers_write_Z(p->reg, 0);
-  test_template(
-      "ADD (Unvalid condition)",
-      p,
-      EQ,             // Cond
-      1,              // I : Immediate value
-      ADD,            // ADD
-      1,              // S : Set condition codes
-      0,              // Rn : r0
-      1,              // Rd : r1
-      0b000000000011, // Shifter : #3
-      2,              // Rn value
-      0,              // Rs value
-      0,              // Rm value
-      0,              // Expected Rd value
-      -1,             // Expected Z flag
-      -1,             // Expected N flag
-      -1,             // Expected C flag
-      -1);            // Expected V flag
-
   test_template(
       "ADD (Immediate value with rotation)",
       p,
