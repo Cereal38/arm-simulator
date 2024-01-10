@@ -104,6 +104,10 @@ void test_ADD(arm_core p)
       0,              // Expected C flag
       0);             // Expected V flag
 
+  registers_write_C(p->reg, 1);
+  registers_write_Z(p->reg, 1);
+  registers_write_N(p->reg, 1);
+  registers_write_V(p->reg, 1);
   test_template(
       "ADD (S = 0)",
       p,
@@ -118,10 +122,10 @@ void test_ADD(arm_core p)
       0,              // Rs value
       0,              // Rm value
       5,              // Expected Rd value
-      0,              // Expected Z flag
-      0,              // Expected N flag
-      0,              // Expected C flag
-      0);             // Expected V flag
+      1,              // Expected Z flag
+      1,              // Expected N flag
+      1,              // Expected C flag
+      1);             // Expected V flag
 
   test_template(
       "ADD (N+V : 0x7FFFFFFF + 0x1)",
@@ -914,6 +918,8 @@ void test_tst(arm_core p)
 
   registers_write(p->reg, 0, USR, 0);
   registers_write_C(p->reg, 0);
+  registers_write_Z(p->reg, 1);
+  registers_write_N(p->reg, 1);
   test_template(
       "TST (S = 0)",
       p,
