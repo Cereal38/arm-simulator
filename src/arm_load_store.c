@@ -152,6 +152,28 @@ int number_registers(uint16_t register_list)
   return compteur;
 }
 
+void printBinary(int num) {
+    if (num == 0) {
+        printf("0");
+        return;
+    }
+
+    int binary[32];  // Assuming 32-bit integers
+    int i = 0;
+
+    // Convert decimal to binary
+    while (num > 0) {
+        binary[i] = num % 2;
+        num /= 2;
+        i++;
+    }
+
+    // Print binary representation in reverse order
+    for (int j = i - 1; j >= 0; j--) {
+        printf("%d", binary[j]);
+    }
+}
+
 // Manque les cas avec le bit S. Manuel page 482.
 // LDM et STM info plus générale page 134.
 // LDM(1) (apparement c'est lui qu'il faut faire) page 186 du manuel.
@@ -202,8 +224,14 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
       }
       if (L)
       { // LDM(1)
-        uint32_t Ri = arm_read_register(p, address);
-        arm_write_register(p, i, Ri);
+        printf("Je fais LDM\n");
+        uint8_t data;
+        memory_read_byte(p->mem, address, &data);
+        //printBinary(Ri);
+        //arm_write_register(p, i, Ri);
+        arm_write_register(p, address, data);
+
+        printf("J'ai fais LDM\n");
       }
       else
       { // STM(1)

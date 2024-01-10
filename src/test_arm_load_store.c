@@ -52,22 +52,25 @@ void test_template_load_store_multiple(
     uint32_t ins = (cond << 28) | (code << 20) | (Rn << 16) | register_list;
     // Execute
     //printf("Before execution, Rn = %u\n", registers_read(p->reg, Rn, USR));
+    printf("Valeur avant r1: %d \n", registers_read(p->reg, 1, registers_get_mode(p->reg)));
+    //printf("Valeur avant r2: %d \n", registers_read(p->reg, 2, registers_get_mode(p->reg)));
     arm_load_store_multiple(p, ins);
+    printf("Valeur après r1: %d \n", registers_read(p->reg, 1, registers_get_mode(p->reg)));
     //printf("After execution, Rd = %u\n", registers_read(p->reg, Rd, USR));
     // Check result
-    assert(registers_read(p->reg, 0, USR) == expected_value);
+    assert(registers_read(p->reg, 0, registers_get_mode(p->reg)) == expected_value);
 }
 
 void test_LDM(arm_core p){
 
-    uint8_t Rn = 0;
-    uint16_t register_list = 0b1;
+    uint8_t Rn = 0; // r0;
+    uint16_t register_list = 0b10;//r1
 
-    registers_write(p->reg, 0, USR, 2);
+    registers_write(p->reg, 0, registers_get_mode(p->reg), 2);//r0 = 2
 
     uint32_t expected_value = 2;
 
-    test_template_load_store_multiple("LDM incremente AFTER 1 element",
+    test_template_load_store_multiple("LDM incremente AFTER 1 element, r0 dans r1\n",
                                       p,
                                       AL,
                                       0b10001011,
@@ -76,6 +79,27 @@ void test_LDM(arm_core p){
                                       2,
                                       expected_value);
 }
+
+/*
+void test_LDM(arm_core p){
+
+    uint8_t Rn = 0; // r0;
+    uint16_t register_list = 0b0000000000000001;//r0
+
+    registers_write(p->reg, 0, USR, 2);//r0 = 2
+
+    uint32_t expected_value = 2;
+
+    test_template_load_store_multiple("LDM incremente AFTER 1 element, r0 dans r0\n",
+                                      p,
+                                      AL,
+                                      0b10001011,
+                                      Rn,
+                                      register_list,
+                                      2,
+                                      expected_value);
+}
+*/
 
 /*
 //Tests pour LDR / STR "normal" non testé car ça marche pas :-(
