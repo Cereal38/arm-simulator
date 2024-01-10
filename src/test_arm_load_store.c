@@ -42,21 +42,19 @@ void test_template_load_store_multiple(
     uint8_t code,  // Bits 27-20
     uint8_t Rn,    // Bits 19-16
     uint16_t register_list,//Bits 15-0
-    uint32_t Rn_value,
     uint32_t expected_value)
 {
-    printf("Test : %s ... ", name);
-    // Set Rn
-    registers_write(p->reg, Rn, USR, Rn_value);
+    printf("Test : %s ... \n", name);
     // Set instruction
     uint32_t ins = (cond << 28) | (code << 20) | (Rn << 16) | register_list;
     // Execute
-    //printf("Before execution, Rn = %u\n", registers_read(p->reg, Rn, USR));
+    printf("Before execution, Rn = %u\n", registers_read(p->reg, Rn, registers_get_mode(p->reg)));
+    printf("Valeur avant r0: %d \n", registers_read(p->reg, 0, registers_get_mode(p->reg)));
     printf("Valeur avant r1: %d \n", registers_read(p->reg, 1, registers_get_mode(p->reg)));
-    //printf("Valeur avant r2: %d \n", registers_read(p->reg, 2, registers_get_mode(p->reg)));
     arm_load_store_multiple(p, ins);
+    printf("After execution, Rn = %u\n", registers_read(p->reg, Rn, registers_get_mode(p->reg)));
+    printf("Valeur après r0: %d \n", registers_read(p->reg, 0, registers_get_mode(p->reg)));
     printf("Valeur après r1: %d \n", registers_read(p->reg, 1, registers_get_mode(p->reg)));
-    //printf("After execution, Rd = %u\n", registers_read(p->reg, Rd, USR));
     // Check result
     assert(registers_read(p->reg, 0, registers_get_mode(p->reg)) == expected_value);
 }
@@ -64,19 +62,19 @@ void test_template_load_store_multiple(
 void test_LDM(arm_core p){
 
     uint8_t Rn = 0; // r0;
-    uint16_t register_list = 0b10;//r1
+    uint16_t register_list = 0b10; // r1
 
-    registers_write(p->reg, 0, registers_get_mode(p->reg), 2);//r0 = 2
+    registers_write(p->reg, 1, registers_get_mode(p->reg), 2);//r1 = 2
 
     uint32_t expected_value = 2;
 
+    printf("Valeur initiale de RN : %d\n", Rn);
     test_template_load_store_multiple("LDM incremente AFTER 1 element, r0 dans r1\n",
                                       p,
                                       AL,
                                       0b10001011,
                                       Rn,
                                       register_list,
-                                      2,
                                       expected_value);
 }
 

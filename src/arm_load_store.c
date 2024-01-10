@@ -180,21 +180,18 @@ void printBinary(int num) {
 // STM(1) page 339 du Manuel.
 int arm_load_store_multiple(arm_core p, uint32_t ins)
 {
-  uint8_t posP = 24;
-  uint8_t posU = 23;
-  uint8_t posS = 22;
-  uint8_t posW = 21;
-  uint8_t posL = 20;
 
-  uint8_t P = (ins >> posP) & 0b1;
-  uint8_t U = (ins >> posU) & 0b1;
-  uint8_t S = (ins >> posS) & 0b1;
-  uint8_t W = (ins >> posW) & 0b1;
-  uint8_t L = (ins >> posL) & 0b1;
+  uint8_t P = get_bit(ins, 24);
+  uint8_t U = get_bit(ins, 23);
+  uint8_t S = get_bit(ins, 22);
+  uint8_t W = get_bit(ins, 21);
+  uint8_t L = get_bit(ins, 20);
 
-  uint8_t posRn = 16; // 19 à 16
-  uint8_t rn = (ins >> posRn) & 0b1111;
-  uint16_t register_list = ins & 0b1111; // 15 à 0
+  uint8_t rn = get_bits(ins, 19, 16);
+  uint16_t register_list = get_bits(ins, 15, 0);
+  
+  uint8_t endianess = is_big_endian();
+  uint8_t mode = registers_get_mode(p->reg);
 
   uint32_t address = arm_read_register(p, rn);
 
@@ -224,14 +221,12 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
       }
       if (L)
       { // LDM(1)
-        printf("Je fais LDM\n");
-        uint8_t data;
-        memory_read_byte(p->mem, address, &data);
-        //printBinary(Ri);
-        //arm_write_register(p, i, Ri);
-        arm_write_register(p, address, data);
-
-        printf("J'ai fais LDM\n");
+        uint32_t data;
+        if (memory_read_word(p->mem, address, &data, endianess) != 0)
+        {
+          return UNDEFINED_INSTRUCTION;
+        }
+        registers_write(p->reg, i, mode, data);
       }
       else
       { // STM(1)
@@ -250,7 +245,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
   if (W == 1)
   {
     arm_write_register(p, rn, address); // address sera déjà à la bonne valeur normalement (address +/- 4 * nbr_register_list)
-  }//Erreur ici? si w==0 il ne faut pas changer l'adresse alors que la elle le sera dans tous les cas?
+  }
   return 0;
 }
 
