@@ -105,6 +105,25 @@ void test_ADD(arm_core p)
       0);             // Expected V flag
 
   test_template(
+      "ADD (S = 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      ADD,            // Opcode
+      0,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
+      0b000000000011, // Shifter : #3
+      2,              // Rn value
+      0,              // Rs value
+      0,              // Rm value
+      5,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
+      0);             // Expected V flag
+
+  test_template(
       "ADD (N+V : 0x7FFFFFFF + 0x1)",
       p,
       AL,             // Cond
