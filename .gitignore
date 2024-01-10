@@ -1,7 +1,7 @@
 #useless files and directories, feel free to modify later if any file is needed.
 .deps
 autom4te.cache
-Examples
+
 arm_simulator 
 config.h
 config.log
