@@ -353,27 +353,35 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   {
   case AND:
     result = rn & shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case EOR:
     result = rn ^ shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case SUB:
     result = rn - shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case RSB:
     result = shifter_operand - rn;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case ADD:
     result = rn + shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case ADC:
     result = rn + shifter_operand + registers_read_C(p->reg);
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case SBC:
     result = rn - shifter_operand - !registers_read_C(p->reg);
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case RSC:
     result = shifter_operand - rn - !registers_read_C(p->reg);
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case TST:
     result = rn & shifter_operand;
@@ -389,15 +397,19 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     break;
   case ORR:
     result = rn | shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case MOV:
     result = shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case BIC:
     result = rn & ~shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   case MVN:
     result = ~shifter_operand;
+    registers_write(p->reg, rd_code, mode, result);
     break;
   default:
     return UNDEFINED_INSTRUCTION;
@@ -405,6 +417,34 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
   // ---------- END COMPUTE RESULT ----------
 
   // ---------- START WRITE RESULT AND SET FLAGS ----------
+  switch (opcode)
+  {
+  case TST:
+    registers_write_N(p->reg, get_bit(result, 31));
+    registers_write_Z(p->reg, (result == 0) ? 1 : 0);
+    registers_write_C(p->reg, shifter_carry_out);
+    break;
+  case TEQ:
+    registers_write_N(p->reg, get_bit(result, 31));
+    registers_write_Z(p->reg, (result == 0) ? 1 : 0);
+    registers_write_C(p->reg, shifter_carry_out);
+    break;
+  case CMP:
+    registers_write_N(p->reg, get_bit(result, 31));
+    registers_write_Z(p->reg, (result == 0) ? 1 : 0);
+    registers_write_C(p->reg, !borrow_from(rn, shifter_operand, -1));
+    registers_write_V(p->reg, overflow_from(rn, shifter_operand, -1, 0));
+    break;
+  case CMN:
+    registers_write_N(p->reg, get_bit(result, 31));
+    registers_write_Z(p->reg, (result == 0) ? 1 : 0);
+    registers_write_C(p->reg, carry_from(rn, shifter_operand, -1));
+    registers_write_V(p->reg, overflow_from(rn, shifter_operand, -1, 1));
+    break;
+  default:
+    break;
+  }
+
   if (s_code == 1)
   {
     registers_write_N(p->reg, get_bit(result, 31));
@@ -413,74 +453,48 @@ int arm_data_processing_immediate(arm_core p, uint32_t ins)
     {
     case AND:
       registers_write_C(p->reg, shifter_carry_out);
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case EOR:
       registers_write_C(p->reg, shifter_carry_out);
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case SUB:
       registers_write_C(p->reg, !borrow_from(rn, shifter_operand, -1));
       registers_write_V(p->reg, overflow_from(rn, shifter_operand, -1, 0));
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case RSB:
       registers_write_C(p->reg, !borrow_from(shifter_operand, rn, -1));
       registers_write_V(p->reg, overflow_from(rn, shifter_operand, -1, 0));
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case ADD:
       registers_write_C(p->reg, carry_from(rn, shifter_operand, -1));
       registers_write_V(p->reg, overflow_from(rn, shifter_operand, -1, 1));
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case ADC:
       uint8_t c_flag = registers_read_C(p->reg);
       registers_write_C(p->reg, carry_from(rn, shifter_operand, c_flag));
       registers_write_V(p->reg, overflow_from(rn, shifter_operand, c_flag, 1));
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case SBC:
       c_flag = registers_read_C(p->reg);
       registers_write_C(p->reg, !borrow_from(rn, shifter_operand, c_flag));
       registers_write_V(p->reg, overflow_from(rn, shifter_operand, c_flag, 0));
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case RSC:
       c_flag = registers_read_C(p->reg);
       registers_write_C(p->reg, !borrow_from(shifter_operand, rn, c_flag));
       registers_write_V(p->reg, overflow_from(shifter_operand, rn, c_flag, 0));
-      registers_write(p->reg, rd_code, mode, result);
-      break;
-    case TST:
-      registers_write_C(p->reg, shifter_carry_out);
-      break;
-    case TEQ:
-      registers_write_C(p->reg, shifter_carry_out);
-      break;
-    case CMP:
-      registers_write_C(p->reg, !borrow_from(rn, shifter_operand, -1));
-      registers_write_V(p->reg, overflow_from(rn, shifter_operand, -1, 0));
-      break;
-    case CMN:
-      registers_write_C(p->reg, carry_from(rn, shifter_operand, -1));
-      registers_write_V(p->reg, overflow_from(rn, shifter_operand, -1, 1));
       break;
     case ORR:
       registers_write_C(p->reg, shifter_carry_out);
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case MOV:
       registers_write_C(p->reg, shifter_carry_out);
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case BIC:
       registers_write_C(p->reg, shifter_carry_out);
-      registers_write(p->reg, rd_code, mode, result);
       break;
     case MVN:
       registers_write_C(p->reg, shifter_carry_out);
-      registers_write(p->reg, rd_code, mode, result);
     default:
       return UNDEFINED_INSTRUCTION;
     }
@@ -511,6 +525,6 @@ int arm_data_processing_immediate_msr(arm_core p, uint32_t ins)
   int8_t bit_immediate_8 = get_bits(ins, 7, 0);
   int8_t rotate_imm = get_bits(ins, 11, 8);
   int8_t operand = rotateRight8(bit_immediate_8, (rotate_imm * 2));
-  int result = msr_instruction_commun_code(p, ins ,operand);
-  return result; 
+  int result = msr_instruction_commun_code(p, ins, operand);
+  return result;
 }
