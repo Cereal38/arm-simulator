@@ -44,16 +44,51 @@ void test_template_branch(char *name,
 }
 
 void test_B_inconditionnel (arm_core p) {
+    // Cas avec une adresse négative
     test_template_branch(
-        " B Inconditionnel ",
+        " B Inconditionnel (Adresse Négative) ",
         p,
         AL,     // cond
         0,      // bit L
-        5,      //signed_immed
-        20,      // expected_PC
+        -5,     // signed_immed
+        PC_INIT_VAL - 5,  // expected_PC
+        LR_INIT_VAL      // expected_LR
+    );
+
+    // Cas avec une adresse positive
+    test_template_branch(
+        " B Inconditionnel (Adresse Positive) ",
+        p,
+        AL,     // cond
+        0,      // bit L
+        5,      // signed_immed
+        20,  // expected_PC
+        LR_INIT_VAL      // expected_LR
+    );
+
+    // Cas avec une adresse proche de la limite positive
+    test_template_branch(
+        " B Inconditionnel (Adresse Limite Positive) ",
+        p,
+        AL,     // cond
+        0,      // bit L
+        0x3FFFFFC,  // signed_immed (proche de la limite positive)
+        -4,  // expected_PC
+        LR_INIT_VAL      // expected_LR
+    );
+
+    // Cas avec une adresse proche de la limite négative
+    test_template_branch(
+        " B Inconditionnel (Adresse Limite Négative) ",
+        p,
+        AL,     // cond
+        0,      // bit L
+        -0x3FFFFFC,  // signed_immed (proche de la limite négative)
+        PC_INIT_VAL - 0x3FFFFFC,  // expected_PC
         LR_INIT_VAL      // expected_LR
     );
 }
+
 
 void test_BL_inconditionnel(arm_core p) {
     test_template_branch(
