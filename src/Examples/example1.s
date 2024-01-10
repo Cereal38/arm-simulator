@@ -5,7 +5,7 @@ main:
     MOV r1,#7
     MOV r2,#8
     ADD r1,r1,r2
-    B 3
+    B main
     ADC r3,r1,r2,LSL #2
     ADC r4,r1,r2,LSR #2
     ADC r5,r1,r2,ROR #2

@@ -265,3 +265,8 @@ int arm_coprocessor_load_store(arm_core p, uint32_t ins)
   }
   return 0;
 }
+
+int arm_coprocessor_load_store(arm_core p, uint32_t ins) {
+    /* Not implemented */
+    return UNDEFINED_INSTRUCTION;
+}
