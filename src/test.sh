@@ -11,5 +11,5 @@ port=$1
 arm-none-eabi-gdb 
 #< file Examples/example1 < target remote localhost:$port
  file Examples/example1
-target remote localhost:35511
+target remote localhost:36901
 
