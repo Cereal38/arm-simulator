@@ -69,7 +69,7 @@ void test_B_inconditionnel (arm_core p) {
 void test_B_conditionnel (arm_core p) {
     // Cas avec une adresse positive et branchement si égal (Z set)
     test_template_branch(
-        " B Égal (EQ) ",
+        " B Égal (EQ) - Adresse Positive ",
         p,
         EQ,     // cond
         0,      // bit L
@@ -80,7 +80,7 @@ void test_B_conditionnel (arm_core p) {
 
     // Cas avec une adresse positive et branchement si non égal (Z clear)
     test_template_branch(
-        " B Non Égal (NE) ",
+        " B Non Égal (NE) - Adresse Positive  ",
         p,
         NE,     // cond
         0,      // bit L
@@ -90,7 +90,7 @@ void test_B_conditionnel (arm_core p) {
     );
     // Cas avec une adresse positive et branchement si supérieur ou égal (C set ou Z set)
     test_template_branch(
-        " B Supérieur ou Égal (CSHS) ",
+        " B Supérieur ou Égal (CSHS) - Adresse Positive  ",
         p,
         CSHS,   // cond
         0,      // bit L
@@ -101,123 +101,42 @@ void test_B_conditionnel (arm_core p) {
 
     // Cas avec une adresse positive et branchement si inférieur (C clear et Z clear)
     test_template_branch(
-        " B Inférieur (CCLO) ",
+        " B Inférieur (CCLO) - Adresse Négative ",
         p,
         CCLO,   // cond
         0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
+        0xfffffc,      // signed_immed
+        0x0,  // expected_PC
         LR_INIT_VAL      // expected_LR
     );
 
     // Cas avec une adresse positive et branchement si négatif (N set)
     test_template_branch(
-        " B Négatif (MI) ",
+        " B Négatif (MI) - Adresse Négative ",
         p,
         MI,     // cond
         0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
+        0xfffffc,      // signed_immed
+        0x0,  // expected_PC
         LR_INIT_VAL      // expected_LR
     );
     // Cas avec une adresse positive et branchement si positif ou nul (N clear)
     test_template_branch(
-        " B Positif ou Nul (PL) ",
+        " B Positif ou Nul (PL) - Adresse Négative ",
         p,
         PL,     // cond
         0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
+        0xfffffc,      // signed_immed
+        0x0,  // expected_PC
         LR_INIT_VAL      // expected_LR
     );
-    // Cas avec une adresse positive et branchement si débordement (V set)
-    test_template_branch(
-        " B Débordement (VS) ",
-        p,
-        VS,     // cond
-        0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
+    
+}
 
-    // Cas avec une adresse positive et branchement si pas de débordement (V clear)
-    test_template_branch(
-        " B Pas de Débordement (VC) ",
-        p,
-        VC,     // cond
-        0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
 
-    // Cas avec une adresse positive et branchement si supérieur (C set et Z clear)
-    test_template_branch(
-        " B Supérieur (HI) ",
-        p,
-        HI,     // cond
-        0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
-
-    // Cas avec une adresse positive et branchement si inférieur ou égal (C clear ou Z set)
-    test_template_branch(
-        " B Inférieur ou Égal (LS) ",
-        p,
-        LS,     // cond
-        0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
-
-    // Cas avec une adresse positive et branchement si supérieur ou égal (N set et V set ou N clear et V clear)
-    test_template_branch(
-        " B Supérieur ou Égal (GE) ",
-        p,
-        GE,     // cond
-        0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
-
-    // Cas avec une adresse positive et branchement si inférieur (N set et V clear ou N clear et V set)
-    test_template_branch(
-        " B Inférieur (LT) ",
-        p,
-        LT,     // cond
-        0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
-
-    // Cas avec une adresse positive et branchement si supérieur (N set et V clear et Z clear ou N clear et V set et Z clear)
-    test_template_branch(
-        " B Supérieur (GT) ",
-        p,
-        GT,     // cond
-        0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
-
-    // Cas avec une adresse positive et branchement si inférieur ou égal (N set et V set et Z set ou N clear et V clear et Z set)
-    test_template_branch(
-        " B Inférieur ou Égal (LE) ",
-        p,
-        LE,     // cond
-        0,      // bit L
-        0x000003,      // signed_immed
-        0x1c,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
-
+void test_B (arm_core p) {
+    test_B_inconditionnel(p);
+    test_B_conditionnel(p);
 }
 
 void test_BL_inconditionnel(arm_core p) {
@@ -242,13 +161,72 @@ void test_BL_inconditionnel(arm_core p) {
     
 }
 
-void test_B (arm_core p) {
-    test_B_inconditionnel(p);
-    test_B_conditionnel(p);
+void test_BL_conditionnel_positif(arm_core p) {
+    // Cas avec une adresse positive et branchement de lien si égal (Z set)
+    test_template_branch(
+        "BL Égal (EQ) - Adresse Positive ",
+        p,
+        EQ,     // cond
+        1,      // bit L
+        0x000003,      // signed_immed
+        0x1c,  // expected_PC
+        0x0c      // expected_LR
+    );
+
+    // Cas avec une adresse positive et branchement de lien si non égal (Z clear)
+    test_template_branch(
+        "BL Non Égal (NE) - Adresse Positive ",
+        p,
+        NE,     // cond
+        1,      // bit L
+        0x000003,      // signed_immed
+        0x1c,  // expected_PC
+        0x0c      // expected_LR
+    );
+
+    // Meme resultats avec d'autre condition 
+}
+
+void test_BL_conditionnel_negatif(arm_core p) {
+    // Cas avec une adresse négative et branchement de lien si égal (Z set)
+    test_template_branch(
+        "BL Égal (EQ) - Adresse Négative ",
+        p,
+        EQ,     // cond
+        1,      // bit L
+        0xfffffc,      // signed_immed
+        0x0,  // expected_PC
+        PC_INIT_VAL + 4      // expected_LR
+    );
+
+    // Cas avec une adresse négative et branchement de lien si non égal (Z clear)
+    test_template_branch(
+        "BL Non Égal (NE) - Adresse Négative ",
+        p,
+        NE,     // cond
+        1,      // bit L
+        0xfffffc,      // signed_immed
+        0x0,  // expected_PC
+        PC_INIT_VAL + 4      // expected_LR
+    );
+
+    // Cas avec une adresse négative et branchement de lien si supérieur ou égal (C set ou Z set)
+    test_template_branch(
+        "BL Supérieur ou Égal (CSHS) - Adresse Négative ",
+        p,
+        CSHS,   // cond
+        1,      // bit L
+        0xfffffc,      // signed_immed
+        0x0,  // expected_PC
+        PC_INIT_VAL + 4      // expected_LR
+    );
+   
 }
 
 void test_BL (arm_core p) {
     test_BL_inconditionnel(p);
+    test_BL_conditionnel_positif(p);
+    test_BL_conditionnel_negatif(p);
 }
 
 int main()

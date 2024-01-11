@@ -6,9 +6,9 @@ main:
     MOV r2,#8
 branch:
     MOV r3,#2
-    ADD r1,r1,r2            //88
-    ADD r1,r1,r2            //92
-    MOV r3 #0
+    ADD r1,r1,r2            
+    ADD r1,r1,r2            
+    MOV r3, #0
     B branch
     MOV r3,#0
     MOV r1, r14
