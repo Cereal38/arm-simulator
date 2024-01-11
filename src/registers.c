@@ -266,6 +266,11 @@ void registers_write_V(registers r, uint8_t value)
   write_cpsr_bit(r, V, value);
 }
 
+void registers_write_T(registers r, uint8_t value)
+{
+  write_cpsr_bit(r, T, value);
+}
+
 int registers_read_Z(registers r)
 {
   return get_bits(r->cpsr, Z, Z);
@@ -284,4 +289,9 @@ int registers_read_C(registers r)
 int registers_read_V(registers r)
 {
   return get_bits(r->cpsr, V, V);
+}
+
+int registers_read_T(registers r)
+{
+  return get_bits(r->cpsr, T, T);
 }

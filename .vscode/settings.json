@@ -5,6 +5,7 @@
     "arm_core.h": "c",
     "arm_data_processing.h": "c",
     "stdio.h": "c",
-    "util.h": "c"
+    "util.h": "c",
+    "arm_constants.h": "c"
   }
 }
