@@ -29,6 +29,7 @@ Contact: Guillaume.Huard@imag.fr
 int arm_load_store(arm_core p, uint32_t ins)
 {
 
+
   // Les positions
   uint8_t bitI = get_bit(ins, 25);
   uint8_t bitP = get_bit(ins, 24);
@@ -42,34 +43,80 @@ int arm_load_store(arm_core p, uint32_t ins)
   uint8_t mode = registers_get_mode(p->reg);
 
   uint32_t address;
-  printf ("rd = %d\n", rd);
-  printf ("rn = %d\n", rn);
+
   
   switch (bitL)
   {
   // Load instructions
   case 1:
     // LDRH
-    if (bitI == 0 && get_bits(ins, 27, 26) == 0b00)
+     if (bitI == 0 && get_bits(ins, 27, 26) == 0b00)
     {
-      uint16_t data = arm_read_register(p, rn);
-      arm_write_register(p, rd, data);
-      printf ("data5 = %d\n", data);
+      //man P.474
+      int offset = get_bits(ins, 11, 0);
+      uint8_t immedH = get_bits(ins, 11, 8);
+      uint8_t rm = get_bits(ins, 3, 0);
+      offset = (immedH << 4) | rm;
+
+
+      if (bitP) { // val imm
+        if (bitU){
+          address = arm_read_register(p, rn) + offset;
+        } else {
+          address = arm_read_register(p, rn) - offset;
+        }
+      } else { //val reg
+          if (bitU){
+            address = arm_read_register(p, rn) + arm_read_register(p, rm);
+          } else {
+            address = arm_read_register(p, rn) - arm_read_register(p, rm);
+          }
+      }
+      uint16_t data;
+      data =(uint16_t) registers_read(p->reg, rn, mode);
+      arm_write_register(p, rd, data );
+      
     }
 
     // LDRB
     else if (bitB == 1 && get_bits(ins, 27, 26) == 0b01)
     {
-      uint8_t data = arm_read_register(p, rn);
-      arm_write_register(p, rd, data);
-      printf ("data4 = %d\n", data);
+      address = registers_read(p->reg, rn, mode);
+      uint8_t data ;
+      arm_read_byte(p, address, (uint8_t *) &data);
+      if (rd == 15)
+      {
+        // PC = data AND 0xFFFFFFFE
+        // T Bit = data[0]
+        registers_write(p->reg, 15, mode, data & 0xFFFFFFFE);
+        registers_write_T(p->reg, get_bit(data, 0));
+        
+      }
+      else
+      {
+        // Rd = data
+        // if (rn == 15)
+        // {
+        //   data += 8;
+        //   //  dans le cas ou rn = 15, l'addresse de ma varible  je la connais pas  je sais pas ou est ce 
+        //   // le compilateur va la mettre 
+        // }
+  
+        registers_write(p->reg, rd, mode, data);
+        // on affiche la valeur a l'addrss de rd
+        // int memory_read_word(memory mem, uint32_t address, uint32_t *value, uint8_t be)
+
+        uint32_t val = 0;
+        memory_read_word(p->mem, data,&val, endianess);
+        // printf ("val = %x\n", val);
+      }
     }
 
     // LDR
     else if (bitB == 0 && get_bits(ins, 27, 26) == 0b01)
     {
       // data = Memory[address,4]
-      printf ("LDR\n");
+     
       
       uint32_t data = registers_read(p->reg, rn, mode);
       
@@ -79,16 +126,18 @@ int arm_load_store(arm_core p, uint32_t ins)
         // T Bit = data[0]
         registers_write(p->reg, 15, mode, data & 0xFFFFFFFE);
         registers_write_T(p->reg, get_bit(data, 0));
-        printf ("data2 = %d\n", data);
+      
       }
       else
       {
         // Rd = data
-        if (rn == 15)
-        {
-          data += 16;
-        }
-        printf ("data1 = %d\n", data);
+        // if (rn == 15)
+        // {
+        //   data += 8;
+        //   //  dans le cas ou rn = 15, l'addresse de ma varible  je la connais pas  je sais pas ou est ce 
+        //   // le compilateur va la mettre 
+        // }
+    
         // registers_write(p->reg, 15, mode, data & 0xFFFFFFFC);
         registers_write(p->reg, rd, mode, data);
         // on affiche la valeur a l'addrss de rd
@@ -96,7 +145,7 @@ int arm_load_store(arm_core p, uint32_t ins)
 
         uint32_t val = 0;
         memory_read_word(p->mem, data,&val, endianess);
-        printf ("val = %x\n", val);
+        // printf ("val = %x\n", val);
       }
     }
   break;  
@@ -107,10 +156,7 @@ int arm_load_store(arm_core p, uint32_t ins)
       // Memory[address,2] = Rd[15:0]
       address = arm_read_register(p, rn);
       uint16_t data = arm_read_register(p, rd) & 0xFFFF;
-      if (memory_write_half(p->mem, address, data, endianess) != 0)
-      {
-        return UNDEFINED_INSTRUCTION;
-      }
+      arm_write_half(p, address, data & 0xFFFF);
     }
 
     // STRB
@@ -119,24 +165,17 @@ int arm_load_store(arm_core p, uint32_t ins)
       // Memory[address,1] = Rd[7:0]
       address = arm_read_register(p, rn);
       uint8_t data = arm_read_register(p, rd) & 0xFF;
-      if (memory_write_byte(p->mem, address, data) != 0)
-      {
-        return UNDEFINED_INSTRUCTION;
-      }
+      arm_write_byte(p, address, data & 0xFF);
     }
 
     // STR
     else if (bitB == 0 && get_bits(ins, 27, 26) == 0b01)
     {
-      printf ("STR\n");
       // Memory[address,4] = Rd
       address = arm_read_register(p, rn);
       uint32_t data = arm_read_register(p, rd);
-      if (memory_write_word(p->mem, address, data, endianess) != 0)
-      {
-        printf ("echeck pour STR\n ") ;
-        return UNDEFINED_INSTRUCTION;
-      }
+      arm_write_word(p, address, data);
+   
     }
     break;
   default:
@@ -144,6 +183,8 @@ int arm_load_store(arm_core p, uint32_t ins)
     return UNDEFINED_INSTRUCTION;
   }
 }
+
+
 
 int number_registers(uint16_t register_list)
 {
@@ -156,29 +197,6 @@ int number_registers(uint16_t register_list)
   return compteur;
 }
 
-void printBinary(int num) {
-    if (num == 0) {
-        printf("0");
-        return;
-    }
-
-    int binary[32];  // Assuming 32-bit integers
-    int i = 0;
-
-    // Convert decimal to binary
-    while (num > 0) {
-        binary[i] = num % 2;
-        num /= 2;
-        i++;
-    }
-
-    // Print binary representation in reverse order
-    for (int j = i - 1; j >= 0; j--) {
-        printf("%d", binary[j]);
-    }
-}
-
-// Manque les cas avec le bit S. Manuel page 482.
 // LDM et STM info plus générale page 134.
 // LDM(1) (apparement c'est lui qu'il faut faire) page 186 du manuel.
 // STM(1) page 339 du Manuel.
@@ -197,7 +215,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
   uint8_t endianess = is_big_endian();
   uint8_t mode = registers_get_mode(p->reg);
 
-  uint32_t address = arm_read_register(p, rn);
+  uint32_t address = registers_read(p->reg, rn, registers_get_mode(p->reg));
 
   int nbr_register_list = number_registers(register_list);
 
@@ -223,19 +241,17 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
         else // incremente BEFORE
           address += 4;
       }
-      if (L)
-      { // LDM(1)
+      if (!L)
+      { // STM(1)
         uint32_t data;
-        if (memory_read_word(p->mem, address, &data, endianess) != 0)
-        {
-          return UNDEFINED_INSTRUCTION;
-        }
-        registers_write(p->reg, i, mode, data);
+        arm_read_word(p, i, &data);
+        arm_write_word(p, address, data);
       }
       else
-      { // STM(1)
-        uint32_t Ri = arm_read_register(p, i);
-        arm_write_register(p, address, Ri);
+      { // LDM(1)
+        uint32_t data;
+        arm_read_word(p, address, &data);
+        arm_write_word(p, i, data);
       }
       if (P == 0)
       {
@@ -280,15 +296,19 @@ int arm_coprocessor_load_store(arm_core p, uint32_t ins)
 
   if (P == 1 && W == 0)
   { // Immedite offset
+    return UNDEFINED_INSTRUCTION;
   }
   if (P == 1 && W == 1)
   { // Immediate pre-indexed
+    return UNDEFINED_INSTRUCTION;
   }
   if (P == 0 && W == 1)
   { // Immediate post-indexed
+    return UNDEFINED_INSTRUCTION;
   }
   else
   { // Unindexed
+    return UNDEFINED_INSTRUCTION;
   }
-  return 0;
+  return UNDEFINED_INSTRUCTION;
 }

@@ -158,7 +158,6 @@ static int arm_execute_instruction(arm_core p)
   {
     fprintf(stderr, "Condition non satisfaite \n");
     // Gestion interruption conditon non satisfaite
-    //  TODO 
     return UNDEFINED_INSTRUCTION;
   }
   if (cond == -1)
@@ -174,7 +173,7 @@ static int arm_execute_instruction(arm_core p)
   switch (code)
   {
   case 0b000: // Data processing immediate shift or register shift
-    printf (" case  data processing \n") ;
+  
     if (get_bits(instruction, 24, 20) == 0b10000 || get_bits(instruction, 24, 20) == 0b10010 || get_bits(instruction, 24, 20) == 0b10110 || get_bits(instruction, 24, 20) == 0b10100 ) 
     {
       resultat = arm_miscellaneous(p, instruction);
@@ -233,7 +232,6 @@ static int arm_execute_instruction(arm_core p)
       if (get_bit(instruction, 4))
       {
         // Media instructions 
-        // TODO
         resultat =  UNDEFINED_INSTRUCTION;
       }
       // Load/store register offset
@@ -281,16 +279,26 @@ static int arm_execute_instruction(arm_core p)
 int arm_step(arm_core p)
 {
   int result;
-  printf ("step\n");
+
   result = arm_execute_instruction(p);
   //  on affiche la valeur des registres R1 et R2
-  printf("R0 = %d\n", arm_read_register(p, 0) );
-  printf ("R1 = %d\n", arm_read_register(p, 1));
+  printf("R0 = %x\n", arm_read_register(p, 0) );
+  printf ("R1 = %x\n", arm_read_register(p, 1));
   printf ("R2 = %d\n", arm_read_register(p, 2));
   printf ("R3 = %d\n", arm_read_register(p, 3));
-  printf ("pc = %d\n", arm_read_register(p, 15));
-  printf ("cpsr = %d\n", arm_read_register(p, 16));
+  printf ("R4 = %d\n", arm_read_register(p, 4));
+  printf ("R5 = %d\n", arm_read_register(p, 5));
+  printf ("R6 = %d\n", arm_read_register(p, 6));
+  printf ("R7 = %d\n", arm_read_register(p, 7));
+  printf ("R8 = %d\n", arm_read_register(p, 8));
+  printf ("R9 = %d\n", arm_read_register(p, 9));
+  printf ("R10 = %d\n", arm_read_register(p, 10));
+  printf ("R11 = %d\n", arm_read_register(p, 11));
+  printf ("R12 = %d\n", arm_read_register(p, 12));
+  printf ("R13 = %d\n", arm_read_register(p, 13));
   printf ("lr = %d\n", arm_read_register(p, 14));
+  printf ("pc = %d\n", registers_read(p->reg, 15, registers_get_mode(p->reg)));
+  printf ("cpsr = %d\n", arm_read_register(p, 16));
   printf ("===============================\n") ;
 
   if (result )

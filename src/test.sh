@@ -13,10 +13,10 @@ file="Examples/example3"
 base=$(basename "$file" .s)
 
 # Lancer le simulateur en arrière-plan
-./arm_simulator --gdb-port 58000 > /dev/null 2>&1 &
+./arm_simulator --gdb-port 58001 > /dev/null 2>&1 &
 
 # Attente courte pour permettre au simulateur de démarrer
 sleep 1
 
 # Lancer GDB en mode interactif pour ouvrir le fichier d'exemple et se connecter au simulateur
-$gdb -ex "file $file" -ex "target remote localhost:58000" -ex "load" 
+$gdb -ex "file $file" -ex "target remote localhost:58001" -ex "load" 
