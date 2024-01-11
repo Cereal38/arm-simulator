@@ -151,29 +151,6 @@ int number_registers(uint16_t register_list)
   return compteur;
 }
 
-void printBinary(int num) {
-    if (num == 0) {
-        printf("0");
-        return;
-    }
-
-    int binary[32];  // Assuming 32-bit integers
-    int i = 0;
-
-    // Convert decimal to binary
-    while (num > 0) {
-        binary[i] = num % 2;
-        num /= 2;
-        i++;
-    }
-
-    // Print binary representation in reverse order
-    for (int j = i - 1; j >= 0; j--) {
-        printf("%d", binary[j]);
-    }
-}
-
-// Manque les cas avec le bit S. Manuel page 482.
 // LDM et STM info plus générale page 134.
 // LDM(1) (apparement c'est lui qu'il faut faire) page 186 du manuel.
 // STM(1) page 339 du Manuel.
@@ -192,7 +169,7 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
   uint8_t endianess = is_big_endian();
   uint8_t mode = registers_get_mode(p->reg);
 
-  uint32_t address = arm_read_register(p, rn);
+  uint32_t address = registers_read(p->reg, rn, registers_get_mode(p->reg));
 
   int nbr_register_list = number_registers(register_list);
 
@@ -218,19 +195,17 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
         else // incremente BEFORE
           address += 4;
       }
-      if (L)
-      { // LDM(1)
+      if (!L)
+      { // STM(1)
         uint32_t data;
-        if (memory_read_word(p->mem, address, &data, endianess) != 0)
-        {
-          return UNDEFINED_INSTRUCTION;
-        }
-        registers_write(p->reg, i, mode, data);
+        arm_read_word(p, i, &data);
+        arm_write_word(p, address, data);
       }
       else
-      { // STM(1)
-        uint32_t Ri = arm_read_register(p, i);
-        arm_write_register(p, address, Ri);
+      { // LDM(1)
+        uint32_t data;
+        arm_read_word(p, address, &data);
+        arm_write_word(p, i, data);
       }
       if (P == 0)
       {
@@ -275,15 +250,20 @@ int arm_coprocessor_load_store(arm_core p, uint32_t ins)
 
   if (P == 1 && W == 0)
   { // Immedite offset
+    return UNDEFINED_INSTRUCTION;
   }
   if (P == 1 && W == 1)
   { // Immediate pre-indexed
+    return UNDEFINED_INSTRUCTION;
   }
   if (P == 0 && W == 1)
   { // Immediate post-indexed
+    return UNDEFINED_INSTRUCTION;
   }
   else
   { // Unindexed
+    return UNDEFINED_INSTRUCTION;
   }
-  return 0;
+  return UNDEFINED_INSTRUCTION;
 }
+
