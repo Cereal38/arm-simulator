@@ -278,12 +278,14 @@ int arm_step(arm_core p)
   printf("step\n");
   result = arm_execute_instruction(p);
   //  on affiche la valeur des registres R1 et R2
+
   printf("R0 = %d\n", arm_read_register(p, 0));
   printf("R1 = %d\n", arm_read_register(p, 1));
   printf("R2 = %d\n", arm_read_register(p, 2));
   printf("R3 = %d\n", arm_read_register(p, 3));
   printf("pc = %d\n", arm_read_register(p, 15));
-  printf("cpsr = %d\n", arm_read_register(p, 16));
+  printf("cpsr = %d\n", arm_read_cpsr(p));
+  printf("spsr = %d\n", arm_read_spsr(p));
   printf("lr = %d\n", arm_read_register(p, 14));
 
   if (result)

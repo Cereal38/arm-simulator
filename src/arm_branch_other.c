@@ -99,18 +99,19 @@ int msr_instruction_commun_code(arm_core p, uint32_t ins, int8_t operand){
         } else {
             mask = byte_mask & UserMask;
         }
-        uint32_t CPSR_register = registers_read_cpsr(p->reg);
+        uint32_t CPSR_register = arm_read_cpsr(p);
         CPSR_register = (CPSR_register & (~mask)) | (operand & mask);
-        registers_write_cpsr(p->reg, CPSR_register);
+        arm_write_cpsr(p,CPSR_register);
+    
     } else /* R == 1 */ {
         if (arm_current_mode_has_spsr(p)) {
             mask = byte_mask & (UserMask | PrivMask | StateMask);
-            uint8_t mode = registers_get_mode(p->reg);
-            uint32_t SPSR_register = registers_read_spsr(p->reg, mode);
+            uint32_t SPSR_register = arm_read_spsr(p);
             SPSR_register = (SPSR_register & (~mask)) | (operand & mask);
-            registers_write_spsr(p->reg, mode, SPSR_register);
+            arm_write_spsr(p,SPSR_register);
         } else {
             // TODO Vérifier UNDEF Ou UNPREDICTABLE
+            perror("Le mode acctuel n'a pas spsr \n");
             return UNDEFINED_INSTRUCTION;
         }
     }
@@ -126,11 +127,10 @@ int mrs_instruction (arm_core p, uint32_t ins){
     }
 
     if( get_bit(ins,22) ) /* R == 1 */ {
-        uint8_t mode = registers_get_mode(p->reg);
-        uint32_t SPSR_register = registers_read_spsr(p->reg, mode);
+        uint32_t SPSR_register = arm_read_spsr(p);
         arm_write_register(p,rd,SPSR_register);
     } else /* R == 0 */ {
-        uint32_t CPSR_register = registers_read_cpsr(p->reg);
+        uint32_t CPSR_register = arm_read_cpsr(p);
         arm_write_register(p,rd,CPSR_register);
     }
     return 0;
