@@ -53,6 +53,7 @@ Contact: Guillaume.Huard@imag.fr
 #define Z 30
 #define C 29
 #define V 28
+#define T 5
 
 /* shift operations */
 #define LSL 0
@@ -61,21 +62,21 @@ Contact: Guillaume.Huard@imag.fr
 #define ROR 3
 
 /* Conditions */
-#define EQ    0b0000
-#define NE    0b0001
-#define CSHS  0b0010
-#define CCLO  0b0011
-#define MI    0b0100
-#define PL    0b0101
-#define VS    0b0110
-#define VC    0b0111
-#define HI    0b1000
-#define LS    0b1001
-#define GE    0b1010
-#define LT    0b1011
-#define GT    0b1100
-#define LE    0b1101
-#define AL    0b1110
+#define EQ 0b0000
+#define NE 0b0001
+#define CSHS 0b0010
+#define CCLO 0b0011
+#define MI 0b0100
+#define PL 0b0101
+#define VS 0b0110
+#define VC 0b0111
+#define HI 0b1000
+#define LS 0b1001
+#define GE 0b1010
+#define LT 0b1011
+#define GT 0b1100
+#define LE 0b1101
+#define AL 0b1110
 
 /* Opcodes */
 #define AND 0b0000

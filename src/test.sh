@@ -1,15 +1,22 @@
-#!/bin/bash
+#!/bin/sh
+gdb=arm-none-eabi-gdb
 
-
-#on verifie qu'on a un argument
-if [ $# -eq 0 ]
+# Vérifier la présence du simulateur et de la version étudiante
+if [ ! -x ./arm_simulator -o ! -d student ]
 then
-    echo "Il faut un argument !"
+    echo "Error: Missing simulator or student version"
     exit 1
 fi
-port=$1
-arm-none-eabi-gdb 
-#< file Examples/example1 < target remote localhost:$port
- file Examples/example1
-target remote localhost:35511
 
+# Itérer sur le premier fichier d'exemple dans Examples/
+file="Examples/example3"
+base=$(basename "$file" .s)
+
+# Lancer le simulateur en arrière-plan
+./arm_simulator --gdb-port 58000 > /dev/null 2>&1 &
+
+# Attente courte pour permettre au simulateur de démarrer
+sleep 1
+
+# Lancer GDB en mode interactif pour ouvrir le fichier d'exemple et se connecter au simulateur
+$gdb -ex "file $file" -ex "target remote localhost:58000" -ex "load" 
