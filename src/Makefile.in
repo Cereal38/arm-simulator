@@ -90,7 +90,8 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = arm_simulator$(EXEEXT) send_irq$(EXEEXT) \
 	memory_test$(EXEEXT) registers_test$(EXEEXT) \
-	test_arm_data_processing$(EXEEXT) test_arm_branch$(EXEEXT)
+	test_arm_data_processing$(EXEEXT) test_arm_branch$(EXEEXT) \
+	test_arm_load_store$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -143,6 +144,11 @@ test_arm_data_processing_OBJECTS =  \
 	$(am_test_arm_data_processing_OBJECTS)
 test_arm_data_processing_LDADD = $(LDADD)
 test_arm_data_processing_DEPENDENCIES =
+am_test_arm_load_store_OBJECTS = test_arm_load_store.$(OBJEXT) \
+	$(am__objects_1)
+test_arm_load_store_OBJECTS = $(am_test_arm_load_store_OBJECTS)
+test_arm_load_store_LDADD = $(LDADD)
+test_arm_load_store_DEPENDENCIES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -168,7 +174,8 @@ am__depfiles_remade = ./$(DEPDIR)/arm.Po \
 	./$(DEPDIR)/memory_test.Po ./$(DEPDIR)/registers.Po \
 	./$(DEPDIR)/registers_test.Po ./$(DEPDIR)/scanner.Po \
 	./$(DEPDIR)/send_irq.Po ./$(DEPDIR)/test_arm_branch.Po \
-	./$(DEPDIR)/test_arm_data_processing.Po ./$(DEPDIR)/trace.Po \
+	./$(DEPDIR)/test_arm_data_processing.Po \
+	./$(DEPDIR)/test_arm_load_store.Po ./$(DEPDIR)/trace.Po \
 	./$(DEPDIR)/util.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -191,10 +198,12 @@ am__v_LEX_1 =
 YLWRAP = $(top_srcdir)/build-aux/ylwrap
 SOURCES = $(arm_simulator_SOURCES) $(memory_test_SOURCES) \
 	$(registers_test_SOURCES) $(send_irq_SOURCES) \
-	$(test_arm_branch_SOURCES) $(test_arm_data_processing_SOURCES)
+	$(test_arm_branch_SOURCES) $(test_arm_data_processing_SOURCES) \
+	$(test_arm_load_store_SOURCES)
 DIST_SOURCES = $(arm_simulator_SOURCES) $(memory_test_SOURCES) \
 	$(registers_test_SOURCES) $(send_irq_SOURCES) \
-	$(test_arm_branch_SOURCES) $(test_arm_data_processing_SOURCES)
+	$(test_arm_branch_SOURCES) $(test_arm_data_processing_SOURCES) \
+	$(test_arm_load_store_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -423,6 +432,7 @@ memory_test_SOURCES = memory_test.c memory.h memory.c util.h util.c
 registers_test_SOURCES = registers_test.c registers.h registers.c util.h util.c arm_constants.h arm_constants.c
 test_arm_data_processing_SOURCES = test_arm_data_processing.c $(COMMON)
 test_arm_branch_SOURCES = test_arm_branch.c $(COMMON)
+test_arm_load_store_SOURCES = test_arm_load_store.c $(COMMON)
 EXTRA_DIST = gdb_commands make_trace.sh License
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -544,6 +554,10 @@ test_arm_data_processing$(EXEEXT): $(test_arm_data_processing_OBJECTS) $(test_ar
 	@rm -f test_arm_data_processing$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_arm_data_processing_OBJECTS) $(test_arm_data_processing_LDADD) $(LIBS)
 
+test_arm_load_store$(EXEEXT): $(test_arm_load_store_OBJECTS) $(test_arm_load_store_DEPENDENCIES) $(EXTRA_test_arm_load_store_DEPENDENCIES) 
+	@rm -f test_arm_load_store$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_arm_load_store_OBJECTS) $(test_arm_load_store_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -570,6 +584,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/send_irq.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arm_branch.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arm_data_processing.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_arm_load_store.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Po@am__quote@ # am--include-marker
 
@@ -963,6 +978,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/send_irq.Po
 	-rm -f ./$(DEPDIR)/test_arm_branch.Po
 	-rm -f ./$(DEPDIR)/test_arm_data_processing.Po
+	-rm -f ./$(DEPDIR)/test_arm_load_store.Po
 	-rm -f ./$(DEPDIR)/trace.Po
 	-rm -f ./$(DEPDIR)/util.Po
 	-rm -f Makefile
@@ -1032,6 +1048,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/send_irq.Po
 	-rm -f ./$(DEPDIR)/test_arm_branch.Po
 	-rm -f ./$(DEPDIR)/test_arm_data_processing.Po
+	-rm -f ./$(DEPDIR)/test_arm_load_store.Po
 	-rm -f ./$(DEPDIR)/trace.Po
 	-rm -f ./$(DEPDIR)/util.Po
 	-rm -f Makefile

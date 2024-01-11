@@ -198,29 +198,25 @@ int number_registers(uint16_t register_list)
   return compteur;
 }
 
-// Manque les cas avec le bit S. Manuel page 482.
 // LDM et STM info plus générale page 134.
 // LDM(1) (apparement c'est lui qu'il faut faire) page 186 du manuel.
 // STM(1) page 339 du Manuel.
 int arm_load_store_multiple(arm_core p, uint32_t ins)
 {
-  uint8_t posP = 24;
-  uint8_t posU = 23;
-  uint8_t posS = 22;
-  uint8_t posW = 21;
-  uint8_t posL = 20;
 
-  uint8_t P = (ins >> posP) & 0b1;
-  uint8_t U = (ins >> posU) & 0b1;
-  uint8_t S = (ins >> posS) & 0b1;
-  uint8_t W = (ins >> posW) & 0b1;
-  uint8_t L = (ins >> posL) & 0b1;
+  uint8_t P = get_bit(ins, 24);
+  uint8_t U = get_bit(ins, 23);
+  uint8_t S = get_bit(ins, 22);
+  uint8_t W = get_bit(ins, 21);
+  uint8_t L = get_bit(ins, 20);
 
-  uint8_t posRn = 16; // 19 à 16
-  uint8_t rn = (ins >> posRn) & 0b1111;
-  uint16_t register_list = ins & 0b1111; // 15 à 0
+  uint8_t rn = get_bits(ins, 19, 16);
+  uint16_t register_list = get_bits(ins, 15, 0);
 
-  uint32_t address = arm_read_register(p, rn);
+  // uint8_t endianess = is_big_endian();
+  // uint8_t mode = registers_get_mode(p->reg);
+
+  uint32_t address = registers_read(p->reg, rn, registers_get_mode(p->reg));
 
   int nbr_register_list = number_registers(register_list);
 
@@ -235,79 +231,85 @@ int arm_load_store_multiple(arm_core p, uint32_t ins)
     fprintf(stderr, "<arm_load_store.c> Erreur le bit S n'est pas à 0.\n");
     return UNDEFINED_INSTRUCTION;
   }
-  if (L)
-  { // LDM(1)
-    for (int i = 0; i < 15; i++)
+  for (int i = 0; i < 16; i++)
+  {
+    if ((register_list & (1 << i)) != 0)
     {
-      if ((register_list & (1 << i)) != 0)
+      if (P == 1)
       {
-        if (P == 1)
-        {
-          if (U == 0) // decremente BEFORE
-            address -= 4;
-          else // incremente BEFORE
-            address += 4;
-        }
-        uint32_t Ri = arm_read_register(p, address);
-        arm_write_register(p, i, Ri);
-        if (P == 0)
-        {
-          if (U == 0) // decremente AFTER
-            address -= 4;
-          else // incremente AFTER
-            address += 4;
-        }
+        if (U == 0) // decremente BEFORE
+          address -= 4;
+        else // incremente BEFORE
+          address += 4;
       }
-    }
-    if ((register_list & (1 << 15)) != 0)
-    { // si PC est set dans register_list
-      uint32_t value = arm_read_register(p, address);
-      arm_write_register(p, 15, value); // 15 pour pc
-      // uint8_t T = value & 0b1;//bit thumb? qu'est ce que c'est que ce truc??
-      address += 4;
-      // fprintf(stderr, "<arm_load_store.c> Non implémenté : le bit 15 (PC) est set.\n");
-      // return UNDEFINED_INSTRUCTION;
-      //  des choses incompréhensibles
-      // TODO à vérifier ici voilà
-    }
-  }
-  else
-  { // STM(1)
-    for (int i = 0; i < 16; i++)
-    {
-      if ((register_list & (1 << i)) != 0)
+      if (!L)
+      { // STM(1)
+        uint32_t data;
+        arm_read_word(p, i, &data);
+        arm_write_word(p, address, data);
+      }
+      else
+      { // LDM(1)
+        uint32_t data;
+        arm_read_word(p, address, &data);
+        arm_write_word(p, i, data);
+      }
+      if (P == 0)
       {
-        if (P == 1)
-        {
-          if (U == 0) // decremente BEFORE
-            address -= 4;
-          else // incremente BEFORE
-            address += 4;
-        }
-        uint32_t Ri = arm_read_register(p, i);
-        arm_write_register(p, address, Ri);
-        if (P == 0)
-        {
-          if (U == 0) // decremente AFTER
-            address -= 4;
-          else // incremente AFTER
-            address += 4;
-        }
+        if (U == 0) // decremente AFTER
+          address -= 4;
+        else // incremente AFTER
+          address += 4;
       }
     }
   }
   if (W == 1)
   {
-    if (U == 0)
-      address = address - 4 * nbr_register_list;
-    else
-      address = address + 4 * nbr_register_list;
+    arm_write_register(p, rn, address); // address sera déjà à la bonne valeur normalement (address +/- 4 * nbr_register_list)
   }
   return 0;
 }
 
 int arm_coprocessor_load_store(arm_core p, uint32_t ins)
 {
-  /* Not implemented */
+  // uint8_t posP = 24;
+  // uint8_t posU = 23;
+  // uint8_t posW = 21;
+  // uint8_t posL = 20;
+
+  // uint8_t P = (ins >> posP) & 0b1;
+  // uint8_t U = (ins >> posU) & 0b1;
+  // uint8_t W = (ins >> posW) & 0b1;
+  // uint8_t L = (ins >> posL) & 0b1;
+
+  // uint8_t posRn = 16; // 19 à 16
+  // uint8_t rn = (ins >> posRn) & 0b1111;
+
+  // // uint8_t pos_cp_num = 8;
+  // // uint8_t cp_num = (ins >> pos_cp_num) & 0b1111; // 11 à 8
+
+  // // uint8_t pos_CRd = 12;
+  // // uint8_t CRd = (ins >> pos_CRd) & 0b1111; // 12 à 15
+
+  // // uint8_t offset_8 = ins & 0b111111111; // 7 à 0
+
+  // // uint32_t base = arm_read_register(p, rn);
+
+  // if (P == 1 && W == 0)
+  // { // Immedite offset
+  //   return UNDEFINED_INSTRUCTION;
+  // }
+  // if (P == 1 && W == 1)
+  // { // Immediate pre-indexed
+  //   return UNDEFINED_INSTRUCTION;
+  // }
+  // if (P == 0 && W == 1)
+  // { // Immediate post-indexed
+  //   return UNDEFINED_INSTRUCTION;
+  // }
+  // else
+  // { // Unindexed
+  //   return UNDEFINED_INSTRUCTION;
+  // }
   return UNDEFINED_INSTRUCTION;
 }

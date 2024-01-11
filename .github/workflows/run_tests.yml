@@ -60,3 +60,13 @@ jobs:
           if [ $? -ne 0 ]; then
             exit 1
           fi
+
+      - name: Test arm_load_store.c
+        run: ./test_arm_load_store
+        working-directory: ./src
+
+      - name: Fail if tests failed
+        run: |
+          if [ $? -ne 0 ]; then
+            exit 1
+          fi
