@@ -23,6 +23,7 @@ Contact: Guillaume.Huard@imag.fr
 #include "arm_load_store.h"
 #include "arm_exception.h"
 #include "arm_constants.h"
+#include "registers.h"
 #include "util.h"
 #include "debug.h"
 
