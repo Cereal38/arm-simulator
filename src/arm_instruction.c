@@ -136,8 +136,6 @@ int verif_cond(uint32_t instruction, registers r)
   }
 }
 
-
-
 static int arm_execute_instruction(arm_core p)
 {
   uint32_t instruction;
@@ -158,7 +156,7 @@ static int arm_execute_instruction(arm_core p)
   {
     fprintf(stderr, "Condition non satisfaite \n");
     // Gestion interruption conditon non satisfaite
-    //  TODO 
+    //  TODO
     return UNDEFINED_INSTRUCTION;
   }
   if (cond == -1)
@@ -174,47 +172,46 @@ static int arm_execute_instruction(arm_core p)
   switch (code)
   {
   case 0b000: // Data processing immediate shift or register shift
-    printf (" case  data processing \n") ;
-    if (get_bits(instruction, 24, 20) == 0b10000 || get_bits(instruction, 24, 20) == 0b10010 || get_bits(instruction, 24, 20) == 0b10110 || get_bits(instruction, 24, 20) == 0b10100 ) 
+    printf(" case  data processing \n");
+    if (get_bits(instruction, 24, 20) == 0b10000 || get_bits(instruction, 24, 20) == 0b10010 || get_bits(instruction, 24, 20) == 0b10110 || get_bits(instruction, 24, 20) == 0b10100)
     {
       resultat = arm_miscellaneous(p, instruction);
     }
     else if (get_bit(instruction, 4) & get_bit(instruction, 7))
     {
-            // case offset 
-      resultat = arm_load_store (p, instruction);
+      // case offset
+      resultat = arm_load_store(p, instruction);
     }
-    else 
+    else
     {
       resultat = arm_data_processing_immediate(p, instruction);
     }
- 
+
     break;
   case 0b001: // Data processing immediate or move immediate to status register
 
-
-      if ((get_bits(instruction, 24, 23)) == 0b10)
+    if ((get_bits(instruction, 24, 23)) == 0b10)
+    {
+      if (get_bits(instruction, 21, 20) == 0b10)
       {
-        if (get_bits(instruction, 21, 20) == 0b10)
-        {
-          resultat = arm_data_processing_immediate_msr(p, instruction);
-        }
-        else
-         resultat = arm_data_processing_immediate(p, instruction);
+        resultat = arm_data_processing_immediate_msr(p, instruction);
+      }
+      else
+        resultat = arm_data_processing_immediate(p, instruction);
 
-        if (get_bits(instruction, 21, 20) == 0b00)
-        {
-          resultat = UNDEFINED_INSTRUCTION;
-        }
-        else
-        {
-          resultat = arm_data_processing_immediate(p, instruction);
-        }
+      if (get_bits(instruction, 21, 20) == 0b00)
+      {
+        resultat = UNDEFINED_INSTRUCTION;
       }
       else
       {
         resultat = arm_data_processing_immediate(p, instruction);
-      } 
+      }
+    }
+    else
+    {
+      resultat = arm_data_processing_immediate(p, instruction);
+    }
 
     break;
   case 0b010: // Load/store immediate offset
@@ -222,22 +219,20 @@ static int arm_execute_instruction(arm_core p)
     resultat = arm_load_store(p, instruction);
     break;
 
-  case 0b011: // Load/store register offset 
+  case 0b011: // Load/store register offset
 
-
-
-      if ((get_bits(instruction, 24, 20) == 0b11111) && (get_bits(instruction, 7, 4) == 0b1111))
-      {
-        resultat = UNDEFINED_INSTRUCTION;
-      }
-      if (get_bit(instruction, 4))
-      {
-        // Media instructions 
-        // TODO
-        resultat =  UNDEFINED_INSTRUCTION;
-      }
-      // Load/store register offset
-      resultat =  arm_load_store(p, instruction);
+    if ((get_bits(instruction, 24, 20) == 0b11111) && (get_bits(instruction, 7, 4) == 0b1111))
+    {
+      resultat = UNDEFINED_INSTRUCTION;
+    }
+    if (get_bit(instruction, 4))
+    {
+      // Media instructions
+      // TODO
+      resultat = UNDEFINED_INSTRUCTION;
+    }
+    // Load/store register offset
+    resultat = arm_load_store(p, instruction);
 
     break;
   case 0b100: // Load/store multiple
@@ -255,19 +250,18 @@ static int arm_execute_instruction(arm_core p)
 
     break;
   case 0b111: // Cop data process / Cop register transfers / Software interrupt
-    
-    
-  if (get_bit(instruction, 24))
-  {
-    resultat = SOFTWARE_INTERRUPT;
-  }
-  if (get_bit(instruction, 4))
-  {
-    // coprocessor register transfers
-    resultat = arm_coprocessor_others_swi(p, instruction);
-  }
-  // coprocessor Data processing
-    resultat = 0 ;
+
+    if (get_bit(instruction, 24))
+    {
+      resultat = SOFTWARE_INTERRUPT;
+    }
+    if (get_bit(instruction, 4))
+    {
+      // coprocessor register transfers
+      resultat = arm_coprocessor_others_swi(p, instruction);
+    }
+    // coprocessor Data processing
+    resultat = 0;
 
     break;
   default: // ne dois jamais arriver
@@ -281,18 +275,18 @@ static int arm_execute_instruction(arm_core p)
 int arm_step(arm_core p)
 {
   int result;
-  printf ("step\n");
+  printf("step\n");
   result = arm_execute_instruction(p);
   //  on affiche la valeur des registres R1 et R2
-  printf("R0 = %d\n", arm_read_register(p, 0) );
-  printf ("R1 = %d\n", arm_read_register(p, 1));
-  printf ("R2 = %d\n", arm_read_register(p, 2));
-  printf ("R3 = %d\n", arm_read_register(p, 3));
-  printf ("pc = %d\n", arm_read_register(p, 15));
-  printf ("cpsr = %d\n", arm_read_register(p, 16));
-  printf ("lr = %d\n", arm_read_register(p, 14));
+  printf("R0 = %d\n", arm_read_register(p, 0));
+  printf("R1 = %d\n", arm_read_register(p, 1));
+  printf("R2 = %d\n", arm_read_register(p, 2));
+  printf("R3 = %d\n", arm_read_register(p, 3));
+  printf("pc = %d\n", arm_read_register(p, 15));
+  printf("cpsr = %d\n", arm_read_register(p, 16));
+  printf("lr = %d\n", arm_read_register(p, 14));
 
-  if (result )
+  if (result)
   {
     return arm_exception(p, result);
   }
