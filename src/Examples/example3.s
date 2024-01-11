@@ -2,7 +2,7 @@
 .text
 main:
     mov r0, #5
-    mov r1, #456679
+    mov r1, #45
     strb r0, [r1]
     ldrb r0, [r1]
 
