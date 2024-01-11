@@ -54,8 +54,8 @@ int arm_load_store(arm_core p, uint32_t ins)
     {
       
       uint16_t dataHalf;
-      uint32_t addressRn = registers_get_address(p, rn);
-      int res = arm_read_half(p, addressRn, &dataHalf);
+      uint32_t *addressRn = registers_get_address(p, rn);
+      int res = arm_read_half(p, *addressRn, &dataHalf);
       arm_write_half(p, rd, dataHalf);
 
     }
@@ -65,24 +65,29 @@ int arm_load_store(arm_core p, uint32_t ins)
     {
 
       uint8_t dataByte;
-      uint32_t addressRn = registers_get_address(p, rn);
-      int res = arm_read_byte(p, addressRn ,&dataByte);
+      uint32_t *addressRn = registers_get_address(p, rn);
+      printf("addressRn = %ls\n", addressRn);
+      int res = arm_read_byte(p, *addressRn ,&dataByte);
       arm_write_byte(p, rd, dataByte);
-      
+
     }
 
     // LDR
     else if (bitB == 0 && get_bits(ins, 27, 26) == 0b01)
     {
       // data = Memory[address,4]
-      uint32_t dataWord = arm_read_register(p, rn);
+      uint32_t dataWord;
+      uint32_t *addressRn = registers_get_address(p,rn);
+      int res = arm_read_word(p, *addressRn ,&dataWord);
+
 
 
       if (rd == 15)
       {
         // PC = data AND 0xFFFFFFFE
         // T Bit = data[0]
-        registers_write(p->reg, 15, mode, dataWord & 0xFFFFFFFE);
+        arm_write_word(p,rd, (dataWord & 0xFFFFFFFE));
+        //registers_write(p->reg, 15, mode, dataWord & 0xFFFFFFFE);
         registers_write_T(p->reg, get_bit(dataWord, 0));
       }
       else

@@ -200,6 +200,6 @@ int arm_write_word(arm_core p, uint32_t address, uint32_t value) {
     return result;
 }
 
-uint32_t registers_get_address(arm_core p, uint8_t regi) {
+uint32_t *registers_get_address(arm_core p, uint8_t regi) {
     return &p->reg->registers[regi];
 }
