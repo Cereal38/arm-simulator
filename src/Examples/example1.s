@@ -4,8 +4,14 @@ main:
     
     MOV r1,#7
     MOV r2,#8
-    ADD r1,r1,r2
-    B 3
+branch:
+    MOV r3,#2
+    ADD r1,r1,r2            
+    ADD r1,r1,r2            
+    MOV r3, #0
+    B branch
+    MOV r3,#0
+    MOV r1, r14
     ADC r3,r1,r2,LSL #2
     ADC r4,r1,r2,LSR #2
     ADC r5,r1,r2,ROR #2
