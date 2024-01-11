@@ -63,3 +63,13 @@ jobs:
           if [ $? -ne 0 ]; then
             exit 1
           fi
+
+      - name: Test arm_branch.c
+        run: ./test_arm_branch
+        working-directory: ./src
+
+      - name: Fail if tests failed
+        run: |
+          if [ $? -ne 0 ]; then
+            exit 1
+          fi
