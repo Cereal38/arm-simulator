@@ -66,9 +66,11 @@ void registers_write_Z(registers r, uint8_t value);
 void registers_write_N(registers r, uint8_t value);
 void registers_write_C(registers r, uint8_t value);
 void registers_write_V(registers r, uint8_t value);
+void registers_write_T(registers r, uint8_t value);
 int registers_read_Z(registers r);
 int registers_read_N(registers r);
 int registers_read_C(registers r);
 int registers_read_V(registers r);
+int registers_read_T(registers r);
 
 #endif
