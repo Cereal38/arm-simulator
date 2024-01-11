@@ -28,16 +28,15 @@ Contact: Guillaume.Huard@imag.fr
 
 int arm_branch(arm_core p, uint32_t ins) {
 
-    // Recuperation de l'adresse de PC
+    // Recuperation de l'adresse de PCz
     uint32_t address;
-    uint8_t mode = registers_get_mode(p->reg);
-    address = registers_read(p->reg, 15, mode);
+    address = arm_read_register(p,15);
 
     // Verification L ( with Link )
     // On met dans LR Le retour à l'instruction suivant PC si L
     if (get_bit(ins,24)){
         // LR registre 14, adress (PC depart)
-        registers_write(p->reg, 14, mode, address + 4);
+        arm_write_register(p, 14, address );
     }
 
     // recuperation des 24 premiers bits
@@ -53,7 +52,7 @@ int arm_branch(arm_core p, uint32_t ins) {
 
 
     // Mettre PC au bon endroit pour le branchement
-    registers_write(p->reg, 15, mode, address + immed);
+    arm_write_register(p,15,address + immed);
     
     // TODO Vérifier la valeur de retour
     return 0;

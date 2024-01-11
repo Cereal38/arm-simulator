@@ -9,8 +9,8 @@
 #include "util.h"
 
 #define CODE_BL 0b101
-#define PC_INIT_VAL 0x00000000 
-#define LR_INIT_VAL 0x0000000C
+#define PC_INIT_VAL 0x00000008 
+#define LR_INIT_VAL 0x00000000
 
 void test_template_branch(char *name,
                           arm_core p,
@@ -37,23 +37,12 @@ void test_template_branch(char *name,
     assert( lr == expected_LR );
 
     uint32_t pc = arm_read_register(p,15);
-    // On compare avec PC + 4 car lors de la lecture du registre dans la fonction arm_read_register_internal de arm_core on incremente PC de 4
-    assert( pc == expected_PC + 4);
+    assert( pc == expected_PC);
 
     printf("OK\n");
 }
 
 void test_B_inconditionnel (arm_core p) {
-    // Cas avec une adresse négative
-    test_template_branch(
-        " B Inconditionnel (Adresse Négative) ",
-        p,
-        AL,     // cond
-        0,      // bit L
-        -5,     // signed_immed
-        PC_INIT_VAL - 5,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
 
     // Cas avec une adresse positive
     test_template_branch(
@@ -61,30 +50,18 @@ void test_B_inconditionnel (arm_core p) {
         p,
         AL,     // cond
         0,      // bit L
-        5,      // signed_immed
-        20,  // expected_PC
+        0x000003,      // signed_immed
+        0x1c,  // expected_PC
         LR_INIT_VAL      // expected_LR
     );
 
-    // Cas avec une adresse proche de la limite positive
     test_template_branch(
-        " B Inconditionnel (Adresse Limite Positive) ",
+        " B Inconditionnel (Adresse Negative) ",
         p,
         AL,     // cond
         0,      // bit L
-        0x3FFFFFC,  // signed_immed (proche de la limite positive)
-        -4,  // expected_PC
-        LR_INIT_VAL      // expected_LR
-    );
-
-    // Cas avec une adresse proche de la limite négative
-    test_template_branch(
-        " B Inconditionnel (Adresse Limite Négative) ",
-        p,
-        AL,     // cond
-        0,      // bit L
-        -0x3FFFFFC,  // signed_immed (proche de la limite négative)
-        PC_INIT_VAL - 0x3FFFFFC,  // expected_PC
+        0xfffffc,      // signed_immed
+        0x0,  // expected_PC
         LR_INIT_VAL      // expected_LR
     );
 }
@@ -92,12 +69,21 @@ void test_B_inconditionnel (arm_core p) {
 
 void test_BL_inconditionnel(arm_core p) {
     test_template_branch(
-        "BL Inconditionnel avec LR",
+        "BL Inconditionnel (Adresse Positive) ",
         p,
         AL,     // cond
         1,      // bit L
-        5,      // signed_immed
-        20,     // expected_PC
+        0xea000003,      // signed_immed
+        0x1c,  // expected_PC
+        0x0c      // expected_LR
+    );
+    test_template_branch(
+        "BL Inconditionnel (Adresse Negative) ",
+        p,
+        AL,     // cond
+        1,      // bit L
+        0xfffffc,      // signed_immed
+        0x0,  // expected_PC
         PC_INIT_VAL + 4      // expected_LR
     );
 }

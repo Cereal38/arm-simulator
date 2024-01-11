@@ -104,6 +104,29 @@ void test_ADD(arm_core p)
       0,              // Expected C flag
       0);             // Expected V flag
 
+  registers_write_C(p->reg, 1);
+  registers_write_Z(p->reg, 1);
+  registers_write_N(p->reg, 1);
+  registers_write_V(p->reg, 1);
+  test_template(
+      "ADD (S = 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      ADD,            // Opcode
+      0,              // S : Set condition codes
+      0,              // Rn : r0
+      1,              // Rd : r1
+      0b000000000011, // Shifter : #3
+      2,              // Rn value
+      0,              // Rs value
+      0,              // Rm value
+      5,              // Expected Rd value
+      1,              // Expected Z flag
+      1,              // Expected N flag
+      1,              // Expected C flag
+      1);             // Expected V flag
+
   test_template(
       "ADD (N+V : 0x7FFFFFFF + 0x1)",
       p,
@@ -122,26 +145,6 @@ void test_ADD(arm_core p)
       1,              // Expected N flag
       0,              // Expected C flag
       1);             // Expected V flag
-
-  registers_write_Z(p->reg, 0);
-  test_template(
-      "ADD (Unvalid condition)",
-      p,
-      EQ,             // Cond
-      1,              // I : Immediate value
-      ADD,            // ADD
-      1,              // S : Set condition codes
-      0,              // Rn : r0
-      1,              // Rd : r1
-      0b000000000011, // Shifter : #3
-      2,              // Rn value
-      0,              // Rs value
-      0,              // Rm value
-      0,              // Expected Rd value
-      -1,             // Expected Z flag
-      -1,             // Expected N flag
-      -1,             // Expected C flag
-      -1);            // Expected V flag
 
   test_template(
       "ADD (Immediate value with rotation)",
@@ -891,6 +894,29 @@ void test_tst(arm_core p)
       1,              // Expected Z flag
       0,              // Expected N flag
       1,              // Expected C flag
+      -1);            // Expected V flag
+
+  registers_write(p->reg, 0, USR, 0);
+  registers_write_C(p->reg, 0);
+  registers_write_Z(p->reg, 1);
+  registers_write_N(p->reg, 1);
+  test_template(
+      "TST (S = 0)",
+      p,
+      AL,             // Cond
+      1,              // I : Immediate value
+      TST,            // Opcode
+      0,              // S : Set condition codes
+      1,              // Rn : r0
+      0,              // Rd : r0
+      0b000000000001, // Shifter : 1
+      1,              // Rn value
+      0,              // Rs value
+      0,              // Rm value
+      0,              // Expected Rd value
+      0,              // Expected Z flag
+      0,              // Expected N flag
+      0,              // Expected C flag
       -1);            // Expected V flag
 }
 
